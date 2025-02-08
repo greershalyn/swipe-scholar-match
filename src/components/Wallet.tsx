@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -25,9 +25,14 @@ interface WalletProps {
 }
 
 const Wallet: React.FC<WalletProps> = ({ className }) => {
+  const queryClient = useQueryClient();
+  
   const { data: savedScholarships, isLoading } = useQuery({
     queryKey: ['saved-scholarships'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
       const { data: savedScholarships, error } = await supabase
         .from('saved_scholarships')
         .select(`
@@ -42,9 +47,13 @@ const Wallet: React.FC<WalletProps> = ({ className }) => {
             provider
           )
         `)
+        .eq('profile_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching saved scholarships:', error);
+        throw error;
+      }
       return savedScholarships as SavedScholarship[];
     },
   });

@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
 import ScholarshipCard from './ScholarshipCard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from '@/integrations/supabase/client';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface Scholarship {
   id: string;
@@ -47,6 +48,7 @@ const saveScholarship = async (scholarshipId: string) => {
 const ScholarshipSwiper = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState<'left' | 'right' | null>(null);
+  const queryClient = useQueryClient();
 
   const { data: scholarships, isLoading, error } = useQuery({
     queryKey: ['scholarships'],
@@ -56,6 +58,7 @@ const ScholarshipSwiper = () => {
   const saveMutation = useMutation({
     mutationFn: saveScholarship,
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['saved-scholarships'] });
       toast({
         title: "Scholarship Saved!",
         description: "Check your wallet to apply for this scholarship.",
@@ -83,7 +86,6 @@ const ScholarshipSwiper = () => {
     setDirection(direction);
     
     if (direction === 'right' && scholarships?.[currentIndex]) {
-      // Save the scholarship to wallet
       saveMutation.mutate(scholarships[currentIndex].id);
     }
     
