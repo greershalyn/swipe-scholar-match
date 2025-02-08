@@ -21,6 +21,7 @@ serve(async (req) => {
 
   try {
     const { userProfile } = await req.json();
+    console.log('Received user profile:', userProfile);
     
     // Create a detailed prompt based on user profile
     const searchPrompt = `
@@ -54,6 +55,8 @@ serve(async (req) => {
       }
     `;
 
+    console.log('Sending prompt to OpenAI:', searchPrompt);
+
     // Call OpenAI API to get scholarship suggestions
     const openAiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -62,7 +65,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
@@ -78,12 +81,12 @@ serve(async (req) => {
 
     if (!openAiResponse.ok) {
       const errorData = await openAiResponse.text();
-      console.error('OpenAI API error:', errorData);
-      throw new Error('Failed to get scholarship suggestions from OpenAI');
+      console.error('OpenAI API error response:', errorData);
+      throw new Error(`OpenAI API error: ${errorData}`);
     }
 
     const openAiData = await openAiResponse.json();
-    console.log('OpenAI response:', openAiData); // Added for debugging
+    console.log('OpenAI API raw response:', openAiData);
     
     if (!openAiData.choices || !openAiData.choices[0] || !openAiData.choices[0].message) {
       console.error('Unexpected OpenAI response format:', openAiData);
@@ -93,6 +96,7 @@ serve(async (req) => {
     let scholarshipsData;
     try {
       scholarshipsData = JSON.parse(openAiData.choices[0].message.content);
+      console.log('Parsed scholarships data:', scholarshipsData);
     } catch (error) {
       console.error('Failed to parse OpenAI response:', openAiData.choices[0].message.content);
       throw new Error('Invalid JSON response from OpenAI');
@@ -105,14 +109,19 @@ serve(async (req) => {
 
     // Insert scholarships into database
     for (const scholarship of scholarshipsData.scholarships) {
-      const { data: existingScholarship } = await supabase
+      const { data: existingScholarship, error: checkError } = await supabase
         .from('scholarships')
         .select('id')
         .eq('url', scholarship.url)
         .single();
 
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error('Error checking existing scholarship:', checkError);
+        continue;
+      }
+
       if (!existingScholarship) {
-        const { error } = await supabase
+        const { error: insertError } = await supabase
           .from('scholarships')
           .insert([{
             title: scholarship.title,
@@ -128,22 +137,30 @@ serve(async (req) => {
             last_verified_at: new Date(),
           }]);
 
-        if (error) {
-          console.error('Error inserting scholarship:', error);
-          throw error;
+        if (insertError) {
+          console.error('Error inserting scholarship:', insertError);
+          continue;
         }
       }
     }
 
     return new Response(
-      JSON.stringify({ success: true, count: scholarshipsData.scholarships.length }),
+      JSON.stringify({ 
+        success: true, 
+        count: scholarshipsData.scholarships.length,
+        message: `Successfully processed ${scholarshipsData.scholarships.length} scholarships`
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('Error in discover-scholarships function:', error);
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+      JSON.stringify({ 
+        success: false, 
+        error: error.message,
+        details: error instanceof Error ? error.stack : undefined
+      }),
       { 
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
