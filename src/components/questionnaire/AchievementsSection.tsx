@@ -49,10 +49,12 @@ export const AchievementsSection = ({ formData, setFormData }: AchievementsSecti
   const renderArrayField = (
     field: 'rewards_achievements' | 'volunteering_experience' | 'organizations',
     label: string,
-    placeholder: string
+    placeholder: string,
+    prompt: string
   ) => (
     <div className="space-y-2">
       <Label>{label}</Label>
+      <p className="text-sm text-muted-foreground mb-2">{prompt}</p>
       <div className="space-y-2">
         {formData[field].map((item: string, index: number) => (
           <div key={index} className="flex gap-2">
@@ -89,17 +91,20 @@ export const AchievementsSection = ({ formData, setFormData }: AchievementsSecti
       {renderArrayField(
         'rewards_achievements',
         'Rewards & Achievements',
-        'Enter an achievement...'
+        'Enter an achievement...',
+        'List any academic awards, honors, or notable achievements you have received.'
       )}
       {renderArrayField(
         'volunteering_experience',
         'Volunteering Experience',
-        'Enter volunteering experience...'
+        'Enter volunteering experience...',
+        'Share your community service and volunteer work experiences.'
       )}
       {renderArrayField(
         'organizations',
         'Organizations',
-        'Enter organization name...'
+        'Enter organization name...',
+        'List any clubs, professional organizations, or student groups you are involved with.'
       )}
     </div>
   );
