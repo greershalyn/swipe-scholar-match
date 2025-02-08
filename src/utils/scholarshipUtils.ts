@@ -7,6 +7,27 @@ export const fetchScholarships = async (): Promise<Scholarship[]> => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Must be logged in to view scholarships');
 
+  // Get user profile data
+  const { data: userProfile } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .single();
+
+  // Call discover-scholarships function to find new scholarships
+  const { data: discoveryResult, error: discoveryError } = await supabase.functions.invoke(
+    'discover-scholarships',
+    {
+      body: { userProfile },
+    }
+  );
+
+  if (discoveryError) {
+    console.error('Error discovering scholarships:', discoveryError);
+  } else {
+    console.log('Discovered new scholarships:', discoveryResult);
+  }
+
   // Get all swiped scholarship IDs for the current user
   const { data: swipedScholarships } = await supabase
     .from('swiped_scholarships')
@@ -25,39 +46,18 @@ export const fetchScholarships = async (): Promise<Scholarship[]> => {
     ...(savedScholarships?.map(s => s.scholarship_id) || [])
   ]);
 
-  // First, try to get scholarships that haven't been swiped on
+  // Get active scholarships with future deadlines
   let { data: scholarships } = await supabase
     .from('scholarships')
     .select('*')
+    .eq('is_active', true)
+    .gt('deadline', new Date().toISOString())
     .order('created_at', { ascending: false });
 
   if (!scholarships) throw new Error('Failed to fetch scholarships');
 
   // Filter out already saved or right-swiped scholarships
   scholarships = scholarships.filter(s => !excludeIds.has(s.id));
-
-  // If no new scholarships, get left-swiped ones
-  if (scholarships.length === 0 && swipedScholarships?.some(s => !s.swiped_right)) {
-    const leftSwipedIds = swipedScholarships
-      .filter(s => !s.swiped_right)
-      .map(s => s.scholarship_id);
-
-    const { data: leftSwipedScholarships } = await supabase
-      .from('scholarships')
-      .select('*')
-      .in('id', leftSwipedIds)
-      .order('created_at', { ascending: false });
-
-    scholarships = leftSwipedScholarships || [];
-
-    if (scholarships.length > 0) {
-      toast({
-        title: "Reviewing Previous Scholarships",
-        description: "Here are some scholarships you previously skipped.",
-        duration: 5000,
-      });
-    }
-  }
 
   return scholarships;
 };
