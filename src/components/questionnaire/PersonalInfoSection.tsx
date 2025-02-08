@@ -63,7 +63,7 @@ export const PersonalInfoSection = ({ formData, handleInputChange, setFormData }
           <SelectTrigger>
             <SelectValue placeholder="Select gender" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-white border shadow-lg z-50">
             <SelectItem value="male">Male</SelectItem>
             <SelectItem value="female">Female</SelectItem>
             <SelectItem value="non-binary">Non-binary</SelectItem>
@@ -79,7 +79,7 @@ export const PersonalInfoSection = ({ formData, handleInputChange, setFormData }
           <SelectTrigger>
             <SelectValue placeholder="Select ethnicity" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-white border shadow-lg z-50">
             <SelectItem value="american-indian">American Indian or Alaska Native</SelectItem>
             <SelectItem value="asian">Asian</SelectItem>
             <SelectItem value="black">Black or African American</SelectItem>
