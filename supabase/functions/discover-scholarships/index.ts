@@ -16,7 +16,7 @@ const corsHeaders = {
   'Access-Control-Max-Age': '86400',
 };
 
-serve(async (req) => {
+export const handler = async (req: Request) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { 
@@ -212,4 +212,6 @@ serve(async (req) => {
       }
     );
   }
-});
+};
+
+serve(handler);
