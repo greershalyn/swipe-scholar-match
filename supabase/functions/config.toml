@@ -1,0 +1,8 @@
+
+project_id = "cewxnkpihtujqbwbzjcv"
+[discover-scholarships]
+verify_jwt = false
+[openai-scholarship-search]
+verify_jwt = false
+[store-scholarships]
+verify_jwt = false
