@@ -15,6 +15,11 @@ interface CrawlResult {
   creditsUsed?: number;
   expiresAt?: string;
   data?: any[];
+  scholarship?: {
+    title: string;
+    amount: number;
+    provider: string;
+  };
 }
 
 export const CrawlForm = () => {
@@ -102,9 +107,13 @@ export const CrawlForm = () => {
           <h3 className="text-lg font-semibold mb-2">Crawl Results</h3>
           <div className="space-y-2 text-sm">
             <p>Status: Success</p>
-            <p>Added scholarship: {crawlResult.scholarship?.title}</p>
-            <p>Amount: ${crawlResult.scholarship?.amount}</p>
-            <p>Provider: {crawlResult.scholarship?.provider}</p>
+            {crawlResult.scholarship && (
+              <>
+                <p>Added scholarship: {crawlResult.scholarship.title}</p>
+                <p>Amount: ${crawlResult.scholarship.amount}</p>
+                <p>Provider: {crawlResult.scholarship.provider}</p>
+              </>
+            )}
           </div>
         </Card>
       )}
