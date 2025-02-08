@@ -9,7 +9,87 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          act_score: number | null
+          address: string | null
+          awards_honors: string[] | null
+          birth_date: string | null
+          city: string | null
+          created_at: string
+          current_education_level: string | null
+          disability_status: boolean | null
+          essay_personal_statement: string | null
+          ethnicity: string | null
+          extracurricular_activities: string[] | null
+          financial_need: boolean | null
+          first_generation_student: boolean | null
+          full_name: string | null
+          gender: string | null
+          gpa: number | null
+          household_income: number | null
+          id: string
+          intended_major: string | null
+          military_affiliation: string | null
+          sat_score: number | null
+          state: string | null
+          updated_at: string
+          zip_code: string | null
+        }
+        Insert: {
+          act_score?: number | null
+          address?: string | null
+          awards_honors?: string[] | null
+          birth_date?: string | null
+          city?: string | null
+          created_at?: string
+          current_education_level?: string | null
+          disability_status?: boolean | null
+          essay_personal_statement?: string | null
+          ethnicity?: string | null
+          extracurricular_activities?: string[] | null
+          financial_need?: boolean | null
+          first_generation_student?: boolean | null
+          full_name?: string | null
+          gender?: string | null
+          gpa?: number | null
+          household_income?: number | null
+          id: string
+          intended_major?: string | null
+          military_affiliation?: string | null
+          sat_score?: number | null
+          state?: string | null
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Update: {
+          act_score?: number | null
+          address?: string | null
+          awards_honors?: string[] | null
+          birth_date?: string | null
+          city?: string | null
+          created_at?: string
+          current_education_level?: string | null
+          disability_status?: boolean | null
+          essay_personal_statement?: string | null
+          ethnicity?: string | null
+          extracurricular_activities?: string[] | null
+          financial_need?: boolean | null
+          first_generation_student?: boolean | null
+          full_name?: string | null
+          gender?: string | null
+          gpa?: number | null
+          household_income?: number | null
+          id?: string
+          intended_major?: string | null
+          military_affiliation?: string | null
+          sat_score?: number | null
+          state?: string | null
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
