@@ -1,7 +1,61 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Scholarship } from '../types/scholarship';
 import { toast } from "@/components/ui/use-toast";
+
+// Mock scholarship data for testing
+const mockScholarships: Scholarship[] = [
+  {
+    id: 'mock-1',
+    title: 'STEM Excellence Scholarship',
+    amount: 5000,
+    deadline: '2024-12-31',
+    category: 'STEM',
+    description: 'For outstanding students pursuing degrees in Science, Technology, Engineering, or Mathematics.',
+    requirements: [
+      'Minimum 3.5 GPA',
+      'Pursuing STEM degree',
+      'Full-time enrollment',
+      'US citizen or permanent resident'
+    ],
+    provider: 'Future Tech Foundation',
+    url: 'https://example.com/stem-scholarship',
+    match_score: 95
+  },
+  {
+    id: 'mock-2',
+    title: 'First Generation Student Award',
+    amount: 3000,
+    deadline: '2024-11-30',
+    category: 'First Generation',
+    description: 'Supporting first-generation college students in their academic journey.',
+    requirements: [
+      'First-generation college student',
+      'Minimum 3.0 GPA',
+      'Demonstrated financial need',
+      'Community involvement'
+    ],
+    provider: 'Education Access Foundation',
+    url: 'https://example.com/firstgen-scholarship',
+    match_score: 88
+  },
+  {
+    id: 'mock-3',
+    title: 'Creative Arts Grant',
+    amount: 2500,
+    deadline: '2024-10-15',
+    category: 'Arts',
+    description: 'Supporting talented students in visual arts, music, theater, or creative writing.',
+    requirements: [
+      'Portfolio submission',
+      'Arts major or minor',
+      'Letter of recommendation',
+      'Essay submission'
+    ],
+    provider: 'Arts Alliance',
+    url: 'https://example.com/arts-grant',
+    match_score: 75
+  }
+];
 
 export const fetchScholarships = async (): Promise<Scholarship[]> => {
   const { data: { user } } = await supabase.auth.getUser();
@@ -14,41 +68,9 @@ export const fetchScholarships = async (): Promise<Scholarship[]> => {
     .eq('id', user.id)
     .single();
 
-  // Call discover-scholarships function to find new scholarships
-  const { data: discoveryResult, error: discoveryError } = await supabase.functions.invoke(
-    'discover-scholarships',
-    {
-      body: { userProfile },
-    }
-  );
-
-  if (discoveryError) {
-    console.error('Error discovering scholarships:', discoveryError);
-    // Check if it's a setup pending error
-    const errorBody = JSON.parse(discoveryError.message || '{}');
-    if (errorBody.status === 'setup_pending') {
-      toast({
-        title: "Service Setup in Progress",
-        description: "Our AI service is being initialized. Please try again in a few minutes.",
-        duration: 5000,
-      });
-    } else if (discoveryError.status === 429) {
-      toast({
-        title: "Service Temporarily Unavailable",
-        description: "Our AI service quota has been exceeded. Please try again later or contact support.",
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Error",
-        description: "Failed to discover new scholarships. Please try again later.",
-        variant: "destructive",
-      });
-    }
-  } else {
-    console.log('Discovered new scholarships:', discoveryResult);
-  }
-
+  // For now, return mock data instead of calling the discover-scholarships function
+  console.log('Using mock scholarship data for testing');
+  
   // Get all swiped scholarship IDs for the current user
   const { data: swipedScholarships } = await supabase
     .from('swiped_scholarships')
@@ -67,20 +89,8 @@ export const fetchScholarships = async (): Promise<Scholarship[]> => {
     ...(savedScholarships?.map(s => s.scholarship_id) || [])
   ]);
 
-  // Get active scholarships with future deadlines
-  let { data: scholarships } = await supabase
-    .from('scholarships')
-    .select('*')
-    .eq('is_active', true)
-    .gt('deadline', new Date().toISOString())
-    .order('created_at', { ascending: false });
-
-  if (!scholarships) throw new Error('Failed to fetch scholarships');
-
-  // Filter out already saved or right-swiped scholarships
-  scholarships = scholarships.filter(s => !excludeIds.has(s.id));
-
-  return scholarships;
+  // Filter out already saved or right-swiped scholarships from mock data
+  return mockScholarships.filter(s => !excludeIds.has(s.id));
 };
 
 export const saveScholarship = async (scholarshipId: string) => {
