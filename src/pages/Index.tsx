@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -112,7 +113,16 @@ const Index = () => {
           </div>
         </div>
 
-        {user && <ScholarshipSwiper />}
+        {user && (
+          <>
+            <ScholarshipSwiper />
+            <div className="mt-2 text-center">
+              <p className="text-lg text-white font-medium">
+                Swipe right to apply, left to skip
+              </p>
+            </div>
+          </>
+        )}
 
         {!user && (
           <div className="text-center mt-16 bg-white/95 p-12 rounded-3xl shadow-xl animate-fade-in">
@@ -130,14 +140,6 @@ const Index = () => {
             >
               Sign Up Now
             </Button>
-          </div>
-        )}
-
-        {user && (
-          <div className="mt-8 text-center">
-            <p className="text-lg text-white font-medium">
-              Swipe right to apply, left to skip
-            </p>
           </div>
         )}
       </div>
