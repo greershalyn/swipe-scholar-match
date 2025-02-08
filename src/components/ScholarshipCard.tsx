@@ -3,7 +3,7 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { motion, PanInfo } from 'framer-motion';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, ThumbsUp, ThumbsDown } from 'lucide-react';
 
 interface ScholarshipCardProps {
   scholarship: {
@@ -93,9 +93,15 @@ const ScholarshipCard: React.FC<ScholarshipCardProps> = ({ scholarship, onSwipe 
           </a>
         </div>
 
-        <div className="mt-6 flex justify-center gap-4 text-sm text-muted-foreground">
-          <p>← Swipe left to skip</p>
-          <p>Swipe right to apply →</p>
+        <div className="mt-6 flex justify-center gap-8 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <ThumbsDown className="w-6 h-6 text-red-500" />
+            <span>Skip</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span>Apply</span>
+            <ThumbsUp className="w-6 h-6 text-green-500" />
+          </div>
         </div>
       </Card>
     </motion.div>
