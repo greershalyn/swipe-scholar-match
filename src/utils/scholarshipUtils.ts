@@ -2,7 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Scholarship } from '../types/scholarship';
 import { toast } from "@/components/ui/use-toast";
 
-// Mock scholarship data for testing
+// Mock scholarship data for testing and fallback
 const mockScholarships: Scholarship[] = [
   {
     id: 'mock-1',
@@ -68,9 +68,18 @@ export const fetchScholarships = async (): Promise<Scholarship[]> => {
     .eq('id', user.id)
     .single();
 
-  // For now, return mock data instead of calling the discover-scholarships function
-  console.log('Using mock scholarship data for testing');
-  
+  // Call the discover-scholarships function to get AI-powered recommendations
+  const { data, error } = await supabase.functions.invoke('discover-scholarships', {
+    body: { userProfile }
+  });
+
+  if (error) {
+    console.error('Error calling discover-scholarships:', error);
+    // Fall back to mock data if the function fails
+    console.log('Using mock scholarship data as fallback');
+    return mockScholarships;
+  }
+
   // Get all swiped scholarship IDs for the current user
   const { data: swipedScholarships } = await supabase
     .from('swiped_scholarships')
@@ -89,8 +98,25 @@ export const fetchScholarships = async (): Promise<Scholarship[]> => {
     ...(savedScholarships?.map(s => s.scholarship_id) || [])
   ]);
 
-  // Filter out already saved or right-swiped scholarships from mock data
-  return mockScholarships.filter(s => !excludeIds.has(s.id));
+  // Get all scholarships from the database
+  const { data: scholarships } = await supabase
+    .from('scholarships')
+    .select('*')
+    .eq('is_active', true)
+    .gt('deadline', new Date().toISOString())
+    .order('last_verified_at', { ascending: false });
+
+  if (!scholarships?.length) {
+    console.log('No scholarships found in database, using mock data');
+    return mockScholarships.filter(s => !excludeIds.has(s.id));
+  }
+
+  return scholarships
+    .filter(s => !excludeIds.has(s.id))
+    .map(s => ({
+      ...s,
+      match_score: calculateMatchScore(s, userProfile)
+    }));
 };
 
 export const saveScholarship = async (scholarshipId: string) => {
@@ -180,4 +206,26 @@ export const recordLeftSwipe = async (scholarshipId: string) => {
 
     if (error) throw error;
   }
+};
+
+// Helper function to calculate match score based on user profile
+const calculateMatchScore = (scholarship: Scholarship, userProfile: any): number => {
+  let score = 75; // Base score
+
+  if (userProfile?.intended_major && 
+      scholarship.description?.toLowerCase().includes(userProfile.intended_major.toLowerCase())) {
+    score += 10;
+  }
+
+  if (userProfile?.first_generation_student && 
+      scholarship.description?.toLowerCase().includes('first generation')) {
+    score += 10;
+  }
+
+  if (userProfile?.ethnicity && 
+      scholarship.description?.toLowerCase().includes(userProfile.ethnicity.toLowerCase())) {
+    score += 5;
+  }
+
+  return Math.min(100, score);
 };
