@@ -114,7 +114,11 @@ const Questionnaire = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            <PersonalInfoSection formData={formData} handleInputChange={handleInputChange} />
+            <PersonalInfoSection 
+              formData={formData} 
+              handleInputChange={handleInputChange}
+              setFormData={setFormData}
+            />
             <AcademicInfoSection formData={formData} handleInputChange={handleInputChange} />
             <BackgroundInfoSection formData={formData} setFormData={setFormData} />
             <PersonalStatementSection formData={formData} handleInputChange={handleInputChange} />

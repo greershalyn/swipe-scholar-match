@@ -1,6 +1,13 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface PersonalInfoProps {
   formData: {
@@ -14,9 +21,17 @@ interface PersonalInfoProps {
     zip_code: string;
   };
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  setFormData: (data: any) => void;
 }
 
-export const PersonalInfoSection = ({ formData, handleInputChange }: PersonalInfoProps) => {
+export const PersonalInfoSection = ({ formData, handleInputChange, setFormData }: PersonalInfoProps) => {
+  const handleSelectChange = (field: string, value: string) => {
+    setFormData((prev: any) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div className="space-y-2">
@@ -44,24 +59,38 @@ export const PersonalInfoSection = ({ formData, handleInputChange }: PersonalInf
 
       <div className="space-y-2">
         <Label htmlFor="gender">Gender</Label>
-        <Input
-          id="gender"
-          name="gender"
-          value={formData.gender}
-          onChange={handleInputChange}
-          required
-        />
+        <Select value={formData.gender} onValueChange={(value) => handleSelectChange('gender', value)}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select gender" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="male">Male</SelectItem>
+            <SelectItem value="female">Female</SelectItem>
+            <SelectItem value="non-binary">Non-binary</SelectItem>
+            <SelectItem value="other">Other</SelectItem>
+            <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="ethnicity">Ethnicity</Label>
-        <Input
-          id="ethnicity"
-          name="ethnicity"
-          value={formData.ethnicity}
-          onChange={handleInputChange}
-          required
-        />
+        <Select value={formData.ethnicity} onValueChange={(value) => handleSelectChange('ethnicity', value)}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select ethnicity" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="american-indian">American Indian or Alaska Native</SelectItem>
+            <SelectItem value="asian">Asian</SelectItem>
+            <SelectItem value="black">Black or African American</SelectItem>
+            <SelectItem value="hispanic">Hispanic or Latino</SelectItem>
+            <SelectItem value="pacific-islander">Native Hawaiian or Other Pacific Islander</SelectItem>
+            <SelectItem value="white">White</SelectItem>
+            <SelectItem value="multiple">Two or More Races</SelectItem>
+            <SelectItem value="other">Other</SelectItem>
+            <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="space-y-2">
