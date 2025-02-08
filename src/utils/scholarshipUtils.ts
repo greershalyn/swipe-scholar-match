@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Scholarship } from '../types/scholarship';
 import { toast } from "@/components/ui/use-toast";
