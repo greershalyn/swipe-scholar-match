@@ -16,7 +16,7 @@ interface Scholarship {
   requirements: string[];
   url: string;
   provider: string;
-  match_score?: number; // We'll implement matching logic later
+  match_score?: number;
 }
 
 const fetchScholarships = async () => {
@@ -32,6 +32,18 @@ const fetchScholarships = async () => {
 const applyForScholarship = async (scholarshipId: string) => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Must be logged in to apply');
+
+  // Check if user has already applied
+  const { data: existingApplication } = await supabase
+    .from('scholarship_applications')
+    .select('id')
+    .eq('scholarship_id', scholarshipId)
+    .eq('profile_id', user.id)
+    .maybeSingle();
+
+  if (existingApplication) {
+    throw new Error('You have already applied for this scholarship');
+  }
 
   const { error } = await supabase
     .from('scholarship_applications')
@@ -60,12 +72,20 @@ const ScholarshipSwiper = () => {
         duration: 5000,
       });
     },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+    onError: (error: Error) => {
+      if (error.message === 'You have already applied for this scholarship') {
+        toast({
+          title: "Already Applied",
+          description: "You have already applied for this scholarship. Swipe left to see more opportunities!",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     },
   });
 
