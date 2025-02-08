@@ -192,6 +192,8 @@ export type Database = {
           description: string
           id: string
           is_active: boolean
+          last_crawled_at: string | null
+          match_score: number | null
           provider: string
           requirements: string[]
           title: string
@@ -206,6 +208,8 @@ export type Database = {
           description: string
           id?: string
           is_active?: boolean
+          last_crawled_at?: string | null
+          match_score?: number | null
           provider: string
           requirements?: string[]
           title: string
@@ -220,6 +224,8 @@ export type Database = {
           description?: string
           id?: string
           is_active?: boolean
+          last_crawled_at?: string | null
+          match_score?: number | null
           provider?: string
           requirements?: string[]
           title?: string
