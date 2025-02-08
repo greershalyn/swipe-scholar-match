@@ -20,7 +20,11 @@ interface SavedScholarship {
   applied: boolean;
 }
 
-const Wallet = () => {
+interface WalletProps {
+  className?: string;
+}
+
+const Wallet: React.FC<WalletProps> = ({ className }) => {
   const { data: savedScholarships, isLoading } = useQuery({
     queryKey: ['saved-scholarships'],
     queryFn: async () => {
@@ -70,36 +74,38 @@ const Wallet = () => {
   };
 
   return (
-    <div className="space-y-4">
-      {savedScholarships.map((saved) => (
-        <Card key={saved.id} className="p-4">
-          <div className="flex justify-between items-start">
-            <div>
-              <h3 className="font-semibold text-lg text-accent mb-1">
-                {saved.scholarship.title}
-              </h3>
-              <p className="text-sm text-muted-foreground mb-2">
-                Provider: {saved.scholarship.provider}
-              </p>
-              <div className="flex items-center gap-2 mb-2">
-                <Badge variant="outline" className="bg-primary/10 text-primary">
-                  ${saved.scholarship.amount.toLocaleString()}
-                </Badge>
-                <Badge variant="outline" className="bg-accent/10 text-accent">
-                  Deadline: {formatDeadline(saved.scholarship.deadline)}
-                </Badge>
+    <div className={className}>
+      <div className="space-y-4">
+        {savedScholarships.map((saved) => (
+          <Card key={saved.id} className="p-4">
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="font-semibold text-lg text-accent mb-1">
+                  {saved.scholarship.title}
+                </h3>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Provider: {saved.scholarship.provider}
+                </p>
+                <div className="flex items-center gap-2 mb-2">
+                  <Badge variant="outline" className="bg-primary/10 text-primary">
+                    ${saved.scholarship.amount.toLocaleString()}
+                  </Badge>
+                  <Badge variant="outline" className="bg-accent/10 text-accent">
+                    Deadline: {formatDeadline(saved.scholarship.deadline)}
+                  </Badge>
+                </div>
               </div>
+              <Button
+                variant="outline"
+                className="flex items-center gap-2"
+                onClick={() => window.open(saved.scholarship.url, '_blank')}
+              >
+                Apply Now <ExternalLink className="h-4 w-4" />
+              </Button>
             </div>
-            <Button
-              variant="outline"
-              className="flex items-center gap-2"
-              onClick={() => window.open(saved.scholarship.url, '_blank')}
-            >
-              Apply Now <ExternalLink className="h-4 w-4" />
-            </Button>
-          </div>
-        </Card>
-      ))}
+          </Card>
+        ))}
+      </div>
     </div>
   );
 };
