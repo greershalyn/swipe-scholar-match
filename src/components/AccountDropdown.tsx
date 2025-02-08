@@ -37,7 +37,7 @@ export const AccountDropdown = () => {
         title: "Logged out successfully",
         description: "You have been signed out of your account.",
       });
-      navigate("/auth");
+      navigate("/");
     } catch (error: any) {
       toast({
         title: "Error",
@@ -64,7 +64,7 @@ export const AccountDropdown = () => {
         title: "Account Deactivated",
         description: "Your account has been deactivated successfully.",
       });
-      navigate("/auth");
+      navigate("/");
     } catch (error: any) {
       toast({
         title: "Error",

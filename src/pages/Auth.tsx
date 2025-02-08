@@ -16,6 +16,22 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const checkProfileCompletion = async (userId: string) => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", userId)
+      .single();
+
+    if (error) {
+      console.error("Error checking profile:", error);
+      return false;
+    }
+
+    // If they have a full_name set, we consider their profile complete
+    return !!data?.full_name;
+  };
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -30,13 +46,18 @@ const Auth = () => {
           title: "Success!",
           description: "Please check your email to verify your account.",
         });
+        navigate("/questionnaire");
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data: { user }, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
         if (error) throw error;
-        navigate("/questionnaire");
+        
+        if (user) {
+          const hasCompletedProfile = await checkProfileCompletion(user.id);
+          navigate(hasCompletedProfile ? "/" : "/questionnaire");
+        }
       }
     } catch (error: any) {
       toast({
