@@ -116,7 +116,7 @@ const Index = () => {
         {user && (
           <>
             <ScholarshipSwiper />
-            <div className="mt-2 text-center">
+            <div className="-mt-4 text-center">
               <p className="text-lg text-white font-medium">
                 Swipe right to apply, left to skip
               </p>
