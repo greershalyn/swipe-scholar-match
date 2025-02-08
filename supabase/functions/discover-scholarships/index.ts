@@ -62,7 +62,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4',
         messages: [
           {
             role: 'system',
@@ -83,6 +83,7 @@ serve(async (req) => {
     }
 
     const openAiData = await openAiResponse.json();
+    console.log('OpenAI response:', openAiData); // Added for debugging
     
     if (!openAiData.choices || !openAiData.choices[0] || !openAiData.choices[0].message) {
       console.error('Unexpected OpenAI response format:', openAiData);
