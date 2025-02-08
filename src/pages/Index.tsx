@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { GraduationCap, Rocket, DollarSign, Clock, Sparkles, BookOpen, Users, Trophy } from 'lucide-react';
 import { AccountDropdown } from '@/components/AccountDropdown';
+import Wallet from '@/components/Wallet';
 
 const Index = () => {
   const [user, setUser] = useState(null);
@@ -14,12 +14,10 @@ const Index = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check current auth status
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
     });
 
-    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -116,10 +114,17 @@ const Index = () => {
         {user && (
           <>
             <ScholarshipSwiper />
-            <div className="-mt-4 text-center">
+            <div className="-mt-12 text-center mb-8">
               <p className="text-lg text-white font-medium">
-                Swipe right to apply, left to skip
+                Swipe right to save to wallet, left to skip
               </p>
+            </div>
+            <div className="bg-white/95 rounded-xl p-6 shadow-lg">
+              <h2 className="text-2xl font-semibold text-accent mb-4 flex items-center gap-2">
+                <Wallet className="h-6 w-6" />
+                Your Scholarship Wallet
+              </h2>
+              <Wallet />
             </div>
           </>
         )}

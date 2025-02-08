@@ -102,6 +102,45 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_scholarships: {
+        Row: {
+          applied: boolean
+          created_at: string
+          id: string
+          profile_id: string
+          scholarship_id: string
+        }
+        Insert: {
+          applied?: boolean
+          created_at?: string
+          id?: string
+          profile_id: string
+          scholarship_id: string
+        }
+        Update: {
+          applied?: boolean
+          created_at?: string
+          id?: string
+          profile_id?: string
+          scholarship_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_scholarships_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_scholarships_scholarship_id_fkey"
+            columns: ["scholarship_id"]
+            isOneToOne: false
+            referencedRelation: "scholarships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scholarship_applications: {
         Row: {
           id: string

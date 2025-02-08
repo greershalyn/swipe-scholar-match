@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import ScholarshipCard from './ScholarshipCard';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -29,28 +28,19 @@ const fetchScholarships = async () => {
   return data as Scholarship[];
 };
 
-const applyForScholarship = async (scholarshipId: string) => {
+const saveScholarship = async (scholarshipId: string) => {
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('Must be logged in to apply');
-
-  // Check if user has already applied
-  const { data: existingApplication } = await supabase
-    .from('scholarship_applications')
-    .select('id')
-    .eq('scholarship_id', scholarshipId)
-    .eq('profile_id', user.id)
-    .maybeSingle();
-
-  if (existingApplication) {
-    throw new Error('You have already applied for this scholarship');
-  }
+  if (!user) throw new Error('Must be logged in to save scholarships');
 
   const { error } = await supabase
-    .from('scholarship_applications')
+    .from('saved_scholarships')
     .insert([
       { scholarship_id: scholarshipId, profile_id: user.id }
     ]);
 
+  if (error && error.code === '23505') {
+    throw new Error('You have already saved this scholarship');
+  }
   if (error) throw error;
 };
 
@@ -63,20 +53,20 @@ const ScholarshipSwiper = () => {
     queryFn: fetchScholarships,
   });
 
-  const applyMutation = useMutation({
-    mutationFn: applyForScholarship,
+  const saveMutation = useMutation({
+    mutationFn: saveScholarship,
     onSuccess: () => {
       toast({
-        title: "Application Submitted!",
-        description: "Your application has been recorded. Visit the scholarship website to complete the process.",
-        duration: 5000,
+        title: "Scholarship Saved!",
+        description: "Check your wallet to apply for this scholarship.",
+        duration: 3000,
       });
     },
     onError: (error: Error) => {
-      if (error.message === 'You have already applied for this scholarship') {
+      if (error.message === 'You have already saved this scholarship') {
         toast({
-          title: "Already Applied",
-          description: "You have already applied for this scholarship. Swipe left to see more opportunities!",
+          title: "Already Saved",
+          description: "You have already saved this scholarship. Check your wallet!",
           variant: "destructive",
         });
       } else {
@@ -93,11 +83,8 @@ const ScholarshipSwiper = () => {
     setDirection(direction);
     
     if (direction === 'right' && scholarships?.[currentIndex]) {
-      // Apply for the scholarship
-      applyMutation.mutate(scholarships[currentIndex].id);
-      
-      // Open scholarship URL in new tab
-      window.open(scholarships[currentIndex].url, '_blank');
+      // Save the scholarship to wallet
+      saveMutation.mutate(scholarships[currentIndex].id);
     }
     
     setTimeout(() => {
