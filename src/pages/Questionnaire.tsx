@@ -19,7 +19,7 @@ import { PersonalStatementSection } from "@/components/questionnaire/PersonalSta
 const Questionnaire = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     full_name: "",
     birth_date: "",
@@ -44,12 +44,47 @@ const Questionnaire = () => {
 
   useEffect(() => {
     checkUser();
+    loadProfileData();
   }, []);
 
   const checkUser = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       navigate("/auth");
+    }
+  };
+
+  const loadProfileData = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", session.user.id)
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        setFormData({
+          ...formData,
+          ...data,
+          gpa: data.gpa?.toString() ?? "",
+          sat_score: data.sat_score?.toString() ?? "",
+          act_score: data.act_score?.toString() ?? "",
+          household_income: data.household_income?.toString() ?? "",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to load profile data",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -103,13 +138,23 @@ const Questionnaire = () => {
     }));
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background p-4 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground">Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background p-4">
       <Card className="max-w-4xl mx-auto">
         <CardHeader>
-          <CardTitle>Scholarship Profile Questionnaire</CardTitle>
+          <CardTitle>Update Your Profile</CardTitle>
           <CardDescription>
-            Help us match you with the best scholarships by completing your profile
+            Update your profile information to help us match you with the best scholarships
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -123,9 +168,14 @@ const Questionnaire = () => {
             <BackgroundInfoSection formData={formData} setFormData={setFormData} />
             <PersonalStatementSection formData={formData} handleInputChange={handleInputChange} />
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Saving..." : "Save Profile"}
-            </Button>
+            <div className="flex gap-4">
+              <Button type="button" variant="outline" onClick={() => navigate("/")} className="w-full">
+                Cancel
+              </Button>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? "Saving..." : "Save Changes"}
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>

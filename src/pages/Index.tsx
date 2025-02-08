@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -6,6 +5,7 @@ import ScholarshipSwiper from '@/components/ScholarshipSwiper';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { GraduationCap, Rocket, DollarSign, Clock, Sparkles, BookOpen, Users, Trophy } from 'lucide-react';
+import { AccountDropdown } from '@/components/AccountDropdown';
 
 const Index = () => {
   const [user, setUser] = useState(null);
@@ -49,9 +49,7 @@ const Index = () => {
       <div className="container px-4 py-8">
         <div className="flex justify-end mb-6">
           {user ? (
-            <Button onClick={handleLogout} variant="outline" className="bg-white hover:bg-gray-100 shadow-lg">
-              Log Out
-            </Button>
+            <AccountDropdown />
           ) : (
             <Button onClick={() => navigate('/auth')} variant="outline" className="bg-white hover:bg-gray-100 shadow-lg">
               Log In
