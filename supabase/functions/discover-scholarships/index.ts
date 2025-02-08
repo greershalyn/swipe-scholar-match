@@ -64,7 +64,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4',
         messages: [
           {
             role: 'system',
@@ -75,6 +75,7 @@ serve(async (req) => {
             content: searchPrompt
           }
         ],
+        temperature: 0.7,
       }),
     });
 
@@ -110,7 +111,9 @@ serve(async (req) => {
 
     let scholarshipsData;
     try {
-      scholarshipsData = JSON.parse(openAiData.choices[0].message.content);
+      const content = openAiData.choices[0].message.content;
+      console.log('Raw content from OpenAI:', content);
+      scholarshipsData = JSON.parse(content);
       console.log('Parsed scholarships data:', scholarshipsData);
     } catch (error) {
       console.error('Failed to parse OpenAI response:', openAiData.choices[0].message.content);
@@ -183,3 +186,4 @@ serve(async (req) => {
     );
   }
 });
+
