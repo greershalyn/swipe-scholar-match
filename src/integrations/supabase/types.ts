@@ -28,6 +28,7 @@ export type Database = {
           full_name: string | null
           gender: string | null
           gpa: number | null
+          high_school_graduated: boolean | null
           household_income: number | null
           id: string
           intended_major: string | null
@@ -58,6 +59,7 @@ export type Database = {
           full_name?: string | null
           gender?: string | null
           gpa?: number | null
+          high_school_graduated?: boolean | null
           household_income?: number | null
           id: string
           intended_major?: string | null
@@ -88,6 +90,7 @@ export type Database = {
           full_name?: string | null
           gender?: string | null
           gpa?: number | null
+          high_school_graduated?: boolean | null
           household_income?: number | null
           id?: string
           intended_major?: string | null
