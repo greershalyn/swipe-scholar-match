@@ -13,10 +13,10 @@ import Footer from "./components/Footer";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <BrowserRouter>
-    <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen flex flex-col">
-        <TooltipProvider>
+  <TooltipProvider>
+    <BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <div className="min-h-screen flex flex-col">
           <div className="flex-grow">
             <Routes>
               <Route path="/" element={<Index />} />
@@ -28,10 +28,10 @@ const App = () => (
           <Footer />
           <Toaster />
           <Sonner />
-        </TooltipProvider>
-      </div>
-    </QueryClientProvider>
-  </BrowserRouter>
+        </div>
+      </QueryClientProvider>
+    </BrowserRouter>
+  </TooltipProvider>
 );
 
 export default App;
