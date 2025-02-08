@@ -44,6 +44,7 @@ const Questionnaire = () => {
     rewards_achievements: [] as string[],
     volunteering_experience: [] as string[],
     organizations: [] as string[],
+    high_school_graduated: false,
   });
 
   useEffect(() => {
@@ -171,7 +172,11 @@ const Questionnaire = () => {
               handleInputChange={handleInputChange}
               setFormData={setFormData}
             />
-            <AcademicInfoSection formData={formData} handleInputChange={handleInputChange} />
+            <AcademicInfoSection 
+              formData={formData} 
+              handleInputChange={handleInputChange} 
+              setFormData={setFormData}
+            />
             <BackgroundInfoSection formData={formData} setFormData={setFormData} />
             <PersonalStatementSection formData={formData} handleInputChange={handleInputChange} />
             <AchievementsSection formData={formData} setFormData={setFormData} />
