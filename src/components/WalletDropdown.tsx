@@ -118,8 +118,8 @@ const WalletDropdown = () => {
   }
 
   return (
-    <ScrollArea className="h-[400px] w-[350px] p-4">
-      <div className="space-y-4">
+    <ScrollArea className="h-[80vh] w-[600px] p-6">
+      <div className="grid grid-cols-2 gap-4">
         {savedScholarships.map((saved) => {
           const deadline = formatDeadline(saved.scholarship.deadline);
           return (
