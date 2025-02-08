@@ -9,6 +9,3 @@ verify_jwt = false
 verify_jwt = false
 [functions.discover-scholarships]
 verify_jwt = false
-[functions.discover-scholarships.cors]
-allowed_origins = ["*"]
-
