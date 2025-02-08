@@ -1,12 +1,12 @@
 
 import React from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ExternalLink, Wallet as WalletIcon } from 'lucide-react';
 import { Badge } from './ui/badge';
-import { ScrollArea } from './ui/scroll-area';
+import { ScrollArea, ScrollBar } from './ui/scroll-area';
 
 interface SavedScholarship {
   id: string;
@@ -26,8 +26,6 @@ interface WalletProps {
 }
 
 const Wallet: React.FC<WalletProps> = ({ className }) => {
-  const queryClient = useQueryClient();
-  
   const { data: savedScholarships, isLoading } = useQuery({
     queryKey: ['saved-scholarships'],
     queryFn: async () => {
@@ -85,7 +83,7 @@ const Wallet: React.FC<WalletProps> = ({ className }) => {
 
   return (
     <div className={className}>
-      <ScrollArea className="w-full rounded-md">
+      <ScrollArea className="w-full">
         <div className="flex gap-4 pb-4" style={{ minWidth: 'min-content' }}>
           {savedScholarships.map((saved) => (
             <Card key={saved.id} className="p-6 hover:shadow-lg transition-shadow duration-200 bg-white/95" style={{ width: '320px', flexShrink: 0 }}>
@@ -117,6 +115,7 @@ const Wallet: React.FC<WalletProps> = ({ className }) => {
             </Card>
           ))}
         </div>
+        <ScrollBar orientation="horizontal" />
       </ScrollArea>
     </div>
   );
