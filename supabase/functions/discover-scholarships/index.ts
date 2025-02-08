@@ -62,7 +62,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
@@ -76,8 +76,31 @@ serve(async (req) => {
       }),
     });
 
+    if (!openAiResponse.ok) {
+      const errorData = await openAiResponse.text();
+      console.error('OpenAI API error:', errorData);
+      throw new Error('Failed to get scholarship suggestions from OpenAI');
+    }
+
     const openAiData = await openAiResponse.json();
-    const scholarshipsData = JSON.parse(openAiData.choices[0].message.content);
+    
+    if (!openAiData.choices || !openAiData.choices[0] || !openAiData.choices[0].message) {
+      console.error('Unexpected OpenAI response format:', openAiData);
+      throw new Error('Invalid response format from OpenAI');
+    }
+
+    let scholarshipsData;
+    try {
+      scholarshipsData = JSON.parse(openAiData.choices[0].message.content);
+    } catch (error) {
+      console.error('Failed to parse OpenAI response:', openAiData.choices[0].message.content);
+      throw new Error('Invalid JSON response from OpenAI');
+    }
+
+    if (!scholarshipsData.scholarships || !Array.isArray(scholarshipsData.scholarships)) {
+      console.error('Invalid scholarships data format:', scholarshipsData);
+      throw new Error('Invalid scholarships data format');
+    }
 
     // Insert scholarships into database
     for (const scholarship of scholarshipsData.scholarships) {
@@ -104,7 +127,10 @@ serve(async (req) => {
             last_verified_at: new Date(),
           }]);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error inserting scholarship:', error);
+          throw error;
+        }
       }
     }
 
