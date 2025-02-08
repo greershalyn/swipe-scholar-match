@@ -33,15 +33,24 @@ const saveScholarship = async (scholarshipId: string) => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Must be logged in to save scholarships');
 
+  // First check if scholarship is already saved
+  const { data: existingSave } = await supabase
+    .from('saved_scholarships')
+    .select('id')
+    .eq('scholarship_id', scholarshipId)
+    .eq('profile_id', user.id)
+    .maybeSingle();
+
+  if (existingSave) {
+    throw new Error('You have already saved this scholarship');
+  }
+
   const { error } = await supabase
     .from('saved_scholarships')
     .insert([
       { scholarship_id: scholarshipId, profile_id: user.id }
     ]);
 
-  if (error && error.code === '23505') {
-    throw new Error('You have already saved this scholarship');
-  }
   if (error) throw error;
 };
 
