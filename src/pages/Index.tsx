@@ -8,21 +8,26 @@ import { useToast } from '@/components/ui/use-toast';
 import { GraduationCap, Rocket, DollarSign, Clock, Sparkles, BookOpen, Users, Trophy, Wallet as WalletIcon } from 'lucide-react';
 import { AccountDropdown } from '@/components/AccountDropdown';
 import Wallet from '@/components/Wallet';
+import { CrawlForm } from '@/components/CrawlForm';
 
 const Index = () => {
   const [user, setUser] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      // Check if user has admin privileges (you'll need to implement this logic)
+      setIsAdmin(session?.user?.email === 'admin@example.com'); // Replace with your admin check
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      setIsAdmin(session?.user?.email === 'admin@example.com'); // Replace with your admin check
     });
 
     return () => subscription.unsubscribe();
@@ -122,6 +127,14 @@ const Index = () => {
                 </p>
               </div>
             </div>
+            
+            {isAdmin && (
+              <div className="max-w-2xl mx-auto mb-12">
+                <h2 className="text-2xl font-semibold text-white mb-6">Add New Scholarship</h2>
+                <CrawlForm />
+              </div>
+            )}
+
             <div className="max-w-7xl mx-auto bg-white/95 rounded-xl p-8 shadow-lg">
               <h2 className="text-2xl font-semibold text-accent mb-6 flex items-center gap-2">
                 <WalletIcon className="h-6 w-6" />
@@ -156,4 +169,3 @@ const Index = () => {
 };
 
 export default Index;
-
