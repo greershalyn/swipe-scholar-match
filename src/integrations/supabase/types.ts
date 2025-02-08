@@ -11,6 +11,7 @@ export type Database = {
     Tables: {
       profiles: {
         Row: {
+          account_active: boolean | null
           act_score: number | null
           address: string | null
           awards_honors: string[] | null
@@ -31,12 +32,16 @@ export type Database = {
           id: string
           intended_major: string | null
           military_affiliation: string | null
+          organizations: string[] | null
+          rewards_achievements: string[] | null
           sat_score: number | null
           state: string | null
           updated_at: string
+          volunteering_experience: string[] | null
           zip_code: string | null
         }
         Insert: {
+          account_active?: boolean | null
           act_score?: number | null
           address?: string | null
           awards_honors?: string[] | null
@@ -57,12 +62,16 @@ export type Database = {
           id: string
           intended_major?: string | null
           military_affiliation?: string | null
+          organizations?: string[] | null
+          rewards_achievements?: string[] | null
           sat_score?: number | null
           state?: string | null
           updated_at?: string
+          volunteering_experience?: string[] | null
           zip_code?: string | null
         }
         Update: {
+          account_active?: boolean | null
           act_score?: number | null
           address?: string | null
           awards_honors?: string[] | null
@@ -83,9 +92,12 @@ export type Database = {
           id?: string
           intended_major?: string | null
           military_affiliation?: string | null
+          organizations?: string[] | null
+          rewards_achievements?: string[] | null
           sat_score?: number | null
           state?: string | null
           updated_at?: string
+          volunteering_experience?: string[] | null
           zip_code?: string | null
         }
         Relationships: []
