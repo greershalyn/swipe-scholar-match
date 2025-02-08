@@ -20,6 +20,11 @@ export default {
     },
     extend: {
       colors: {
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
         primary: {
           DEFAULT: "#86A789",
           foreground: "#ffffff",
@@ -32,8 +37,6 @@ export default {
           DEFAULT: "#464E47",
           foreground: "#ffffff",
         },
-        background: "#ffffff",
-        border: "#ACB6B6",
         muted: {
           DEFAULT: "#F8F9FA",
           foreground: "#6B7280",
@@ -72,3 +75,4 @@ export default {
   },
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;
+
