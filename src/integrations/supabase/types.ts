@@ -90,6 +90,90 @@ export type Database = {
         }
         Relationships: []
       }
+      scholarship_applications: {
+        Row: {
+          id: string
+          profile_id: string
+          scholarship_id: string
+          status: string
+          submitted_at: string
+        }
+        Insert: {
+          id?: string
+          profile_id: string
+          scholarship_id: string
+          status?: string
+          submitted_at?: string
+        }
+        Update: {
+          id?: string
+          profile_id?: string
+          scholarship_id?: string
+          status?: string
+          submitted_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scholarship_applications_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scholarship_applications_scholarship_id_fkey"
+            columns: ["scholarship_id"]
+            isOneToOne: false
+            referencedRelation: "scholarships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scholarships: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          deadline: string
+          description: string
+          id: string
+          is_active: boolean
+          provider: string
+          requirements: string[]
+          title: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string
+          deadline: string
+          description: string
+          id?: string
+          is_active?: boolean
+          provider: string
+          requirements?: string[]
+          title: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          deadline?: string
+          description?: string
+          id?: string
+          is_active?: boolean
+          provider?: string
+          requirements?: string[]
+          title?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

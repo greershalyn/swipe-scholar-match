@@ -3,6 +3,7 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { motion, PanInfo } from 'framer-motion';
+import { ExternalLink } from 'lucide-react';
 
 interface ScholarshipCardProps {
   scholarship: {
@@ -13,7 +14,9 @@ interface ScholarshipCardProps {
     category: string;
     description: string;
     requirements: string[];
-    match_score: number;
+    match_score?: number;
+    provider: string;
+    url: string;
   };
   onSwipe: (direction: 'left' | 'right') => void;
 }
@@ -26,6 +29,14 @@ const ScholarshipCard: React.FC<ScholarshipCardProps> = ({ scholarship, onSwipe 
     } else if (info.offset.x < -threshold) {
       onSwipe('left');
     }
+  };
+
+  const formatDeadline = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   };
 
   return (
@@ -47,12 +58,15 @@ const ScholarshipCard: React.FC<ScholarshipCardProps> = ({ scholarship, onSwipe 
               ${scholarship.amount.toLocaleString()}
             </Badge>
             <h2 className="text-2xl font-semibold text-accent mb-1">{scholarship.title}</h2>
-            <p className="text-sm text-muted-foreground">Deadline: {scholarship.deadline}</p>
+            <p className="text-sm text-muted-foreground">Deadline: {formatDeadline(scholarship.deadline)}</p>
+            <p className="text-sm text-muted-foreground mt-1">Provider: {scholarship.provider}</p>
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="bg-secondary text-accent">
-              {scholarship.match_score}% Match
-            </Badge>
+            {scholarship.match_score && (
+              <Badge variant="secondary" className="bg-secondary text-accent">
+                {scholarship.match_score}% Match
+              </Badge>
+            )}
           </div>
         </div>
         
@@ -67,6 +81,16 @@ const ScholarshipCard: React.FC<ScholarshipCardProps> = ({ scholarship, onSwipe 
               ))}
             </ul>
           </div>
+
+          <a
+            href={scholarship.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center text-sm text-primary hover:text-primary/80 transition-colors"
+            onClick={(e) => e.stopPropagation()}
+          >
+            View Details <ExternalLink className="ml-1 h-4 w-4" />
+          </a>
         </div>
 
         <div className="mt-6 flex justify-center gap-4 text-sm text-muted-foreground">

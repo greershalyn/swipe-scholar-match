@@ -1,46 +1,83 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ScholarshipCard from './ScholarshipCard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from "@/components/ui/use-toast";
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery, useMutation } from '@tanstack/react-query';
 
-// Mock data for initial development
-const mockScholarships = [
-  {
-    id: '1',
-    title: 'STEM Excellence Scholarship',
-    amount: 10000,
-    deadline: 'March 15, 2024',
-    category: 'STEM',
-    description: 'For outstanding students pursuing degrees in Science, Technology, Engineering, or Mathematics.',
-    requirements: ['3.5+ GPA', 'STEM Major', 'US Citizen'],
-    match_score: 95,
-  },
-  {
-    id: '2',
-    title: 'Arts & Humanities Grant',
-    amount: 5000,
-    deadline: 'April 1, 2024',
-    category: 'Arts',
-    description: 'Supporting creative minds in pursuing their passion in arts and humanities.',
-    requirements: ['Portfolio Submission', 'Arts Major', 'Essay Required'],
-    match_score: 88,
-  },
-  // Add more mock scholarships as needed
-];
+interface Scholarship {
+  id: string;
+  title: string;
+  amount: number;
+  deadline: string;
+  category: string;
+  description: string;
+  requirements: string[];
+  url: string;
+  provider: string;
+  match_score?: number; // We'll implement matching logic later
+}
+
+const fetchScholarships = async () => {
+  const { data, error } = await supabase
+    .from('scholarships')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data as Scholarship[];
+};
+
+const applyForScholarship = async (scholarshipId: string) => {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Must be logged in to apply');
+
+  const { error } = await supabase
+    .from('scholarship_applications')
+    .insert([
+      { scholarship_id: scholarshipId, profile_id: user.id }
+    ]);
+
+  if (error) throw error;
+};
 
 const ScholarshipSwiper = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState<'left' | 'right' | null>(null);
 
-  const handleSwipe = (direction: 'left' | 'right') => {
-    setDirection(direction);
-    if (direction === 'right') {
+  const { data: scholarships, isLoading, error } = useQuery({
+    queryKey: ['scholarships'],
+    queryFn: fetchScholarships,
+  });
+
+  const applyMutation = useMutation({
+    mutationFn: applyForScholarship,
+    onSuccess: () => {
       toast({
         title: "Application Submitted!",
-        description: "We've automatically applied for this scholarship for you.",
-        duration: 3000,
+        description: "Your application has been recorded. Visit the scholarship website to complete the process.",
+        duration: 5000,
       });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSwipe = async (direction: 'left' | 'right') => {
+    setDirection(direction);
+    
+    if (direction === 'right' && scholarships?.[currentIndex]) {
+      // Apply for the scholarship
+      applyMutation.mutate(scholarships[currentIndex].id);
+      
+      // Open scholarship URL in new tab
+      window.open(scholarships[currentIndex].url, '_blank');
     }
     
     setTimeout(() => {
@@ -49,7 +86,37 @@ const ScholarshipSwiper = () => {
     }, 300);
   };
 
-  if (currentIndex >= mockScholarships.length) {
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-[600px]">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[600px] text-center">
+        <h2 className="text-2xl font-semibold text-accent mb-4">Error Loading Scholarships</h2>
+        <p className="text-muted-foreground">
+          There was a problem loading scholarships. Please try again later.
+        </p>
+      </div>
+    );
+  }
+
+  if (!scholarships?.length) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[600px] text-center">
+        <h2 className="text-2xl font-semibold text-accent mb-4">No Scholarships Available</h2>
+        <p className="text-muted-foreground">
+          Check back later for new scholarship opportunities.
+        </p>
+      </div>
+    );
+  }
+
+  if (currentIndex >= scholarships.length) {
     return (
       <div className="flex flex-col items-center justify-center h-[600px] text-center">
         <h2 className="text-2xl font-semibold text-accent mb-4">You're All Caught Up!</h2>
@@ -65,7 +132,7 @@ const ScholarshipSwiper = () => {
       <AnimatePresence mode="wait">
         <ScholarshipCard
           key={currentIndex}
-          scholarship={mockScholarships[currentIndex]}
+          scholarship={scholarships[currentIndex]}
           onSwipe={handleSwipe}
         />
       </AnimatePresence>
