@@ -23,7 +23,6 @@ serve(async (req) => {
     const { userProfile } = await req.json();
     console.log('Received user profile:', userProfile);
     
-    // Create a detailed prompt based on user profile
     const searchPrompt = `
       Find current available scholarships for a student with the following profile:
       - Major: ${userProfile.intended_major || 'Any'}
@@ -83,16 +82,17 @@ serve(async (req) => {
       const errorData = await openAiResponse.text();
       console.error('OpenAI API error response:', errorData);
       
-      // Check for quota exceeded error
-      if (errorData.includes('insufficient_quota')) {
+      // Check for insufficient_quota or billing not active errors
+      if (errorData.includes('insufficient_quota') || errorData.includes('billing')) {
         return new Response(
           JSON.stringify({
             success: false,
-            error: 'OpenAI API quota exceeded. Please check your OpenAI account billing status.',
-            quota_exceeded: true
+            error: 'OpenAI API is temporarily unavailable. The service is being set up and should be available shortly. Please try again in a few minutes.',
+            status: 'setup_pending',
+            details: 'OpenAI billing setup in progress'
           }),
           {
-            status: 429,
+            status: 503, // Service Temporarily Unavailable
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           }
         );

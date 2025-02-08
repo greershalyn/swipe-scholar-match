@@ -24,8 +24,15 @@ export const fetchScholarships = async (): Promise<Scholarship[]> => {
 
   if (discoveryError) {
     console.error('Error discovering scholarships:', discoveryError);
-    // Check if it's a quota exceeded error
-    if (discoveryError.status === 429) {
+    // Check if it's a setup pending error
+    const errorBody = JSON.parse(discoveryError.message || '{}');
+    if (errorBody.status === 'setup_pending') {
+      toast({
+        title: "Service Setup in Progress",
+        description: "Our AI service is being initialized. Please try again in a few minutes.",
+        duration: 5000,
+      });
+    } else if (discoveryError.status === 429) {
       toast({
         title: "Service Temporarily Unavailable",
         description: "Our AI service quota has been exceeded. Please try again later or contact support.",
