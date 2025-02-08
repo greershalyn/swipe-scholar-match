@@ -228,6 +228,30 @@ export type Database = {
         }
         Relationships: []
       }
+      swiped_scholarships: {
+        Row: {
+          created_at: string
+          id: string
+          profile_id: string
+          scholarship_id: string
+          swiped_right: boolean
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          profile_id: string
+          scholarship_id: string
+          swiped_right: boolean
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          profile_id?: string
+          scholarship_id?: string
+          swiped_right?: boolean
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
