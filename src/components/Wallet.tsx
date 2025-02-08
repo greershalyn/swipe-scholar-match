@@ -75,29 +75,29 @@ const Wallet: React.FC<WalletProps> = ({ className }) => {
 
   return (
     <div className={className}>
-      <div className="space-y-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {savedScholarships.map((saved) => (
-          <Card key={saved.id} className="p-4">
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="font-semibold text-lg text-accent mb-1">
+          <Card key={saved.id} className="p-6 hover:shadow-lg transition-shadow duration-200 bg-white/95">
+            <div className="flex flex-col h-full">
+              <div className="flex-1">
+                <h3 className="font-semibold text-lg text-accent mb-2 line-clamp-2">
                   {saved.scholarship.title}
                 </h3>
-                <p className="text-sm text-muted-foreground mb-2">
+                <p className="text-sm text-muted-foreground mb-3">
                   Provider: {saved.scholarship.provider}
                 </p>
-                <div className="flex items-center gap-2 mb-2">
-                  <Badge variant="outline" className="bg-primary/10 text-primary">
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <Badge variant="outline" className="bg-primary/10 text-primary font-medium">
                     ${saved.scholarship.amount.toLocaleString()}
                   </Badge>
-                  <Badge variant="outline" className="bg-accent/10 text-accent">
-                    Deadline: {formatDeadline(saved.scholarship.deadline)}
+                  <Badge variant="outline" className="bg-accent/10 text-accent font-medium">
+                    Due {formatDeadline(saved.scholarship.deadline)}
                   </Badge>
                 </div>
               </div>
               <Button
                 variant="outline"
-                className="flex items-center gap-2"
+                className="w-full flex items-center justify-center gap-2 mt-2 hover:bg-accent hover:text-white transition-colors"
                 onClick={() => window.open(saved.scholarship.url, '_blank')}
               >
                 Apply Now <ExternalLink className="h-4 w-4" />
