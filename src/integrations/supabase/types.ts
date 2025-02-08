@@ -193,12 +193,15 @@ export type Database = {
           id: string
           is_active: boolean
           last_crawled_at: string | null
+          last_verified_at: string | null
           match_score: number | null
           provider: string
           requirements: string[]
+          source_url: string | null
           title: string
           updated_at: string
           url: string
+          verified: boolean | null
         }
         Insert: {
           amount: number
@@ -209,12 +212,15 @@ export type Database = {
           id?: string
           is_active?: boolean
           last_crawled_at?: string | null
+          last_verified_at?: string | null
           match_score?: number | null
           provider: string
           requirements?: string[]
+          source_url?: string | null
           title: string
           updated_at?: string
           url: string
+          verified?: boolean | null
         }
         Update: {
           amount?: number
@@ -225,12 +231,15 @@ export type Database = {
           id?: string
           is_active?: boolean
           last_crawled_at?: string | null
+          last_verified_at?: string | null
           match_score?: number | null
           provider?: string
           requirements?: string[]
+          source_url?: string | null
           title?: string
           updated_at?: string
           url?: string
+          verified?: boolean | null
         }
         Relationships: []
       }
