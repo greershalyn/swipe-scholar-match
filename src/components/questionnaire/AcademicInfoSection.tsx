@@ -97,7 +97,7 @@ export const AcademicInfoSection = ({ formData, handleInputChange, setFormData }
           <SelectTrigger>
             <SelectValue placeholder="Select your education level" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-white dark:bg-gray-800 z-50">
             {educationLevels.map((level) => (
               <SelectItem key={level} value={level}>
                 {level}
@@ -135,3 +135,4 @@ export const AcademicInfoSection = ({ formData, handleInputChange, setFormData }
     </div>
   );
 };
+
