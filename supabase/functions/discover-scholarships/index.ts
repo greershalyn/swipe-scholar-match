@@ -57,7 +57,6 @@ serve(async (req) => {
 
     console.log('Sending prompt to OpenAI:', searchPrompt);
 
-    // Call OpenAI API to get scholarship suggestions
     const openAiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -66,6 +65,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: 'gpt-3.5-turbo',
+        temperature: 0.7,
         messages: [
           {
             role: 'system',
@@ -82,6 +82,22 @@ serve(async (req) => {
     if (!openAiResponse.ok) {
       const errorData = await openAiResponse.text();
       console.error('OpenAI API error response:', errorData);
+      
+      // Check for quota exceeded error
+      if (errorData.includes('insufficient_quota')) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: 'OpenAI API quota exceeded. Please check your OpenAI account billing status.',
+            quota_exceeded: true
+          }),
+          {
+            status: 429,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
+      }
+      
       throw new Error(`OpenAI API error: ${errorData}`);
     }
 
