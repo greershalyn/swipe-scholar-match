@@ -13,8 +13,8 @@ import Footer from "./components/Footer";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <BrowserRouter>
-    <QueryClientProvider client={queryClient}>
+  <QueryClientProvider client={queryClient}>
+    <BrowserRouter>
       <TooltipProvider>
         <div className="min-h-screen flex flex-col">
           <div className="flex-grow">
@@ -30,8 +30,8 @@ const App = () => (
           <Sonner />
         </div>
       </TooltipProvider>
-    </QueryClientProvider>
-  </BrowserRouter>
+    </BrowserRouter>
+  </QueryClientProvider>
 );
 
 export default App;
