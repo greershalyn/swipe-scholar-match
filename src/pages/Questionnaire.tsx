@@ -16,6 +16,7 @@ import { AcademicInfoSection } from "@/components/questionnaire/AcademicInfoSect
 import { BackgroundInfoSection } from "@/components/questionnaire/BackgroundInfoSection";
 import { PersonalStatementSection } from "@/components/questionnaire/PersonalStatementSection";
 import { AchievementsSection } from "@/components/questionnaire/AchievementsSection";
+import { KeywordsSection } from "@/components/questionnaire/KeywordsSection";
 
 const Questionnaire = () => {
   const navigate = useNavigate();
@@ -45,6 +46,7 @@ const Questionnaire = () => {
     volunteering_experience: [] as string[],
     organizations: [] as string[],
     high_school_graduated: false,
+    keywords: [] as string[],
   });
 
   useEffect(() => {
@@ -83,6 +85,7 @@ const Questionnaire = () => {
           rewards_achievements: data.rewards_achievements || [],
           volunteering_experience: data.volunteering_experience || [],
           organizations: data.organizations || [],
+          keywords: data.keywords || [],
         });
       }
     } catch (error: any) {
@@ -180,6 +183,10 @@ const Questionnaire = () => {
             <BackgroundInfoSection formData={formData} setFormData={setFormData} />
             <PersonalStatementSection formData={formData} handleInputChange={handleInputChange} />
             <AchievementsSection formData={formData} setFormData={setFormData} />
+            <KeywordsSection
+              selectedKeywords={formData.keywords}
+              setFormData={setFormData}
+            />
 
             <div className="flex gap-4">
               <Button type="button" variant="outline" onClick={() => navigate("/")} className="w-full">

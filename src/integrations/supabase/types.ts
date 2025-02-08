@@ -32,6 +32,7 @@ export type Database = {
           household_income: number | null
           id: string
           intended_major: string | null
+          keywords: string[] | null
           military_affiliation: string | null
           organizations: string[] | null
           rewards_achievements: string[] | null
@@ -63,6 +64,7 @@ export type Database = {
           household_income?: number | null
           id: string
           intended_major?: string | null
+          keywords?: string[] | null
           military_affiliation?: string | null
           organizations?: string[] | null
           rewards_achievements?: string[] | null
@@ -94,6 +96,7 @@ export type Database = {
           household_income?: number | null
           id?: string
           intended_major?: string | null
+          keywords?: string[] | null
           military_affiliation?: string | null
           organizations?: string[] | null
           rewards_achievements?: string[] | null
