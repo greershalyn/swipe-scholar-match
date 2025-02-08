@@ -23,6 +23,23 @@ serve(async (req) => {
     const { userProfile } = await req.json();
     console.log('Received user profile:', userProfile);
     
+    // Check if OpenAI API key is configured
+    if (!openAiApiKey) {
+      console.error('OpenAI API key not configured');
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'OpenAI API key not configured',
+          status: 'setup_pending',
+          details: 'OpenAI API key setup required'
+        }),
+        {
+          status: 503,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
     const searchPrompt = `
       Find current available scholarships for a student with the following profile:
       - Major: ${userProfile.intended_major || 'Any'}
@@ -63,7 +80,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4-0125-preview',
         messages: [
           {
             role: 'system',
@@ -92,7 +109,7 @@ serve(async (req) => {
             details: 'OpenAI billing setup in progress'
           }),
           {
-            status: 503, // Service Temporarily Unavailable
+            status: 503,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           }
         );
