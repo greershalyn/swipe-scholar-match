@@ -85,10 +85,10 @@ const Wallet: React.FC<WalletProps> = ({ className }) => {
 
   return (
     <div className={className}>
-      <ScrollArea className="h-[500px] w-full rounded-md">
-        <div className="grid gap-4">
+      <ScrollArea className="w-full rounded-md" orientation="horizontal">
+        <div className="flex gap-4 pb-4" style={{ minWidth: 'min-content' }}>
           {savedScholarships.map((saved) => (
-            <Card key={saved.id} className="p-6 hover:shadow-lg transition-shadow duration-200 bg-white/95">
+            <Card key={saved.id} className="p-6 hover:shadow-lg transition-shadow duration-200 bg-white/95" style={{ width: '320px', flexShrink: 0 }}>
               <div className="flex flex-col h-full">
                 <div className="flex-1">
                   <h3 className="font-semibold text-lg text-accent mb-2 line-clamp-2">
