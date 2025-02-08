@@ -1,1 +1,5 @@
+
 project_id = "cewxnkpihtujqbwbzjcv"
+[functions]
+[functions.fetch-scholarships]
+verify_jwt = false
