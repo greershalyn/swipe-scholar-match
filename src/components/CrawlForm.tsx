@@ -78,7 +78,7 @@ export const CrawlForm = () => {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
           <label htmlFor="url" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Scholarship Website URL
+            Website URL
           </label>
           <Input
             id="url"
