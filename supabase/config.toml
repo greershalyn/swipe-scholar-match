@@ -7,3 +7,4 @@ verify_jwt = false
 verify_jwt = false
 [functions.analyze-scholarship]
 verify_jwt = false
+
