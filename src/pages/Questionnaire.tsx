@@ -61,12 +61,19 @@ const Questionnaire = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("No user session found");
 
+      // Convert string values to appropriate types before sending to Supabase
+      const formattedData = {
+        ...formData,
+        gpa: formData.gpa ? parseFloat(formData.gpa) : null,
+        sat_score: formData.sat_score ? parseInt(formData.sat_score) : null,
+        act_score: formData.act_score ? parseInt(formData.act_score) : null,
+        household_income: formData.household_income ? parseFloat(formData.household_income) : null,
+        updated_at: new Date().toISOString(),
+      };
+
       const { error } = await supabase
         .from("profiles")
-        .update({
-          ...formData,
-          updated_at: new Date().toISOString(),
-        })
+        .update(formattedData)
         .eq("id", session.user.id);
 
       if (error) throw error;
@@ -93,7 +100,7 @@ const Questionnaire = () => {
     const { name, value, type } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "number" ? parseFloat(value) : value,
+      [name]: value,
     }));
   };
 
