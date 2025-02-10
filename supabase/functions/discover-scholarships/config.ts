@@ -7,3 +7,4 @@ export const corsHeaders = {
 };
 
 export const openAiSystemPrompt = 'You are a scholarship research assistant helping to find relevant scholarships for students. Only provide real, currently available scholarships.';
+
