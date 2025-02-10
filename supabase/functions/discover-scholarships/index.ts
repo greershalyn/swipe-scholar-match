@@ -11,7 +11,6 @@ const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 console.log('Starting discover-scholarships function...');
 
 serve(async (req: Request) => {
-  // Log incoming request
   console.log('Received request:', req.method, req.url);
   
   // Handle CORS preflight requests
