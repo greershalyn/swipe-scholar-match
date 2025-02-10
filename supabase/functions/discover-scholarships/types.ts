@@ -20,4 +20,3 @@ export interface Scholarship {
 export interface ScholarshipResponse {
   scholarships: Scholarship[];
 }
-
