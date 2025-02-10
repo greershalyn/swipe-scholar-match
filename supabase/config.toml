@@ -1,4 +1,5 @@
 
+# project configuration
 project_id = "cewxnkpihtujqbwbzjcv"
 
 [functions]
@@ -10,3 +11,4 @@ verify_jwt = false
 
 [functions.store-scholarships]
 verify_jwt = false
+
