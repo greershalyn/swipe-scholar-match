@@ -11,11 +11,16 @@ export const fetchScholarships = async (): Promise<Scholarship[]> => {
     if (!user) throw new Error('Must be logged in to view scholarships');
 
     // Get user profile data
-    const { data: userProfile } = await supabase
+    const { data: userProfile, error: profileError } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', user.id)
       .single();
+
+    if (profileError) {
+      console.error('Error fetching user profile:', profileError);
+      return mockScholarships;
+    }
 
     console.log('Calling discover-scholarships with user profile:', userProfile);
 
@@ -26,7 +31,7 @@ export const fetchScholarships = async (): Promise<Scholarship[]> => {
 
     if (error) {
       console.error('Error calling discover-scholarships:', error);
-      throw error;
+      return mockScholarships;
     }
 
     if (!data?.scholarships) {
