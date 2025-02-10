@@ -9,6 +9,9 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 serve(async (req: Request) => {
+  // Log incoming request
+  console.log('Received request:', req.method, req.url);
+  
   if (req.method === 'OPTIONS') {
     return new Response(null, { 
       headers: corsHeaders,
@@ -23,6 +26,7 @@ serve(async (req: Request) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Step 1: Search for scholarships using OpenAI
+    console.log('Calling openai-scholarship-search function...');
     const { data: searchData, error: searchError } = await supabase.functions.invoke('openai-scholarship-search', {
       body: { userProfile }
     });
@@ -39,6 +43,7 @@ serve(async (req: Request) => {
     }
 
     // Step 2: Store the found scholarships
+    console.log('Calling store-scholarships function...');
     const { data: storeData, error: storeError } = await supabase.functions.invoke('store-scholarships', {
       body: { scholarships: searchData.scholarships }
     });
