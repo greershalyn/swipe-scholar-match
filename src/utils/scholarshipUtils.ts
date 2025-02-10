@@ -2,7 +2,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Scholarship } from '../types/scholarship';
 import { saveScholarshipToDb, recordScholarshipSwipe } from './scholarship/dbOperations';
-import { mockScholarships } from './scholarship/mockData';
 import { calculateMatchScore } from './scholarship/matchingLogic';
 
 export const fetchScholarships = async (): Promise<Scholarship[]> => {
@@ -19,7 +18,7 @@ export const fetchScholarships = async (): Promise<Scholarship[]> => {
 
     if (profileError) {
       console.error('Error fetching user profile:', profileError);
-      return mockScholarships;
+      throw profileError;
     }
 
     console.log('Calling discover-scholarships with user profile:', userProfile);
@@ -31,12 +30,12 @@ export const fetchScholarships = async (): Promise<Scholarship[]> => {
 
     if (error) {
       console.error('Error calling discover-scholarships:', error);
-      return mockScholarships;
+      throw error;
     }
 
     if (!data?.scholarships) {
-      console.log('No scholarships returned, using mock data as fallback');
-      return mockScholarships;
+      console.log('No scholarships returned from discover-scholarships');
+      return [];
     }
 
     // Get all swiped scholarship IDs for the current user
@@ -58,29 +57,35 @@ export const fetchScholarships = async (): Promise<Scholarship[]> => {
     ]);
 
     // Get all scholarships from the database
-    const { data: scholarships } = await supabase
+    const { data: scholarships, error: scholarshipsError } = await supabase
       .from('scholarships')
       .select('*')
       .eq('is_active', true)
       .gt('deadline', new Date().toISOString())
       .order('last_verified_at', { ascending: false });
 
-    if (!scholarships?.length) {
-      console.log('No scholarships found in database, using mock data');
-      return mockScholarships.filter(s => !excludeIds.has(s.id));
+    if (scholarshipsError) {
+      console.error('Error fetching scholarships:', scholarshipsError);
+      throw scholarshipsError;
     }
 
-    return scholarships
+    if (!scholarships?.length) {
+      console.log('No scholarships found in database');
+      return [];
+    }
+
+    const filteredScholarships = scholarships
       .filter(s => !excludeIds.has(s.id))
       .map(s => ({
         ...s,
         match_score: calculateMatchScore(s, userProfile)
       }));
+
+    console.log('Returning filtered scholarships:', filteredScholarships);
+    return filteredScholarships;
   } catch (error) {
     console.error('Error in fetchScholarships:', error);
-    // Fallback to mock data if there's an error
-    console.log('Using mock scholarship data as fallback');
-    return mockScholarships;
+    throw error;
   }
 };
 

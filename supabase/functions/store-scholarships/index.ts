@@ -61,6 +61,14 @@ async function storeScholarships(scholarships: Scholarship[], supabase: ReturnTy
 
   for (const scholarship of scholarships) {
     try {
+      // Convert deadline string to proper timestamp if needed
+      const deadline = new Date(scholarship.deadline);
+      if (isNaN(deadline.getTime())) {
+        console.error('Invalid deadline format:', scholarship.deadline);
+        continue;
+      }
+
+      // Check if scholarship already exists by URL
       const { data: existingScholarship, error: checkError } = await supabase
         .from('scholarships')
         .select('id')
@@ -78,22 +86,25 @@ async function storeScholarships(scholarships: Scholarship[], supabase: ReturnTy
           .insert([{
             title: scholarship.title,
             amount: scholarship.amount,
-            deadline: new Date(scholarship.deadline),
+            deadline: deadline.toISOString(),
             requirements: scholarship.requirements,
             provider: scholarship.provider,
             url: scholarship.url,
             description: scholarship.description,
-            category: 'General',
-            verified: true,
+            category: 'AI Generated',
+            verified: false,
             is_active: true,
-            last_verified_at: new Date(),
+            last_verified_at: new Date().toISOString(),
           }]);
 
         if (insertError) {
           console.error('Error inserting scholarship:', insertError);
         } else {
           storedCount++;
+          console.log('Successfully stored scholarship:', scholarship.title);
         }
+      } else {
+        console.log('Scholarship already exists:', scholarship.title);
       }
     } catch (error) {
       console.error('Error processing scholarship:', error);
