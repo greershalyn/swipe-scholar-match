@@ -1,14 +1,9 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { UserProfile, ScholarshipResponse } from '../discover-scholarships/types.ts';
+import { corsHeaders } from '../discover-scholarships/config.ts';
 
 const openAiApiKey = Deno.env.get('OPENAI_API_KEY')!;
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
 
 serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
@@ -98,18 +93,12 @@ serve(async (req: Request) => {
       throw new Error('Invalid response format from OpenAI');
     }
 
-    const content = data.choices[0].message.content;
-    console.log('Parsed content from OpenAI:', content);
+    const scholarships = JSON.parse(data.choices[0].message.content);
+    console.log('Parsed scholarships:', scholarships);
     
-    try {
-      const scholarships: ScholarshipResponse = JSON.parse(content);
-      return new Response(JSON.stringify(scholarships), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    } catch (error) {
-      console.error('Failed to parse OpenAI response:', error);
-      throw new Error('Invalid JSON response from OpenAI');
-    }
+    return new Response(JSON.stringify(scholarships), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
   } catch (error) {
     console.error('Error in openai-scholarship-search function:', error);
     return new Response(
