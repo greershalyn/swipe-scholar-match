@@ -5,13 +5,9 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0';
 import { corsHeaders } from './config.ts';
 import { UserProfile } from './types.ts';
 
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-
 console.log('Starting discover-scholarships function...');
 
 serve(async (req: Request) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { 
       headers: {
@@ -23,25 +19,29 @@ serve(async (req: Request) => {
   }
 
   try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+    console.log('Environment check:', { 
+      hasSupabaseUrl: !!supabaseUrl, 
+      hasSupabaseKey: !!supabaseKey 
+    });
+
     if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Missing required environment variables');
+      throw new Error('Missing environment variables');
     }
 
     console.log('Request method:', req.method);
     console.log('Request headers:', Object.fromEntries(req.headers.entries()));
 
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    
-    if (!req.body) {
-      throw new Error('Request body is required');
-    }
-
     const { userProfile } = await req.json();
+    console.log('Received user profile:', userProfile);
+
     if (!userProfile) {
       throw new Error('User profile is required');
     }
 
-    console.log('Processing scholarship discovery for user profile:', userProfile);
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Step 1: Search for scholarships using OpenAI
     console.log('Calling openai-scholarship-search function...');
@@ -50,11 +50,11 @@ serve(async (req: Request) => {
     });
 
     if (searchError) {
-      console.error('Error from openai-scholarship-search:', searchError);
+      console.error('OpenAI search error:', searchError);
       throw new Error(`Failed to search for scholarships: ${searchError.message}`);
     }
 
-    console.log('Scholarships found:', searchData);
+    console.log('OpenAI search results:', searchData);
 
     if (!searchData?.scholarships || !Array.isArray(searchData.scholarships)) {
       throw new Error('Invalid scholarship data received from search');
@@ -67,7 +67,7 @@ serve(async (req: Request) => {
     });
 
     if (storeError) {
-      console.error('Error from store-scholarships:', storeError);
+      console.error('Store error:', storeError);
       throw new Error(`Failed to store scholarships: ${storeError.message}`);
     }
 
