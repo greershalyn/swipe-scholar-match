@@ -1,10 +1,12 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0';
 import { corsHeaders } from './config.ts';
 import { UserProfile } from './types.ts';
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
@@ -18,53 +20,41 @@ serve(async (req: Request) => {
     const { userProfile } = await req.json();
     console.log('Orchestrating scholarship discovery for user profile:', userProfile);
 
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
     // Step 1: Search for scholarships using OpenAI
-    const searchResponse = await fetch(`${supabaseUrl}/functions/v1/openai-scholarship-search`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': req.headers.get('Authorization') || '',
-      },
-      body: JSON.stringify({ userProfile }),
+    const { data: searchData, error: searchError } = await supabase.functions.invoke('openai-scholarship-search', {
+      body: { userProfile }
     });
 
-    if (!searchResponse.ok) {
-      const error = await searchResponse.text();
-      console.error('Error from openai-scholarship-search:', error);
-      throw new Error(`Failed to search for scholarships: ${error}`);
+    if (searchError) {
+      console.error('Error from openai-scholarship-search:', searchError);
+      throw new Error(`Failed to search for scholarships: ${searchError.message}`);
     }
 
-    const scholarshipsData = await searchResponse.json();
-    console.log('Scholarships found:', scholarshipsData);
+    console.log('Scholarships found:', searchData);
 
-    if (!scholarshipsData.scholarships || !Array.isArray(scholarshipsData.scholarships)) {
+    if (!searchData.scholarships || !Array.isArray(searchData.scholarships)) {
       throw new Error('Invalid scholarship data received from search');
     }
 
     // Step 2: Store the found scholarships
-    const storeResponse = await fetch(`${supabaseUrl}/functions/v1/store-scholarships`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': req.headers.get('Authorization') || '',
-      },
-      body: JSON.stringify({ scholarships: scholarshipsData.scholarships }),
+    const { data: storeData, error: storeError } = await supabase.functions.invoke('store-scholarships', {
+      body: { scholarships: searchData.scholarships }
     });
 
-    if (!storeResponse.ok) {
-      const error = await storeResponse.text();
-      console.error('Error from store-scholarships:', error);
-      throw new Error(`Failed to store scholarships: ${error}`);
+    if (storeError) {
+      console.error('Error from store-scholarships:', storeError);
+      throw new Error(`Failed to store scholarships: ${storeError.message}`);
     }
 
-    const storeResult = await storeResponse.json();
-    console.log('Store result:', storeResult);
+    console.log('Store result:', storeData);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        ...storeResult,
-        scholarships: scholarshipsData.scholarships
+        ...storeData,
+        scholarships: searchData.scholarships
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
