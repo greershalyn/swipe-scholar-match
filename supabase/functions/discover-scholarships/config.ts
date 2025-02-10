@@ -5,5 +5,3 @@ export const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
   'Access-Control-Max-Age': '86400',
 };
-
-export const openAiSystemPrompt = 'You are a scholarship research assistant helping to find relevant scholarships for students. Only provide real, currently available scholarships.';
