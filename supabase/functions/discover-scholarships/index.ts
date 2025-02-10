@@ -11,17 +11,21 @@ const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 console.log('Starting discover-scholarships function...');
 
 serve(async (req: Request) => {
-  console.log('Received request:', req.method, req.url);
-  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { 
-      headers: corsHeaders,
+      headers: {
+        ...corsHeaders,
+        'Access-Control-Max-Age': '86400',
+      },
       status: 204
     });
   }
 
   try {
+    console.log('Request method:', req.method);
+    console.log('Request headers:', Object.fromEntries(req.headers.entries()));
+
     const supabase = createClient(supabaseUrl, supabaseKey);
     
     if (!req.body) {
