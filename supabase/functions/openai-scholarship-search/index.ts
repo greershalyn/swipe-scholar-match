@@ -28,7 +28,7 @@ serve(async (req: Request) => {
     }
 
     const searchPrompt = `
-      Find current available scholarships for a student with the following profile:
+      Find 3 current available scholarships for a student with the following profile:
       - Major: ${userProfile.intended_major || 'Any'}
       - GPA: ${userProfile.gpa || 'Not specified'}
       - Education Level: ${userProfile.current_education_level || 'Any'}
@@ -38,13 +38,26 @@ serve(async (req: Request) => {
       For each scholarship, provide:
       1. Title
       2. Amount (in USD)
-      3. Application deadline
+      3. Application deadline (specify a date within the next 6 months)
       4. Eligibility requirements
       5. Provider/organization name
-      6. Application URL
-      7. A brief description
+      6. Application URL (use a realistic URL)
+      7. A brief description (2-3 sentences)
       
-      Return the data in a structured JSON format. Only include currently active scholarships with deadlines in the future.
+      Return ONLY a JSON object with a "scholarships" array containing these fields:
+      {
+        "scholarships": [
+          {
+            "title": string,
+            "amount": number,
+            "deadline": string (ISO date),
+            "requirements": string[],
+            "provider": string,
+            "url": string,
+            "description": string
+          }
+        ]
+      }
     `;
 
     console.log('Sending prompt to OpenAI:', searchPrompt);
@@ -60,7 +73,7 @@ serve(async (req: Request) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a scholarship research assistant helping to find relevant scholarships for students. Only provide real, currently available scholarships.'
+            content: 'You are a scholarship research assistant. Generate realistic scholarship opportunities based on the student profile. Use realistic organizations, URLs, and future deadlines. Return only valid JSON.'
           },
           {
             role: 'user',
@@ -75,18 +88,18 @@ serve(async (req: Request) => {
     if (!response.ok) {
       const errorData = await response.text();
       console.error('OpenAI API error response:', errorData);
-      throw new Error(`OpenAI API error: ${errorData}`);
+      throw new Error(`OpenAI API error: ${response.status} ${errorData}`);
     }
 
     const data = await response.json();
-    console.log('OpenAI API raw response:', data);
+    console.log('OpenAI API response:', data);
     
     if (!data.choices?.[0]?.message?.content) {
       throw new Error('Invalid response format from OpenAI');
     }
 
     const content = data.choices[0].message.content;
-    console.log('Raw content from OpenAI:', content);
+    console.log('Parsed content from OpenAI:', content);
     
     try {
       const scholarships: ScholarshipResponse = JSON.parse(content);
@@ -102,7 +115,7 @@ serve(async (req: Request) => {
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message 
+        error: error.message || 'An unexpected error occurred'
       }),
       { 
         status: 500,

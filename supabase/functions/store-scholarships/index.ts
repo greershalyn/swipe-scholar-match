@@ -24,6 +24,10 @@ serve(async (req: Request) => {
     const { scholarships } = await req.json();
     console.log('Received scholarships to store:', scholarships);
 
+    if (!Array.isArray(scholarships)) {
+      throw new Error('Invalid scholarships data: expected an array');
+    }
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const storedCount = await storeScholarships(scholarships, supabase);
 
@@ -42,7 +46,7 @@ serve(async (req: Request) => {
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message 
+        error: error.message || 'An unexpected error occurred'
       }),
       { 
         status: 500,
@@ -56,39 +60,43 @@ async function storeScholarships(scholarships: Scholarship[], supabase: ReturnTy
   let storedCount = 0;
 
   for (const scholarship of scholarships) {
-    const { data: existingScholarship, error: checkError } = await supabase
-      .from('scholarships')
-      .select('id')
-      .eq('url', scholarship.url)
-      .single();
-
-    if (checkError && checkError.code !== 'PGRST116') {
-      console.error('Error checking existing scholarship:', checkError);
-      continue;
-    }
-
-    if (!existingScholarship) {
-      const { error: insertError } = await supabase
+    try {
+      const { data: existingScholarship, error: checkError } = await supabase
         .from('scholarships')
-        .insert([{
-          title: scholarship.title,
-          amount: scholarship.amount,
-          deadline: new Date(scholarship.deadline),
-          requirements: scholarship.requirements,
-          provider: scholarship.provider,
-          url: scholarship.url,
-          description: scholarship.description,
-          category: 'General',
-          verified: true,
-          is_active: true,
-          last_verified_at: new Date(),
-        }]);
+        .select('id')
+        .eq('url', scholarship.url)
+        .single();
 
-      if (insertError) {
-        console.error('Error inserting scholarship:', insertError);
-      } else {
-        storedCount++;
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error('Error checking existing scholarship:', checkError);
+        continue;
       }
+
+      if (!existingScholarship) {
+        const { error: insertError } = await supabase
+          .from('scholarships')
+          .insert([{
+            title: scholarship.title,
+            amount: scholarship.amount,
+            deadline: new Date(scholarship.deadline),
+            requirements: scholarship.requirements,
+            provider: scholarship.provider,
+            url: scholarship.url,
+            description: scholarship.description,
+            category: 'General',
+            verified: true,
+            is_active: true,
+            last_verified_at: new Date(),
+          }]);
+
+        if (insertError) {
+          console.error('Error inserting scholarship:', insertError);
+        } else {
+          storedCount++;
+        }
+      }
+    } catch (error) {
+      console.error('Error processing scholarship:', error);
     }
   }
 

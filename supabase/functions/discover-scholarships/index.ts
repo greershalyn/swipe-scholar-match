@@ -31,10 +31,15 @@ serve(async (req: Request) => {
     if (!searchResponse.ok) {
       const error = await searchResponse.text();
       console.error('Error from openai-scholarship-search:', error);
-      throw new Error('Failed to search for scholarships');
+      throw new Error(`Failed to search for scholarships: ${error}`);
     }
 
     const scholarshipsData = await searchResponse.json();
+    console.log('Scholarships found:', scholarshipsData);
+
+    if (!scholarshipsData.scholarships || !Array.isArray(scholarshipsData.scholarships)) {
+      throw new Error('Invalid scholarship data received from search');
+    }
 
     // Step 2: Store the found scholarships
     const storeResponse = await fetch(`${supabaseUrl}/functions/v1/store-scholarships`, {
@@ -49,15 +54,17 @@ serve(async (req: Request) => {
     if (!storeResponse.ok) {
       const error = await storeResponse.text();
       console.error('Error from store-scholarships:', error);
-      throw new Error('Failed to store scholarships');
+      throw new Error(`Failed to store scholarships: ${error}`);
     }
 
     const storeResult = await storeResponse.json();
+    console.log('Store result:', storeResult);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        ...storeResult
+        ...storeResult,
+        scholarships: scholarshipsData.scholarships
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -70,7 +77,7 @@ serve(async (req: Request) => {
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message 
+        error: error.message || 'An unexpected error occurred'
       }),
       { 
         status: 500,
