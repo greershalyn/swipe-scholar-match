@@ -38,6 +38,18 @@ export const fetchScholarships = async (): Promise<Scholarship[]> => {
       return [];
     }
 
+    // Get filtered scholarships from the database that match what OpenAI found
+    const { data: scholarships, error: scholarshipsError } = await supabase
+      .from('scholarships')
+      .select('*')
+      .eq('is_active', true)
+      .gt('deadline', new Date().toISOString());
+
+    if (scholarshipsError) {
+      console.error('Error fetching scholarships:', scholarshipsError);
+      throw scholarshipsError;
+    }
+
     // Get all swiped scholarship IDs for the current user
     const { data: swipedScholarships } = await supabase
       .from('swiped_scholarships')
@@ -56,33 +68,17 @@ export const fetchScholarships = async (): Promise<Scholarship[]> => {
       ...(savedScholarships?.map(s => s.scholarship_id) || [])
     ]);
 
-    // Get all scholarships from the database
-    const { data: scholarships, error: scholarshipsError } = await supabase
-      .from('scholarships')
-      .select('*')
-      .eq('is_active', true)
-      .gt('deadline', new Date().toISOString())
-      .order('last_verified_at', { ascending: false });
-
-    if (scholarshipsError) {
-      console.error('Error fetching scholarships:', scholarshipsError);
-      throw scholarshipsError;
-    }
-
-    if (!scholarships?.length) {
-      console.log('No scholarships found in database');
-      return [];
-    }
-
+    // Filter scholarships and calculate match scores
     const filteredScholarships = scholarships
-      .filter(s => !excludeIds.has(s.id))
+      ?.filter(s => !excludeIds.has(s.id))
       .map(s => ({
         ...s,
         match_score: calculateMatchScore(s, userProfile)
-      }));
+      }))
+      .sort((a, b) => (b.match_score || 0) - (a.match_score || 0));
 
     console.log('Returning filtered scholarships:', filteredScholarships);
-    return filteredScholarships;
+    return filteredScholarships || [];
   } catch (error) {
     console.error('Error in fetchScholarships:', error);
     throw error;
