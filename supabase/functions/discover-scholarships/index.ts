@@ -8,10 +8,13 @@ import { UserProfile } from './types.ts';
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
+console.log('Starting discover-scholarships function...');
+
 serve(async (req: Request) => {
   // Log incoming request
   console.log('Received request:', req.method, req.url);
   
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { 
       headers: corsHeaders,
@@ -20,10 +23,14 @@ serve(async (req: Request) => {
   }
 
   try {
-    const { userProfile } = await req.json();
-    console.log('Orchestrating scholarship discovery for user profile:', userProfile);
-
     const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    if (!req.body) {
+      throw new Error('Request body is required');
+    }
+
+    const { userProfile } = await req.json();
+    console.log('Processing scholarship discovery for user profile:', userProfile);
 
     // Step 1: Search for scholarships using OpenAI
     console.log('Calling openai-scholarship-search function...');
@@ -38,7 +45,7 @@ serve(async (req: Request) => {
 
     console.log('Scholarships found:', searchData);
 
-    if (!searchData.scholarships || !Array.isArray(searchData.scholarships)) {
+    if (!searchData?.scholarships || !Array.isArray(searchData.scholarships)) {
       throw new Error('Invalid scholarship data received from search');
     }
 
@@ -62,12 +69,15 @@ serve(async (req: Request) => {
         scholarships: searchData.scholarships
       }),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json'
+        }
       }
     );
 
   } catch (error) {
-    console.error('Error in discover-scholarships orchestrator:', error);
+    console.error('Error in discover-scholarships function:', error);
     
     return new Response(
       JSON.stringify({ 
@@ -76,9 +86,11 @@ serve(async (req: Request) => {
       }),
       { 
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json'
+        }
       }
     );
   }
 });
-
