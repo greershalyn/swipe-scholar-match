@@ -7,10 +7,8 @@ export const useScholarships = () => {
   return useQuery<Scholarship[]>({
     queryKey: ['scholarships'],
     queryFn: fetchScholarships,
-    onError: (error) => {
-      console.error('Error fetching scholarships:', error);
-    },
+    gcTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
     retry: 2,
-    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };

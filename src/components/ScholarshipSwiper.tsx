@@ -13,7 +13,7 @@ const ScholarshipSwiper = () => {
   const [direction, setDirection] = useState<'left' | 'right' | null>(null);
   const queryClient = useQueryClient();
 
-  const { data: scholarships, isLoading, error } = useScholarships();
+  const { data: scholarships = [], isLoading, error } = useScholarships();
 
   const saveMutation = useMutation({
     mutationFn: saveScholarship,
@@ -53,7 +53,7 @@ const ScholarshipSwiper = () => {
   const handleSwipe = async (direction: 'left' | 'right') => {
     setDirection(direction);
     
-    if (scholarships?.[currentIndex]) {
+    if (scholarships[currentIndex]) {
       if (direction === 'right') {
         saveMutation.mutate(scholarships[currentIndex].id);
       } else {
@@ -84,7 +84,7 @@ const ScholarshipSwiper = () => {
     );
   }
 
-  if (!scholarships?.length) {
+  if (!scholarships.length) {
     return (
       <EmptyState 
         title="No Scholarships Available"
