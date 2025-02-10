@@ -15,6 +15,13 @@ const ScholarshipSwiper = () => {
 
   const { data: scholarships = [], isLoading, error } = useScholarships();
 
+  console.log('ScholarshipSwiper state:', {
+    scholarshipsLength: scholarships?.length,
+    currentIndex,
+    isLoading,
+    error
+  });
+
   const saveMutation = useMutation({
     mutationFn: saveScholarship,
     onSuccess: () => {
@@ -76,6 +83,7 @@ const ScholarshipSwiper = () => {
   }
 
   if (error) {
+    console.error('Scholarship loading error:', error);
     return (
       <EmptyState 
         title="Error Loading Scholarships"
@@ -105,11 +113,13 @@ const ScholarshipSwiper = () => {
   return (
     <div className="relative h-[600px] w-full max-w-md mx-auto">
       <AnimatePresence mode="wait">
-        <ScholarshipCard
-          key={currentIndex}
-          scholarship={scholarships[currentIndex]}
-          onSwipe={handleSwipe}
-        />
+        {scholarships[currentIndex] && (
+          <ScholarshipCard
+            key={currentIndex}
+            scholarship={scholarships[currentIndex]}
+            onSwipe={handleSwipe}
+          />
+        )}
       </AnimatePresence>
     </div>
   );

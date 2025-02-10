@@ -22,16 +22,21 @@ const ScholarshipCard: React.FC<ScholarshipCardProps> = ({ scholarship, onSwipe 
   };
 
   const formatDeadline = (dateString: string) => {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) {
-      console.error('Invalid date string:', dateString);
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        console.error('Invalid date string:', dateString);
+        return 'Deadline not specified';
+      }
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch (error) {
+      console.error('Error formatting date:', error);
       return 'Deadline not specified';
     }
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
   };
 
   if (!scholarship) {
@@ -57,7 +62,7 @@ const ScholarshipCard: React.FC<ScholarshipCardProps> = ({ scholarship, onSwipe 
             <Badge variant="outline" className="mb-2 bg-primary/10 text-primary">
               ${scholarship.amount?.toLocaleString() ?? 'Amount not specified'}
             </Badge>
-            <h2 className="text-2xl font-semibold text-accent mb-1">{scholarship.title}</h2>
+            <h2 className="text-2xl font-semibold text-accent mb-1">{scholarship.title || 'Untitled Scholarship'}</h2>
             <p className="text-sm text-muted-foreground">
               Deadline: {formatDeadline(scholarship.deadline)}
             </p>
@@ -75,12 +80,12 @@ const ScholarshipCard: React.FC<ScholarshipCardProps> = ({ scholarship, onSwipe 
         </div>
         
         <div className="space-y-4">
-          <p className="text-accent/80">{scholarship.description}</p>
+          <p className="text-accent/80">{scholarship.description || 'No description available'}</p>
           
           <div>
             <h3 className="font-medium mb-2 text-accent">Requirements:</h3>
             <ul className="list-disc list-inside space-y-1 text-sm text-accent/70">
-              {Array.isArray(scholarship.requirements) ? (
+              {Array.isArray(scholarship.requirements) && scholarship.requirements.length > 0 ? (
                 scholarship.requirements.map((req, index) => (
                   <li key={index}>{req}</li>
                 ))
