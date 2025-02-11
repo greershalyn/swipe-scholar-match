@@ -28,55 +28,83 @@ serve(async (req: Request) => {
       throw new Error('Missing environment variables');
     }
 
+    // Parse request body and validate inputs
     const { userProfile, page = 1 } = await req.json();
-    console.log('Received request with user profile:', userProfile, 'page:', page);
+    console.log('Processing request for user profile:', userProfile?.id, 'page:', page);
 
-    if (!userProfile) {
-      console.error('User profile is missing');
-      throw new Error('User profile is required');
+    if (!userProfile?.id) {
+      console.error('Invalid user profile:', userProfile);
+      throw new Error('Valid user profile is required');
     }
 
-    // Create Supabase client with service role key
+    // Create Supabase client
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Step 1: Search for scholarships using OpenAI
+    // Call OpenAI search with retries
     console.log('Calling openai-scholarship-search...');
-    const searchResult = await supabase.functions.invoke('openai-scholarship-search', {
-      body: { userProfile }
-    });
+    let retries = 3;
+    let searchResult;
+    while (retries > 0) {
+      try {
+        searchResult = await supabase.functions.invoke('openai-scholarship-search', {
+          body: { userProfile }
+        });
+        if (!searchResult.error) break;
+        retries--;
+        if (retries > 0) await new Promise(r => setTimeout(r, 1000));
+      } catch (e) {
+        console.error('Attempt failed:', e);
+        retries--;
+        if (retries === 0) throw e;
+        await new Promise(r => setTimeout(r, 1000));
+      }
+    }
 
-    if (searchResult.error) {
+    if (searchResult?.error) {
       console.error('OpenAI search error:', searchResult.error);
       throw new Error(`Failed to search for scholarships: ${searchResult.error.message}`);
     }
 
-    const searchData = searchResult.data;
-    if (!searchData?.scholarships || !Array.isArray(searchData.scholarships)) {
-      console.error('Invalid scholarship data received:', searchData);
+    if (!searchResult?.data?.scholarships || !Array.isArray(searchResult.data.scholarships)) {
+      console.error('Invalid scholarship data received:', searchResult?.data);
       throw new Error('Invalid scholarship data received from search');
     }
 
-    // Step 2: Store the found scholarships
-    console.log('Calling store-scholarships...');
-    const storeResult = await supabase.functions.invoke('store-scholarships', {
-      body: { scholarships: searchData.scholarships }
-    });
+    // Store scholarships with retries
+    console.log('Storing scholarships...');
+    retries = 3;
+    let storeResult;
+    while (retries > 0) {
+      try {
+        storeResult = await supabase.functions.invoke('store-scholarships', {
+          body: { scholarships: searchResult.data.scholarships }
+        });
+        if (!storeResult.error) break;
+        retries--;
+        if (retries > 0) await new Promise(r => setTimeout(r, 1000));
+      } catch (e) {
+        console.error('Store attempt failed:', e);
+        retries--;
+        if (retries === 0) throw e;
+        await new Promise(r => setTimeout(r, 1000));
+      }
+    }
 
-    if (storeResult.error) {
+    if (storeResult?.error) {
       console.error('Store error:', storeResult.error);
       throw new Error(`Failed to store scholarships: ${storeResult.error.message}`);
     }
 
     console.log('Successfully processed request');
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        ...storeResult.data,
-        scholarships: searchData.scholarships
+      JSON.stringify({
+        success: true,
+        ...storeResult?.data,
+        scholarships: searchResult.data.scholarships
       }),
-      { 
-        headers: { 
-          ...corsHeaders, 
+      {
+        headers: {
+          ...corsHeaders,
           'Content-Type': 'application/json'
         }
       }
@@ -84,16 +112,15 @@ serve(async (req: Request) => {
 
   } catch (error) {
     console.error('Error in discover-scholarships function:', error);
-    
     return new Response(
-      JSON.stringify({ 
-        success: false, 
+      JSON.stringify({
+        success: false,
         error: error.message || 'An unexpected error occurred'
       }),
-      { 
+      {
         status: 500,
-        headers: { 
-          ...corsHeaders, 
+        headers: {
+          ...corsHeaders,
           'Content-Type': 'application/json'
         }
       }
