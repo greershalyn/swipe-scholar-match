@@ -10,8 +10,11 @@ const corsHeaders = {
 };
 
 serve(async (req: Request) => {
+  console.log('Received request:', req.method);
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
+    console.log('Handling OPTIONS request');
     return new Response(null, { 
       headers: corsHeaders,
       status: 204
@@ -77,12 +80,33 @@ serve(async (req: Request) => {
     // Create Supabase client
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Call OpenAI search with timeout
-    console.log('Calling openai-scholarship-search...');
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 25000); // 25 second timeout
-
     try {
+      // First try to get cached scholarships
+      const { data: cachedScholarships, error: cacheError } = await supabase
+        .from('scholarships')
+        .select('*')
+        .limit(5)
+        .order('created_at', { ascending: false });
+
+      if (cachedScholarships && cachedScholarships.length > 0) {
+        console.log('Returning cached scholarships:', cachedScholarships.length);
+        return new Response(
+          JSON.stringify({
+            success: true,
+            scholarships: cachedScholarships
+          }),
+          {
+            headers: corsHeaders,
+            status: 200
+          }
+        );
+      }
+
+      // If no cached scholarships, call OpenAI search
+      console.log('No cached scholarships found, calling OpenAI search...');
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 25000); // 25 second timeout
+
       const response = await supabase.functions.invoke('openai-scholarship-search', {
         body: { userProfile },
         signal: controller.signal,
