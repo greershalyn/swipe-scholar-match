@@ -157,11 +157,18 @@ If you have any questions about this Privacy Policy, please contact us at contac
       <div className="container flex flex-col items-center justify-center gap-2">
         <div className="flex items-center gap-2">
           <span className="text-white">Powered by</span>
-          <img 
-            src="/lovable-uploads/446d5bd8-d6f2-445b-b802-4625ff226e21.png" 
-            alt="Lewte Logo" 
-            className="h-6"
-          />
+          <a 
+            href="https://www.lewte.com" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="inline-block"
+          >
+            <img 
+              src="/lovable-uploads/446d5bd8-d6f2-445b-b802-4625ff226e21.png" 
+              alt="Lewte Logo" 
+              className="h-6"
+            />
+          </a>
         </div>
         <div className="flex gap-4 text-sm text-gray-400">
           <button 
