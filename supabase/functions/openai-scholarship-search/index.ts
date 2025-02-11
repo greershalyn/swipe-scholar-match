@@ -26,16 +26,20 @@ const TRUSTED_SCHOLARSHIP_DOMAINS = [
 async function verifyUrl(url: string): Promise<boolean> {
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
+    const timeout = setTimeout(() => controller.abort(), 10000); // Increased timeout to 10 seconds
 
     const response = await fetch(url, {
       method: 'HEAD',
-      signal: controller.signal
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      }
     });
 
     clearTimeout(timeout);
     return response.ok;
-  } catch {
+  } catch (error) {
+    console.log(`URL verification failed for ${url}:`, error.message);
     return false;
   }
 }
@@ -164,6 +168,12 @@ serve(async (req: Request) => {
       } else {
         console.log(`Skipping scholarship with invalid URL: ${scholarship.url}`);
       }
+    }
+
+    // Only return error if no valid scholarships were found
+    if (verifiedScholarships.length === 0) {
+      console.error('No valid scholarships found after URL verification');
+      throw new Error('No valid scholarships found after URL verification');
     }
     
     return new Response(JSON.stringify({ scholarships: verifiedScholarships }), {
