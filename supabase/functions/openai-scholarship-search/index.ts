@@ -1,7 +1,12 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders } from '../discover-scholarships/config.ts';
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+};
 
 const openAiApiKey = Deno.env.get('OPENAI_API_KEY')!;
 
@@ -63,7 +68,7 @@ serve(async (req: Request) => {
       }
     `;
 
-    console.log('Sending prompt to OpenAI:', searchPrompt);
+    console.log('Sending prompt to OpenAI');
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -72,7 +77,7 @@ serve(async (req: Request) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4',
         messages: [
           {
             role: 'system',
@@ -96,17 +101,18 @@ serve(async (req: Request) => {
     }
 
     const data = await response.json();
-    console.log('OpenAI API response:', data);
+    console.log('OpenAI API response received');
     
     if (!data.choices?.[0]?.message?.content) {
       throw new Error('Invalid response format from OpenAI');
     }
 
     const scholarships = JSON.parse(data.choices[0].message.content);
-    console.log('Parsed scholarships:', scholarships);
+    console.log('Successfully parsed scholarships data');
     
     return new Response(JSON.stringify(scholarships), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200
     });
   } catch (error) {
     console.error('Error in openai-scholarship-search function:', error);

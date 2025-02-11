@@ -22,6 +22,7 @@ serve(async (req: Request) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     if (!supabaseUrl || !supabaseKey) {
+      console.error('Missing environment variables');
       throw new Error('Missing environment variables');
     }
 
@@ -30,6 +31,7 @@ serve(async (req: Request) => {
     console.log('Processing request for user profile:', userProfile?.id, 'page:', page);
 
     if (!userProfile?.id) {
+      console.error('Invalid user profile');
       throw new Error('Valid user profile is required');
     }
 
