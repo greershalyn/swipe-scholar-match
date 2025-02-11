@@ -27,5 +27,6 @@ export const useScholarships = () => {
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 5 * 60 * 1000,
     retry: 2,
+    initialPageParam: 1, // Add this required parameter
   });
 };
