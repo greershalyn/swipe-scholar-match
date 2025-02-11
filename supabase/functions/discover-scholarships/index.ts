@@ -27,7 +27,8 @@ serve(async (req: Request) => {
       throw new Error('Missing environment variables');
     }
 
-    const { userProfile } = await req.json();
+    const { userProfile, page = 1 } = await req.json();
+    console.log('Received request with user profile:', userProfile, 'page:', page);
 
     if (!userProfile) {
       throw new Error('User profile is required');
@@ -37,6 +38,7 @@ serve(async (req: Request) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Step 1: Search for scholarships using OpenAI
+    console.log('Calling openai-scholarship-search...');
     const { data: searchData, error: searchError } = await supabase.functions.invoke('openai-scholarship-search', {
       body: { userProfile }
     });
@@ -51,6 +53,7 @@ serve(async (req: Request) => {
     }
 
     // Step 2: Store the found scholarships
+    console.log('Calling store-scholarships...');
     const { data: storeData, error: storeError } = await supabase.functions.invoke('store-scholarships', {
       body: { scholarships: searchData.scholarships }
     });
@@ -60,6 +63,7 @@ serve(async (req: Request) => {
       throw new Error(`Failed to store scholarships: ${storeError.message}`);
     }
 
+    console.log('Successfully processed request');
     return new Response(
       JSON.stringify({ 
         success: true, 
