@@ -7,28 +7,30 @@ import { toast } from "@/components/ui/use-toast";
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useScholarships } from '@/hooks/useScholarships';
 import { saveScholarship, recordLeftSwipe } from '@/utils/scholarshipUtils';
+import { Scholarship } from '@/types/scholarship';
 
 const ScholarshipSwiper = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState<'left' | 'right' | null>(null);
-  const [page, setPage] = useState(1);
   const queryClient = useQueryClient();
 
-  const { data: scholarships = [], isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } = useScholarships(page);
+  const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } = useScholarships();
+
+  // Flatten all pages of scholarships into a single array
+  const allScholarships = data?.pages.flatMap(page => page.scholarships) || [];
 
   useEffect(() => {
     // Pre-fetch next page when user is 2 cards away from the end
-    if (scholarships.length - currentIndex <= 2 && !isFetchingNextPage && hasNextPage) {
+    if (allScholarships.length - currentIndex <= 2 && !isFetchingNextPage && hasNextPage) {
       fetchNextPage();
     }
-  }, [currentIndex, scholarships.length, fetchNextPage, hasNextPage, isFetchingNextPage]);
+  }, [currentIndex, allScholarships.length, fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   console.log('ScholarshipSwiper state:', {
-    scholarshipsLength: scholarships?.length,
+    scholarshipsLength: allScholarships.length,
     currentIndex,
     isLoading,
-    error,
-    page
+    error
   });
 
   const saveMutation = useMutation({
@@ -69,11 +71,11 @@ const ScholarshipSwiper = () => {
   const handleSwipe = async (direction: 'left' | 'right') => {
     setDirection(direction);
     
-    if (scholarships[currentIndex]) {
+    if (allScholarships[currentIndex]) {
       if (direction === 'right') {
-        saveMutation.mutate(scholarships[currentIndex].id);
+        saveMutation.mutate(allScholarships[currentIndex].id);
       } else {
-        leftSwipeMutation.mutate(scholarships[currentIndex].id);
+        leftSwipeMutation.mutate(allScholarships[currentIndex].id);
       }
     }
     
@@ -83,7 +85,7 @@ const ScholarshipSwiper = () => {
     }, 300);
   };
 
-  if (isLoading && !scholarships.length) {
+  if (isLoading && !allScholarships.length) {
     return (
       <div className="flex items-center justify-center h-[600px]">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
@@ -101,7 +103,7 @@ const ScholarshipSwiper = () => {
     );
   }
 
-  if (!scholarships.length) {
+  if (!allScholarships.length) {
     return (
       <EmptyState 
         title="No Scholarships Available"
@@ -110,7 +112,7 @@ const ScholarshipSwiper = () => {
     );
   }
 
-  if (currentIndex >= scholarships.length && !hasNextPage) {
+  if (currentIndex >= allScholarships.length && !hasNextPage) {
     return (
       <EmptyState 
         title="You're All Caught Up!"
@@ -122,10 +124,10 @@ const ScholarshipSwiper = () => {
   return (
     <div className="relative h-[600px] w-full max-w-md mx-auto">
       <AnimatePresence mode="wait">
-        {scholarships[currentIndex] && (
+        {allScholarships[currentIndex] && (
           <ScholarshipCard
             key={currentIndex}
-            scholarship={scholarships[currentIndex]}
+            scholarship={allScholarships[currentIndex]}
             onSwipe={handleSwipe}
           />
         )}

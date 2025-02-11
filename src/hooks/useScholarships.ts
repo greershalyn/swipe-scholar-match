@@ -3,16 +3,20 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { fetchScholarships } from '../utils/scholarshipUtils';
 import { Scholarship } from '../types/scholarship';
 
+interface ScholarshipPage {
+  scholarships: Scholarship[];
+  nextPage: number | undefined;
+}
+
 export const useScholarships = () => {
-  return useInfiniteQuery({
+  return useInfiniteQuery<ScholarshipPage>({
     queryKey: ['scholarships'],
     queryFn: async ({ pageParam = 1 }) => {
       try {
-        const data = await fetchScholarships(pageParam);
-        console.log('Fetched scholarships:', data);
+        const data = await fetchScholarships(pageParam as number);
         return {
           scholarships: data || [],
-          nextPage: data.length === 5 ? pageParam + 1 : undefined,
+          nextPage: data.length === 5 ? (pageParam as number) + 1 : undefined,
         };
       } catch (error) {
         console.error('Error in useScholarships:', error);
@@ -20,9 +24,8 @@ export const useScholarships = () => {
       }
     },
     getNextPageParam: (lastPage) => lastPage.nextPage,
-    initialPageSize: 5,
-    gcTime: 5 * 60 * 1000, // 5 minutes
-    staleTime: 5 * 60 * 1000,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 5 * 60 * 1000,
     retry: 2,
   });
 };
