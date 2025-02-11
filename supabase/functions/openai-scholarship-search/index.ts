@@ -26,7 +26,7 @@ const TRUSTED_SCHOLARSHIP_DOMAINS = [
 async function verifyUrl(url: string): Promise<boolean> {
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    const timeout = setTimeout(() => controller.abort(), 5000);
 
     const response = await fetch(url, {
       method: 'HEAD',
@@ -116,7 +116,7 @@ serve(async (req: Request) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
@@ -140,14 +140,20 @@ serve(async (req: Request) => {
     }
 
     const data = await response.json();
-    console.log('OpenAI API response received');
+    console.log('OpenAI API response received:', data);
     
     if (!data.choices?.[0]?.message?.content) {
       throw new Error('Invalid response format from OpenAI');
     }
 
-    const scholarships = JSON.parse(data.choices[0].message.content);
-    console.log('Successfully parsed scholarships data');
+    let scholarships;
+    try {
+      scholarships = JSON.parse(data.choices[0].message.content);
+      console.log('Successfully parsed scholarships data:', scholarships);
+    } catch (parseError) {
+      console.error('Error parsing OpenAI response:', parseError, '\nResponse content:', data.choices[0].message.content);
+      throw new Error('Failed to parse OpenAI response');
+    }
 
     // Verify URLs before returning scholarships
     const verifiedScholarships = [];
