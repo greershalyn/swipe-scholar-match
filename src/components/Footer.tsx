@@ -6,7 +6,10 @@ import {
   AlertDialogDescription,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogCancel,
+  AlertDialogFooter,
 } from "@/components/ui/alert-dialog";
+import { X } from "lucide-react";
 
 const Footer = () => {
   const [openDialog, setOpenDialog] = useState<'eula' | 'terms' | 'privacy' | null>(null);
@@ -183,7 +186,14 @@ If you have any questions about this Privacy Policy, please contact us at contac
       </div>
 
       <AlertDialog open={openDialog !== null} onOpenChange={() => setOpenDialog(null)}>
-        <AlertDialogContent className="max-h-[80vh] overflow-y-auto">
+        <AlertDialogContent className="max-h-[80vh] overflow-y-auto relative">
+          <button 
+            onClick={() => setOpenDialog(null)}
+            className="absolute right-4 top-4 p-1 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none"
+          >
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </button>
           <AlertDialogHeader>
             <AlertDialogTitle>
               {openDialog && documents[openDialog].title}
@@ -192,6 +202,9 @@ If you have any questions about this Privacy Policy, please contact us at contac
               {openDialog && documents[openDialog].content}
             </AlertDialogDescription>
           </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setOpenDialog(null)}>Close</AlertDialogCancel>
+          </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </footer>
