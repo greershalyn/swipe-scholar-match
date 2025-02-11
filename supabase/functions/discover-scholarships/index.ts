@@ -12,10 +12,7 @@ serve(async (req: Request) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { 
-      headers: {
-        ...corsHeaders,
-        'Access-Control-Max-Age': '86400',
-      },
+      headers: corsHeaders,
       status: 204
     });
   }
