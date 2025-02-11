@@ -7,14 +7,15 @@ import { toast } from "@/components/ui/use-toast";
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useScholarships } from '@/hooks/useScholarships';
 import { saveScholarship, recordLeftSwipe } from '@/utils/scholarshipUtils';
-import { Scholarship } from '@/types/scholarship';
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from 'lucide-react';
 
 const ScholarshipSwiper = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState<'left' | 'right' | null>(null);
   const queryClient = useQueryClient();
 
-  const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } = useScholarships();
+  const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage, refetch } = useScholarships();
 
   // Flatten all pages of scholarships into a single array
   const allScholarships = data?.pages.flatMap(page => page.scholarships) || [];
@@ -88,6 +89,15 @@ const ScholarshipSwiper = () => {
     }, 300);
   };
 
+  const handleRefresh = async () => {
+    setCurrentIndex(0);
+    await refetch();
+    toast({
+      title: "Refreshing Scholarships",
+      description: "Looking for new scholarship opportunities...",
+    });
+  };
+
   if (isLoading && !allScholarships.length) {
     return (
       <div className="flex items-center justify-center h-[600px]">
@@ -116,12 +126,21 @@ const ScholarshipSwiper = () => {
   }
 
   if (currentIndex >= allScholarships.length && !hasNextPage) {
-    // Only show "all caught up" if we've truly run out of scholarships
     return (
-      <EmptyState 
-        title="You're All Caught Up!"
-        description="Check back later for more scholarship opportunities."
-      />
+      <div className="flex flex-col items-center justify-center gap-6">
+        <EmptyState 
+          title="You're All Caught Up!"
+          description="Check back later for more scholarship opportunities."
+        />
+        <Button 
+          onClick={handleRefresh}
+          className="gap-2"
+          size="lg"
+        >
+          <RefreshCw className="w-4 h-4" />
+          Find More Scholarships
+        </Button>
+      </div>
     );
   }
 
