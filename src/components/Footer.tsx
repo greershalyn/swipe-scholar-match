@@ -186,7 +186,7 @@ If you have any questions about this Privacy Policy, please contact us at contac
       </div>
 
       <AlertDialog open={openDialog !== null} onOpenChange={() => setOpenDialog(null)}>
-        <AlertDialogContent className="max-h-[80vh] overflow-y-auto relative">
+        <AlertDialogContent className="fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] max-h-[80vh] overflow-y-auto relative w-full max-w-lg">
           <button 
             onClick={() => setOpenDialog(null)}
             className="absolute right-4 top-4 p-1 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none"
