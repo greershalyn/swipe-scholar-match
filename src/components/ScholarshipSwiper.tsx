@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import ScholarshipCard from './ScholarshipCard';
 import EmptyState from './scholarship/EmptyState';
@@ -90,6 +91,9 @@ const ScholarshipSwiper = () => {
 
   const handleRefresh = async () => {
     setCurrentIndex(0);
+    // Remove all existing scholarship data from the cache
+    queryClient.removeQueries({ queryKey: ['scholarships'] });
+    // Then refetch with fresh data
     await refetch();
     toast({
       title: "Refreshing Scholarships",
@@ -131,9 +135,10 @@ const ScholarshipSwiper = () => {
           onClick={handleRefresh}
           className="gap-2"
           size="lg"
+          disabled={isLoading}
         >
-          <RefreshCw className="w-4 h-4" />
-          Find More Scholarships
+          <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+          {isLoading ? 'Finding Scholarships...' : 'Find More Scholarships'}
         </Button>
       </div>
     );
