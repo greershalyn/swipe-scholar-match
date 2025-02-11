@@ -14,7 +14,7 @@ import { useQuestionnaireForm } from "./useQuestionnaireForm";
 
 export const QuestionnaireForm = () => {
   const navigate = useNavigate();
-  const { formData, loading, handleInputChange, handleSubmit } = useQuestionnaireForm();
+  const { formData, setFormData, loading, handleInputChange, handleSubmit } = useQuestionnaireForm();
 
   if (loading) {
     return (
