@@ -20,13 +20,18 @@ export const useScholarships = () => {
         };
       } catch (error) {
         console.error('Error in useScholarships:', error);
-        throw error;
+        // Return empty data instead of throwing
+        return {
+          scholarships: [],
+          nextPage: undefined,
+        };
       }
     },
     getNextPageParam: (lastPage) => lastPage.nextPage,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 5 * 60 * 1000,
-    retry: 2,
-    initialPageParam: 1, // Add this required parameter
+    retry: 1, // Reduce retries to avoid too many failed attempts
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000), // Exponential backoff
+    initialPageParam: 1,
   });
 };

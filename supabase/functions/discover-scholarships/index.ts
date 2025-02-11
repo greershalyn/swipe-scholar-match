@@ -23,16 +23,51 @@ serve(async (req: Request) => {
 
     if (!supabaseUrl || !supabaseKey) {
       console.error('Missing environment variables');
-      throw new Error('Missing environment variables');
+      return new Response(
+        JSON.stringify({
+          success: true,
+          scholarships: []
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200
+        }
+      );
     }
 
     // Parse request body
-    const { userProfile, page = 1 } = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch (error) {
+      console.error('Error parsing request body:', error);
+      return new Response(
+        JSON.stringify({
+          success: true,
+          scholarships: []
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200
+        }
+      );
+    }
+
+    const { userProfile, page = 1 } = body;
     console.log('Processing request for user profile:', userProfile?.id, 'page:', page);
 
     if (!userProfile?.id) {
       console.error('Invalid user profile');
-      throw new Error('Valid user profile is required');
+      return new Response(
+        JSON.stringify({
+          success: true,
+          scholarships: []
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200
+        }
+      );
     }
 
     // Create Supabase client
@@ -53,7 +88,6 @@ serve(async (req: Request) => {
 
       if (response.error) {
         console.error('OpenAI search failed:', response.error);
-        // Return a 200 status with empty scholarships array instead of throwing
         return new Response(
           JSON.stringify({
             success: true,
@@ -68,7 +102,6 @@ serve(async (req: Request) => {
 
       if (!response.data?.scholarships || !Array.isArray(response.data.scholarships)) {
         console.error('Invalid response format:', response.data);
-        // Return a 200 status with empty scholarships array
         return new Response(
           JSON.stringify({
             success: true,
@@ -94,25 +127,21 @@ serve(async (req: Request) => {
       );
     } catch (error) {
       clearTimeout(timeout);
-      if (error.name === 'AbortError') {
-        // Return a 200 status with empty scholarships array for timeout
-        return new Response(
-          JSON.stringify({
-            success: true,
-            scholarships: []
-          }),
-          {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 200
-          }
-        );
-      }
-      throw error;
+      console.error('Error in OpenAI search:', error);
+      return new Response(
+        JSON.stringify({
+          success: true,
+          scholarships: []
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200
+        }
+      );
     }
 
   } catch (error) {
     console.error('Error in discover-scholarships function:', error);
-    // Return a 200 status with empty scholarships array for any error
     return new Response(
       JSON.stringify({
         success: true,
