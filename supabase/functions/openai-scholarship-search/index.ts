@@ -10,6 +10,36 @@ const corsHeaders = {
 
 const openAiApiKey = Deno.env.get('OPENAI_API_KEY')!;
 
+const TRUSTED_SCHOLARSHIP_DOMAINS = [
+  'scholarshipowl.com',
+  'scholarships.com',
+  'fastweb.com',
+  'collegescholarships.org',
+  'chegg.com',
+  'cappex.com',
+  'unigo.com',
+  'niche.com',
+  'goingmerry.com',
+  'petersons.com'
+];
+
+async function verifyUrl(url: string): Promise<boolean> {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+    const response = await fetch(url, {
+      method: 'HEAD',
+      signal: controller.signal
+    });
+
+    clearTimeout(timeout);
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
 serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { 
@@ -31,24 +61,33 @@ serve(async (req: Request) => {
     const sixMonthsFromNow = new Date();
     sixMonthsFromNow.setMonth(currentDate.getMonth() + 6);
 
+    const trustedDomainsString = TRUSTED_SCHOLARSHIP_DOMAINS.map(domain => `- ${domain}`).join('\n');
+
     const searchPrompt = `
-      Find 5 current available scholarships for a student with the following profile:
+      Find 5 currently available scholarships for a student with the following profile:
       - Major: ${userProfile.intended_major || 'Any'}
       - GPA: ${userProfile.gpa || 'Not specified'}
       - Education Level: ${userProfile.current_education_level || 'Any'}
       - Ethnicity: ${userProfile.ethnicity || 'Not specified'}
       - First Generation Student: ${userProfile.first_generation_student ? 'Yes' : 'No'}
       
-      IMPORTANT: Only provide scholarships with deadlines between ${currentDate.toISOString().split('T')[0]} and ${sixMonthsFromNow.toISOString().split('T')[0]}.
+      IMPORTANT GUIDELINES:
+      1. Only provide scholarships with deadlines between ${currentDate.toISOString().split('T')[0]} and ${sixMonthsFromNow.toISOString().split('T')[0]}.
+      2. Prioritize scholarships from these trusted domains:
+      ${trustedDomainsString}
+      3. URLs must be from actual scholarship websites, not placeholder or example domains.
+      4. Each scholarship must have a specific, detailed title that matches the provider organization.
+      5. Requirements must be specific and match the actual scholarship criteria.
+      6. Description should include key details about the scholarship purpose and eligibility.
       
       For each scholarship, provide:
-      1. Title
+      1. Title (be specific and descriptive)
       2. Amount (in USD)
       3. Application deadline (must be a date between today and 6 months from now)
-      4. Eligibility requirements
-      5. Provider/organization name
-      6. Application URL (use a realistic URL)
-      7. A brief description (2-3 sentences)
+      4. Detailed eligibility requirements
+      5. Provider/organization name (must be a real organization)
+      6. Application URL (must be from a real scholarship website)
+      7. A detailed description (2-3 sentences)
       
       Return ONLY a JSON object with a "scholarships" array containing these fields, WITH UNIQUE IDs for each scholarship:
       {
@@ -81,7 +120,7 @@ serve(async (req: Request) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a scholarship research assistant. Generate realistic scholarship opportunities based on the student profile. Use realistic organizations, URLs, and ONLY future deadlines within the next 6 months. Return only valid JSON with unique UUIDs for each scholarship.'
+            content: 'You are a scholarship research assistant. Generate scholarships ONLY from reputable scholarship websites and trusted sources. Focus on accuracy and verifiability. Each scholarship must be from a real organization with a valid, accessible URL. Ensure all dates are in the future and within the specified timeframe.'
           },
           {
             role: 'user',
@@ -109,8 +148,19 @@ serve(async (req: Request) => {
 
     const scholarships = JSON.parse(data.choices[0].message.content);
     console.log('Successfully parsed scholarships data');
+
+    // Verify URLs before returning scholarships
+    const verifiedScholarships = [];
+    for (const scholarship of scholarships.scholarships) {
+      const isUrlValid = await verifyUrl(scholarship.url);
+      if (isUrlValid) {
+        verifiedScholarships.push(scholarship);
+      } else {
+        console.log(`Skipping scholarship with invalid URL: ${scholarship.url}`);
+      }
+    }
     
-    return new Response(JSON.stringify(scholarships), {
+    return new Response(JSON.stringify({ scholarships: verifiedScholarships }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200
     });
