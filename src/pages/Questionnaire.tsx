@@ -47,6 +47,7 @@ const Questionnaire = () => {
     organizations: [] as string[],
     high_school_graduated: false,
     keywords: [] as string[],
+    college_university: "", // Added the missing field
   });
 
   useEffect(() => {
