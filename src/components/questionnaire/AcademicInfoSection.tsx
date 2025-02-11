@@ -1,6 +1,7 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -17,12 +18,17 @@ interface AcademicInfoProps {
     current_education_level: string;
     intended_major: string;
     high_school_graduated: boolean;
+    college_university: string;
   };
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   setFormData: React.Dispatch<React.SetStateAction<any>>;
 }
 
-export const AcademicInfoSection = ({ formData, handleInputChange, setFormData }: AcademicInfoProps) => {
+export const AcademicInfoSection = ({
+  formData,
+  handleInputChange,
+  setFormData,
+}: AcademicInfoProps) => {
   const educationLevels = [
     "9th Grade",
     "10th Grade",
@@ -108,6 +114,17 @@ export const AcademicInfoSection = ({ formData, handleInputChange, setFormData }
       </div>
 
       <div className="space-y-2">
+        <Label htmlFor="college_university">College/University</Label>
+        <Input
+          id="college_university"
+          name="college_university"
+          value={formData.college_university}
+          onChange={handleInputChange}
+          placeholder="Enter your college or university"
+        />
+      </div>
+
+      <div className="space-y-2">
         <Label htmlFor="intended_major">Intended Major</Label>
         <Input
           id="intended_major"
@@ -135,4 +152,3 @@ export const AcademicInfoSection = ({ formData, handleInputChange, setFormData }
     </div>
   );
 };
-

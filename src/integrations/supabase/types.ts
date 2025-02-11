@@ -17,6 +17,7 @@ export type Database = {
           awards_honors: string[] | null
           birth_date: string | null
           city: string | null
+          college_university: string | null
           created_at: string
           current_education_level: string | null
           disability_status: boolean | null
@@ -49,6 +50,7 @@ export type Database = {
           awards_honors?: string[] | null
           birth_date?: string | null
           city?: string | null
+          college_university?: string | null
           created_at?: string
           current_education_level?: string | null
           disability_status?: boolean | null
@@ -81,6 +83,7 @@ export type Database = {
           awards_honors?: string[] | null
           birth_date?: string | null
           city?: string | null
+          college_university?: string | null
           created_at?: string
           current_education_level?: string | null
           disability_status?: boolean | null
