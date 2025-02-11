@@ -25,12 +25,13 @@ serve(async (req: Request) => {
       console.error('Missing environment variables');
       return new Response(
         JSON.stringify({
-          success: true,
+          error: 'Server configuration error',
+          success: false,
           scholarships: []
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200
+          status: 500
         }
       );
     }
@@ -43,12 +44,13 @@ serve(async (req: Request) => {
       console.error('Error parsing request body:', error);
       return new Response(
         JSON.stringify({
-          success: true,
+          error: 'Invalid request body',
+          success: false,
           scholarships: []
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200
+          status: 400
         }
       );
     }
@@ -60,12 +62,13 @@ serve(async (req: Request) => {
       console.error('Invalid user profile');
       return new Response(
         JSON.stringify({
-          success: true,
+          error: 'Invalid user profile',
+          success: false,
           scholarships: []
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200
+          status: 400
         }
       );
     }
@@ -90,12 +93,13 @@ serve(async (req: Request) => {
         console.error('OpenAI search failed:', response.error);
         return new Response(
           JSON.stringify({
-            success: true,
+            error: response.error,
+            success: false,
             scholarships: []
           }),
           {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 200
+            status: 500
           }
         );
       }
@@ -104,12 +108,13 @@ serve(async (req: Request) => {
         console.error('Invalid response format:', response.data);
         return new Response(
           JSON.stringify({
-            success: true,
+            error: 'Invalid response format',
+            success: false,
             scholarships: []
           }),
           {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 200
+            status: 500
           }
         );
       }
@@ -130,12 +135,13 @@ serve(async (req: Request) => {
       console.error('Error in OpenAI search:', error);
       return new Response(
         JSON.stringify({
-          success: true,
+          error: error.message,
+          success: false,
           scholarships: []
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200
+          status: 500
         }
       );
     }
@@ -144,12 +150,13 @@ serve(async (req: Request) => {
     console.error('Error in discover-scholarships function:', error);
     return new Response(
       JSON.stringify({
-        success: true,
+        error: error.message,
+        success: false,
         scholarships: []
-        }),
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200
+        status: 500
       }
     );
   }
