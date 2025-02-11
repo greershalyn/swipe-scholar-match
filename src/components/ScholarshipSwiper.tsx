@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import ScholarshipCard from './ScholarshipCard';
 import EmptyState from './scholarship/EmptyState';
@@ -127,11 +126,7 @@ const ScholarshipSwiper = () => {
 
   if (currentIndex >= allScholarships.length && !hasNextPage) {
     return (
-      <div className="flex flex-col items-center justify-center gap-6">
-        <EmptyState 
-          title="You're All Caught Up!"
-          description="Check back later for more scholarship opportunities."
-        />
+      <div className="flex items-center justify-center h-[600px]">
         <Button 
           onClick={handleRefresh}
           className="gap-2"
