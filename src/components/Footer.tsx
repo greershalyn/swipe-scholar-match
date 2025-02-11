@@ -107,7 +107,45 @@ For any questions about these Terms, please contact us at contact@lewte.com.`,
     },
     privacy: {
       title: "Privacy Policy",
-      content: "Privacy Policy content will go here...",
+      content: `Effective Date: 2/11/25
+
+1. Introduction
+Welcome to SwipeScholar! Your privacy is important to us. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform to find scholarship opportunities.
+
+2. Information We Collect
+When you create a profile and complete the questionnaire on SwipeScholar, we may collect the following information:
+- Personal information (such as name, email address, date of birth, and school information)
+- Academic details (such as GPA, test scores, and major)
+- Demographic information (such as residency status and extracurricular activities)
+- Any other information you voluntarily provide to enhance scholarship matching
+
+3. How We Use Your Information
+We use your information to:
+- Match you with scholarship opportunities best suited to your profile
+- Improve our scholarship recommendation algorithm
+- Communicate with you regarding scholarships and platform updates
+- Provide customer support
+
+4. Voluntary Submission of Academic Information
+SwipeScholar allows users to input academic details such as GPA and test scores at their own free will. This information is used solely to provide the most relevant scholarship matches. You are not required to submit academic information to use our platform, though doing so may enhance the accuracy of your matches.
+
+5. How We Protect Your Information
+We implement industry-standard security measures to protect your personal data from unauthorized access, disclosure, or alteration. However, no method of electronic storage or transmission over the internet is 100% secure, and we cannot guarantee absolute security.
+
+6. Sharing Your Information
+SwipeScholar does not sell, rent, or trade your personal information. We may share your data only with:
+- Scholarship providers and partners, but only with your consent
+- Service providers who assist us in operating our platform (under confidentiality agreements)
+- Legal authorities if required by law
+
+7. Your Choices and Rights
+You may update or delete your profile information at any time. If you wish to opt out of communications or delete your account, you may do so through your account settings or by contacting us at contact@lewte.com.
+
+8. Changes to This Privacy Policy
+We may update this Privacy Policy from time to time. If we make significant changes, we will notify you via email or a notice on our platform.
+
+9. Contact Us
+If you have any questions about this Privacy Policy, please contact us at contact@lewte.com.`,
     },
   };
 
