@@ -6,6 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+  'Content-Type': 'application/json'
 };
 
 const openAiApiKey = Deno.env.get('OPENAI_API_KEY')!;
@@ -26,7 +27,7 @@ const TRUSTED_SCHOLARSHIP_DOMAINS = [
 async function verifyUrl(url: string): Promise<boolean> {
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000); // Increased timeout to 10 seconds
+    const timeout = setTimeout(() => controller.abort(), 10000);
 
     const response = await fetch(url, {
       method: 'HEAD',
@@ -45,7 +46,6 @@ async function verifyUrl(url: string): Promise<boolean> {
 }
 
 serve(async (req: Request) => {
-  // Always return CORS headers for OPTIONS requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { 
       headers: corsHeaders,
@@ -54,11 +54,10 @@ serve(async (req: Request) => {
   }
 
   try {
-    const { userProfile, page = 1 } = await req.json();
-    console.log('Received user profile for scholarship search:', userProfile, 'page:', page);
+    const { userProfile } = await req.json();
+    console.log('Received user profile for scholarship search:', userProfile);
 
     if (!openAiApiKey) {
-      console.error('OpenAI API key not configured');
       throw new Error('OpenAI API key not configured');
     }
 
@@ -85,31 +84,16 @@ serve(async (req: Request) => {
       5. Requirements must be specific and match the actual scholarship criteria.
       6. Description should include key details about the scholarship purpose and eligibility.
       
-      For each scholarship, provide:
-      1. Title (be specific and descriptive)
-      2. Amount (in USD)
-      3. Application deadline (must be a date between today and 6 months from now)
-      4. Detailed eligibility requirements
-      5. Provider/organization name (must be a real organization)
-      6. Application URL (must be from a real scholarship website)
-      7. A detailed description (2-3 sentences)
-      
-      Return ONLY a JSON object with a "scholarships" array containing these fields, WITH UNIQUE IDs for each scholarship:
-      {
-        "scholarships": [
-          {
-            "id": string (UUID v4),
-            "title": string,
-            "amount": number,
-            "deadline": string (ISO date),
-            "requirements": string[],
-            "provider": string,
-            "url": string,
-            "description": string,
-            "is_active": true
-          }
-        ]
-      }
+      Return ONLY valid JSON with a "scholarships" array containing these fields:
+      - id: string (UUID v4)
+      - title: string
+      - amount: number
+      - deadline: string (ISO date)
+      - requirements: string[]
+      - provider: string
+      - url: string
+      - description: string
+      - is_active: boolean
     `;
 
     console.log('Sending prompt to OpenAI');
@@ -133,7 +117,7 @@ serve(async (req: Request) => {
           }
         ],
         temperature: 0.7,
-        max_tokens: 1000,
+        max_tokens: 2000,
         response_format: { type: "json_object" }
       }),
     });
@@ -145,7 +129,7 @@ serve(async (req: Request) => {
     }
 
     const data = await response.json();
-    console.log('OpenAI API response received:', data);
+    console.log('OpenAI API response received');
     
     if (!data.choices?.[0]?.message?.content) {
       throw new Error('Invalid response format from OpenAI');
@@ -154,19 +138,22 @@ serve(async (req: Request) => {
     let scholarships;
     try {
       scholarships = JSON.parse(data.choices[0].message.content);
-      console.log('Successfully parsed scholarships data:', scholarships);
+      console.log('Successfully parsed scholarships data');
     } catch (parseError) {
-      console.error('Error parsing OpenAI response:', parseError, '\nResponse content:', data.choices[0].message.content);
+      console.error('Error parsing OpenAI response:', parseError);
       throw new Error('Failed to parse OpenAI response');
     }
 
-    // If we have no scholarships at all, return an empty array instead of throwing
+    // Return empty array if no scholarships found
     if (!scholarships.scholarships || !Array.isArray(scholarships.scholarships)) {
       console.log('No scholarships found in OpenAI response, returning empty array');
-      return new Response(JSON.stringify({ scholarships: [] }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200
-      });
+      return new Response(
+        JSON.stringify({ scholarships: [] }), 
+        {
+          headers: corsHeaders,
+          status: 200
+        }
+      );
     }
 
     // Verify URLs before returning scholarships
@@ -180,21 +167,23 @@ serve(async (req: Request) => {
       }
     }
     
-    // Return empty array if no valid scholarships instead of throwing
-    return new Response(JSON.stringify({ scholarships: verifiedScholarships }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200
-    });
+    return new Response(
+      JSON.stringify({ scholarships: verifiedScholarships }), 
+      {
+        headers: corsHeaders,
+        status: 200
+      }
+    );
   } catch (error) {
     console.error('Error in openai-scholarship-search function:', error);
     return new Response(
       JSON.stringify({ 
-        success: false, 
-        error: error.message || 'An unexpected error occurred'
+        error: error.message || 'An unexpected error occurred',
+        scholarships: []
       }),
       { 
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: corsHeaders,
+        status: 500
       }
     );
   }
