@@ -13,7 +13,8 @@ export const useScholarships = () => {
     queryKey: ['scholarships'],
     queryFn: async ({ pageParam = 1 }) => {
       try {
-        const data = await fetchScholarships(pageParam as number);
+        // Add timestamp to ensure we get fresh data on refresh
+        const data = await fetchScholarships(pageParam as number, Date.now());
         // If we got less than 5 scholarships, there are no more pages
         const hasMorePages = data && data.length === 5;
         return {
@@ -30,10 +31,10 @@ export const useScholarships = () => {
       }
     },
     getNextPageParam: (lastPage) => lastPage.nextPage,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 5 * 60 * 1000,
-    retry: 1, // Reduce retries to avoid too many failed attempts
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000), // Exponential backoff
+    staleTime: 0, // Always fetch fresh data
+    gcTime: 0, // Clear cache immediately
+    retry: 1,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
     initialPageParam: 1,
   });
 };
