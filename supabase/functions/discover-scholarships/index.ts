@@ -40,29 +40,36 @@ serve(async (req: Request) => {
     // Create Supabase client
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Call OpenAI search with retries
+    // Call OpenAI search with shorter timeout and better error handling
     console.log('Calling openai-scholarship-search...');
-    let retries = 3;
+    let retries = 2;
     let searchResult;
-    while (retries > 0) {
+    
+    while (retries >= 0) {
       try {
-        searchResult = await supabase.functions.invoke('openai-scholarship-search', {
-          body: { userProfile }
-        });
+        searchResult = await Promise.race([
+          supabase.functions.invoke('openai-scholarship-search', {
+            body: { userProfile }
+          }),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Search timeout')), 15000)
+          )
+        ]);
+        
         if (!searchResult.error) break;
+        console.log(`Attempt failed, ${retries} retries left:`, searchResult.error);
         retries--;
-        if (retries > 0) await new Promise(r => setTimeout(r, 1000));
+        if (retries >= 0) await new Promise(r => setTimeout(r, 1000));
       } catch (e) {
-        console.error('Attempt failed:', e);
+        console.error('Search attempt failed:', e);
         retries--;
-        if (retries === 0) throw e;
-        await new Promise(r => setTimeout(r, 1000));
+        if (retries >= 0) {
+          console.log(`Retrying... ${retries} attempts left`);
+          await new Promise(r => setTimeout(r, 1000));
+        } else {
+          throw new Error('Failed to search for scholarships after all retries');
+        }
       }
-    }
-
-    if (searchResult?.error) {
-      console.error('OpenAI search error:', searchResult.error);
-      throw new Error(`Failed to search for scholarships: ${searchResult.error.message}`);
     }
 
     if (!searchResult?.data?.scholarships || !Array.isArray(searchResult.data.scholarships)) {
@@ -70,36 +77,10 @@ serve(async (req: Request) => {
       throw new Error('Invalid scholarship data received from search');
     }
 
-    // Store scholarships with retries
-    console.log('Storing scholarships...');
-    retries = 3;
-    let storeResult;
-    while (retries > 0) {
-      try {
-        storeResult = await supabase.functions.invoke('store-scholarships', {
-          body: { scholarships: searchResult.data.scholarships }
-        });
-        if (!storeResult.error) break;
-        retries--;
-        if (retries > 0) await new Promise(r => setTimeout(r, 1000));
-      } catch (e) {
-        console.error('Store attempt failed:', e);
-        retries--;
-        if (retries === 0) throw e;
-        await new Promise(r => setTimeout(r, 1000));
-      }
-    }
-
-    if (storeResult?.error) {
-      console.error('Store error:', storeResult.error);
-      throw new Error(`Failed to store scholarships: ${storeResult.error.message}`);
-    }
-
     console.log('Successfully processed request');
     return new Response(
       JSON.stringify({
         success: true,
-        ...storeResult?.data,
         scholarships: searchResult.data.scholarships
       }),
       {

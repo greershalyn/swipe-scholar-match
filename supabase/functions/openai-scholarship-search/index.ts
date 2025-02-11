@@ -69,7 +69,7 @@ serve(async (req: Request) => {
     const controller = new AbortController();
     const timeout = setTimeout(() => {
       controller.abort();
-    }, 25000); // 25 second timeout
+    }, 12000); // Reduced to 12 second timeout
 
     try {
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -91,6 +91,7 @@ serve(async (req: Request) => {
             }
           ],
           temperature: 0.7,
+          max_tokens: 1000, // Limit tokens to speed up response
           response_format: { type: "json_object" }
         }),
         signal: controller.signal,
@@ -119,7 +120,7 @@ serve(async (req: Request) => {
       });
     } catch (error) {
       if (error.name === 'AbortError') {
-        throw new Error('OpenAI API request timed out after 25 seconds');
+        throw new Error('OpenAI API request timed out');
       }
       throw error;
     } finally {
