@@ -8,21 +8,24 @@ import { UserProfile } from './types.ts';
 console.log('Starting discover-scholarships function...');
 
 serve(async (req: Request) => {
-  try {
-    // Always handle CORS preflight first
-    if (req.method === 'OPTIONS') {
-      return new Response('ok', { 
-        headers: {
-          ...corsHeaders,
-          'Access-Control-Max-Age': '86400',
-        }
-      });
-    }
+  // Handle CORS preflight requests first
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { 
+      headers: {
+        ...corsHeaders,
+        'Access-Control-Max-Age': '86400',
+        'Content-Type': 'text/plain',
+      },
+      status: 204
+    });
+  }
 
+  try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     if (!supabaseUrl || !supabaseKey) {
+      console.error('Missing environment variables');
       throw new Error('Missing environment variables');
     }
 
@@ -31,6 +34,7 @@ serve(async (req: Request) => {
     console.log('Processing request for user profile:', userProfile?.id, 'page:', page);
 
     if (!userProfile?.id) {
+      console.error('Invalid user profile');
       throw new Error('Valid user profile is required');
     }
 
@@ -46,12 +50,15 @@ serve(async (req: Request) => {
       try {
         const response = await Promise.race([
           supabase.functions.invoke('openai-scholarship-search', {
-            body: { userProfile }
+            body: { userProfile },
+            headers: { ...corsHeaders }
           }),
           new Promise((_, reject) => 
             setTimeout(() => reject(new Error('Search timeout')), 12000)
           )
         ]);
+
+        console.log('Search response:', response);
 
         if (!response.error) {
           searchResult = response;
@@ -62,7 +69,7 @@ serve(async (req: Request) => {
         retries--;
         
         if (retries >= 0) {
-          await new Promise(r => setTimeout(r, 1000));
+          await new Promise(r => setTimeout(r, 2000)); // Increased delay between retries
         }
       } catch (error) {
         console.error('Search attempt failed:', error);
@@ -70,7 +77,7 @@ serve(async (req: Request) => {
         
         if (retries >= 0) {
           console.log(`Retrying... ${retries} attempts left`);
-          await new Promise(r => setTimeout(r, 1000));
+          await new Promise(r => setTimeout(r, 2000));
         } else {
           throw new Error('Failed to search for scholarships after all retries');
         }
@@ -78,6 +85,7 @@ serve(async (req: Request) => {
     }
 
     if (!searchResult?.data?.scholarships || !Array.isArray(searchResult.data.scholarships)) {
+      console.error('Invalid scholarship data received:', searchResult);
       throw new Error('Invalid scholarship data received from search');
     }
 
@@ -91,7 +99,8 @@ serve(async (req: Request) => {
         headers: {
           ...corsHeaders,
           'Content-Type': 'application/json',
-        }
+        },
+        status: 200
       }
     );
 

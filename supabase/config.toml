@@ -4,9 +4,12 @@ project_id = "cewxnkpihtujqbwbzjcv"
 [functions]
 [functions.discover-scholarships]
 verify_jwt = false
+import_map = ["./import_map.json"]
 
 [functions.openai-scholarship-search]
 verify_jwt = false
+import_map = ["./import_map.json"]
 
 [functions.store-scholarships]
 verify_jwt = false
+
