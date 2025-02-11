@@ -24,6 +24,7 @@ serve(async (req: Request) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     if (!supabaseUrl || !supabaseKey) {
+      console.error('Missing environment variables');
       throw new Error('Missing environment variables');
     }
 
@@ -31,6 +32,7 @@ serve(async (req: Request) => {
     console.log('Received request with user profile:', userProfile, 'page:', page);
 
     if (!userProfile) {
+      console.error('User profile is missing');
       throw new Error('User profile is required');
     }
 
@@ -39,35 +41,37 @@ serve(async (req: Request) => {
 
     // Step 1: Search for scholarships using OpenAI
     console.log('Calling openai-scholarship-search...');
-    const { data: searchData, error: searchError } = await supabase.functions.invoke('openai-scholarship-search', {
+    const searchResult = await supabase.functions.invoke('openai-scholarship-search', {
       body: { userProfile }
     });
 
-    if (searchError) {
-      console.error('OpenAI search error:', searchError);
-      throw new Error(`Failed to search for scholarships: ${searchError.message}`);
+    if (searchResult.error) {
+      console.error('OpenAI search error:', searchResult.error);
+      throw new Error(`Failed to search for scholarships: ${searchResult.error.message}`);
     }
 
+    const searchData = searchResult.data;
     if (!searchData?.scholarships || !Array.isArray(searchData.scholarships)) {
+      console.error('Invalid scholarship data received:', searchData);
       throw new Error('Invalid scholarship data received from search');
     }
 
     // Step 2: Store the found scholarships
     console.log('Calling store-scholarships...');
-    const { data: storeData, error: storeError } = await supabase.functions.invoke('store-scholarships', {
+    const storeResult = await supabase.functions.invoke('store-scholarships', {
       body: { scholarships: searchData.scholarships }
     });
 
-    if (storeError) {
-      console.error('Store error:', storeError);
-      throw new Error(`Failed to store scholarships: ${storeError.message}`);
+    if (storeResult.error) {
+      console.error('Store error:', storeResult.error);
+      throw new Error(`Failed to store scholarships: ${storeResult.error.message}`);
     }
 
     console.log('Successfully processed request');
     return new Response(
       JSON.stringify({ 
         success: true, 
-        ...storeData,
+        ...storeResult.data,
         scholarships: searchData.scholarships
       }),
       { 
