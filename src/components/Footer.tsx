@@ -11,11 +11,50 @@ import {
 const Footer = () => {
   const [openDialog, setOpenDialog] = useState<'eula' | 'terms' | 'privacy' | null>(null);
 
-  // Placeholder content - to be replaced with actual content later
   const documents = {
     eula: {
-      title: "End User License Agreement",
-      content: "EULA content will go here...",
+      title: "End User License Agreement (EULA)",
+      content: `Effective Date: 2/11/25
+
+1. Introduction
+This End User License Agreement ("Agreement") is a legal agreement between you ("User") and Lewte ("Company") governing the use of the SwipeScholar platform and related services.
+
+2. Acceptance of Terms
+By creating an account, accessing, or using SwipeScholar, you agree to be bound by this Agreement. If you do not agree to these terms, do not use SwipeScholar.
+
+3. License Grant
+SwipeScholar grants you a limited, non-exclusive, non-transferable, and revocable license to access and use the platform for personal, non-commercial purposes in accordance with this Agreement.
+
+4. User Obligations
+You agree to:
+- Provide accurate and complete information when creating an account.
+- Use the platform only for lawful purposes.
+- Not distribute, modify, or reverse-engineer any part of the platform.
+- Not share your account credentials or allow unauthorized access.
+
+5. Privacy and Data Use
+Your use of SwipeScholar is also governed by our Privacy Policy, which details how we collect, use, and protect your information.
+
+6. Intellectual Property
+All intellectual property rights related to SwipeScholar, including trademarks, copyrights, and proprietary information, are owned by the Company. Unauthorized use of any intellectual property is prohibited.
+
+7. Disclaimers and Limitation of Liability
+SwipeScholar is provided "as is" without warranties of any kind. The Company is not responsible for:
+- The accuracy or availability of scholarship opportunities.
+- Any loss or damage resulting from the use of SwipeScholar.
+- Third-party content or external links provided on the platform.
+
+8. Termination
+SwipeScholar may suspend or terminate your account at any time if you violate this Agreement. You may also terminate your use of the platform by deleting your account.
+
+9. Governing Law
+This Agreement shall be governed by and construed in accordance with the laws of West Virginia.
+
+10. Changes to This Agreement
+We may update this Agreement from time to time. If significant changes are made, we will notify users via email or through a notice on the platform.
+
+11. Contact Information
+If you have any questions about this Agreement, please contact us at contact@lewte.com.`,
     },
     terms: {
       title: "Terms & Conditions",
