@@ -39,17 +39,19 @@ serve(async (req: Request) => {
       6. Application URL (use a realistic URL)
       7. A brief description (2-3 sentences)
       
-      Return ONLY a JSON object with a "scholarships" array containing these fields:
+      Return ONLY a JSON object with a "scholarships" array containing these fields, WITH UNIQUE IDs for each scholarship:
       {
         "scholarships": [
           {
+            "id": string (UUID v4),
             "title": string,
             "amount": number,
             "deadline": string (ISO date),
             "requirements": string[],
             "provider": string,
             "url": string,
-            "description": string
+            "description": string,
+            "is_active": true
           }
         ]
       }
@@ -68,7 +70,7 @@ serve(async (req: Request) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a scholarship research assistant. Generate realistic scholarship opportunities based on the student profile. Use realistic organizations, URLs, and future deadlines. Return only valid JSON.'
+            content: 'You are a scholarship research assistant. Generate realistic scholarship opportunities based on the student profile. Use realistic organizations, URLs, and future deadlines. Return only valid JSON with unique UUIDs for each scholarship.'
           },
           {
             role: 'user',

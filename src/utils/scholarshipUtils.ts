@@ -33,21 +33,10 @@ export const fetchScholarships = async (): Promise<Scholarship[]> => {
       throw error;
     }
 
+    // If no data or scholarships returned, return empty array
     if (!data?.scholarships) {
       console.log('No scholarships returned from discover-scholarships');
       return [];
-    }
-
-    // Get filtered scholarships from the database that match what OpenAI found
-    const { data: scholarships, error: scholarshipsError } = await supabase
-      .from('scholarships')
-      .select('*')
-      .eq('is_active', true)
-      .gt('deadline', new Date().toISOString());
-
-    if (scholarshipsError) {
-      console.error('Error fetching scholarships:', scholarshipsError);
-      throw scholarshipsError;
     }
 
     // Get all swiped scholarship IDs for the current user
@@ -68,17 +57,17 @@ export const fetchScholarships = async (): Promise<Scholarship[]> => {
       ...(savedScholarships?.map(s => s.scholarship_id) || [])
     ]);
 
-    // Filter scholarships and calculate match scores
-    const filteredScholarships = scholarships
-      ?.filter(s => !excludeIds.has(s.id))
-      .map(s => ({
+    // Filter out swiped/saved scholarships and calculate match scores
+    const scholarships = data.scholarships
+      .filter((s: Scholarship) => !excludeIds.has(s.id))
+      .map((s: Scholarship) => ({
         ...s,
         match_score: calculateMatchScore(s, userProfile)
       }))
-      .sort((a, b) => (b.match_score || 0) - (a.match_score || 0));
+      .sort((a: Scholarship, b: Scholarship) => (b.match_score || 0) - (a.match_score || 0));
 
-    console.log('Returning filtered scholarships:', filteredScholarships);
-    return filteredScholarships || [];
+    console.log('Returning filtered scholarships:', scholarships);
+    return scholarships;
   } catch (error) {
     console.error('Error in fetchScholarships:', error);
     throw error;
