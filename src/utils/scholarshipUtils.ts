@@ -39,6 +39,31 @@ export const fetchScholarships = async (page: number = 1): Promise<Scholarship[]
       return [];
     }
 
+    // First, insert the scholarships into the scholarships table if they don't exist
+    for (const scholarship of data.scholarships) {
+      const { error: upsertError } = await supabase
+        .from('scholarships')
+        .upsert(
+          {
+            id: scholarship.id,
+            title: scholarship.title,
+            amount: scholarship.amount,
+            deadline: scholarship.deadline,
+            provider: scholarship.provider,
+            url: scholarship.url,
+            description: scholarship.description,
+            category: scholarship.category || 'General',
+            requirements: scholarship.requirements || [],
+          },
+          { onConflict: 'id' }
+        );
+
+      if (upsertError) {
+        console.error('Error upserting scholarship:', upsertError);
+        throw upsertError;
+      }
+    }
+
     // Get all swiped scholarship IDs for the current user
     const { data: swipedScholarships } = await supabase
       .from('swiped_scholarships')
