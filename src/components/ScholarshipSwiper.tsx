@@ -22,6 +22,7 @@ const ScholarshipSwiper = () => {
   useEffect(() => {
     // Pre-fetch next page when user is 2 cards away from the end
     if (allScholarships.length - currentIndex <= 2 && !isFetchingNextPage && hasNextPage) {
+      console.log('Fetching next page of scholarships...');
       fetchNextPage();
     }
   }, [currentIndex, allScholarships.length, fetchNextPage, hasNextPage, isFetchingNextPage]);
@@ -30,7 +31,9 @@ const ScholarshipSwiper = () => {
     scholarshipsLength: allScholarships.length,
     currentIndex,
     isLoading,
-    error
+    error,
+    hasNextPage,
+    isFetchingNextPage
   });
 
   const saveMutation = useMutation({
@@ -113,6 +116,7 @@ const ScholarshipSwiper = () => {
   }
 
   if (currentIndex >= allScholarships.length && !hasNextPage) {
+    // Only show "all caught up" if we've truly run out of scholarships
     return (
       <EmptyState 
         title="You're All Caught Up!"

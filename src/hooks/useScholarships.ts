@@ -14,9 +14,11 @@ export const useScholarships = () => {
     queryFn: async ({ pageParam = 1 }) => {
       try {
         const data = await fetchScholarships(pageParam as number);
+        // If we got less than 5 scholarships, there are no more pages
+        const hasMorePages = data && data.length === 5;
         return {
           scholarships: data || [],
-          nextPage: data.length === 5 ? (pageParam as number) + 1 : undefined,
+          nextPage: hasMorePages ? (pageParam as number) + 1 : undefined,
         };
       } catch (error) {
         console.error('Error in useScholarships:', error);
