@@ -58,7 +58,52 @@ If you have any questions about this Agreement, please contact us at contact@lew
     },
     terms: {
       title: "Terms & Conditions",
-      content: "Terms & Conditions content will go here...",
+      content: `Effective Date: 2/11/25
+
+1. Introduction
+Welcome to SwipeScholar! These Terms and Conditions ("Terms") govern your use of the SwipeScholar platform. By accessing or using SwipeScholar, you agree to be bound by these Terms.
+
+2. Eligibility
+To use SwipeScholar, you must be at least 13 years old. If you are under 18, you must have permission from a parent or guardian.
+
+3. User Accounts
+You agree to:
+- Provide accurate and complete information when creating an account.
+- Maintain the security of your account credentials.
+- Notify us immediately of any unauthorized use of your account.
+
+4. Use of the Platform
+You may use SwipeScholar solely for personal, non-commercial purposes to find scholarship opportunities. You agree not to:
+- Use the platform for any unlawful or fraudulent activities.
+- Interfere with the proper functioning of SwipeScholar.
+- Attempt to gain unauthorized access to our systems.
+
+5. Scholarship Information
+SwipeScholar does not guarantee the accuracy, availability, or eligibility of scholarship opportunities listed on the platform. It is your responsibility to verify the details and requirements of any scholarship before applying.
+
+6. Privacy
+Your use of SwipeScholar is also governed by our Privacy Policy, which explains how we collect, use, and protect your information.
+
+7. Intellectual Property
+All content, trademarks, and intellectual property related to SwipeScholar belong to the Company. You may not use any of our content without permission.
+
+8. Limitation of Liability
+SwipeScholar is provided "as is" without warranties of any kind. We are not liable for:
+- Errors or omissions in scholarship listings.
+- Loss or damages resulting from the use of SwipeScholar.
+- Any third-party content or external links available on the platform.
+
+9. Termination
+We may suspend or terminate your account if you violate these Terms. You may also close your account at any time.
+
+10. Changes to Terms
+We may update these Terms from time to time. If significant changes occur, we will notify users via email or platform notice.
+
+11. Governing Law
+These Terms shall be governed by and construed under the laws of West Virginia.
+
+12. Contact Us
+For any questions about these Terms, please contact us at contact@lewte.com.`,
     },
     privacy: {
       title: "Privacy Policy",
