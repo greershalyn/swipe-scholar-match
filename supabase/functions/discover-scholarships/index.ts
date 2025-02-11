@@ -39,7 +39,7 @@ serve(async (req: Request) => {
     // Call OpenAI search with timeout
     console.log('Calling openai-scholarship-search...');
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    const timeout = setTimeout(() => controller.abort(), 25000); // 25 second timeout
 
     try {
       const response = await supabase.functions.invoke('openai-scholarship-search', {
@@ -54,12 +54,12 @@ serve(async (req: Request) => {
         throw new Error(`Search failed: ${response.error.message}`);
       }
 
-      if (!response.data?.scholarships) {
-        console.error('No scholarships returned from search');
-        throw new Error('No scholarships found');
+      if (!response.data?.scholarships || !Array.isArray(response.data.scholarships)) {
+        console.error('Invalid response format:', response.data);
+        throw new Error('Invalid scholarship data received');
       }
 
-      console.log('Successfully processed request');
+      console.log('Successfully processed request, found scholarships:', response.data.scholarships.length);
       return new Response(
         JSON.stringify({
           success: true,
@@ -73,20 +73,24 @@ serve(async (req: Request) => {
     } catch (error) {
       clearTimeout(timeout);
       if (error.name === 'AbortError') {
-        throw new Error('Search timed out after 30 seconds');
+        throw new Error('Search timed out after 25 seconds');
       }
       throw error;
     }
 
   } catch (error) {
     console.error('Error in discover-scholarships function:', error);
+    const statusCode = error.name === 'AbortError' ? 408 : 500;
+    const errorMessage = error.message || 'An unexpected error occurred';
+    
+    console.log('Returning error response:', statusCode, errorMessage);
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message || 'An unexpected error occurred'
+        error: errorMessage
       }),
       {
-        status: error.name === 'AbortError' ? 408 : 500,
+        status: statusCode,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
