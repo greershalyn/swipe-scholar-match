@@ -6,6 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+  'Content-Type': 'application/json'
 };
 
 serve(async (req: Request) => {
@@ -30,7 +31,7 @@ serve(async (req: Request) => {
           scholarships: []
         }),
         {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: corsHeaders,
           status: 500
         }
       );
@@ -49,7 +50,7 @@ serve(async (req: Request) => {
           scholarships: []
         }),
         {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: corsHeaders,
           status: 400
         }
       );
@@ -67,7 +68,7 @@ serve(async (req: Request) => {
           scholarships: []
         }),
         {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: corsHeaders,
           status: 400
         }
       );
@@ -88,6 +89,7 @@ serve(async (req: Request) => {
       });
 
       clearTimeout(timeout);
+      console.log('OpenAI search response:', response);
 
       if (response.error) {
         console.error('OpenAI search failed:', response.error);
@@ -98,7 +100,7 @@ serve(async (req: Request) => {
             scholarships: []
           }),
           {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: corsHeaders,
             status: 500
           }
         );
@@ -113,7 +115,7 @@ serve(async (req: Request) => {
             scholarships: []
           }),
           {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: corsHeaders,
             status: 500
           }
         );
@@ -126,7 +128,7 @@ serve(async (req: Request) => {
           scholarships: response.data.scholarships
         }),
         {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: corsHeaders,
           status: 200
         }
       );
@@ -140,7 +142,7 @@ serve(async (req: Request) => {
           scholarships: []
         }),
         {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: corsHeaders,
           status: 500
         }
       );
@@ -155,7 +157,7 @@ serve(async (req: Request) => {
         scholarships: []
       }),
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: corsHeaders,
         status: 500
       }
     );
