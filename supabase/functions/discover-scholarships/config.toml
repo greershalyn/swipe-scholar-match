@@ -1,0 +1,6 @@
+
+project_id = "cewxnkpihtujqbwbzjcv"
+
+[functions]
+[functions.discover-scholarships]
+verify_jwt = false

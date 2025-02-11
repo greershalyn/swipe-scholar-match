@@ -146,7 +146,7 @@ serve(async (req: Request) => {
       JSON.stringify({
         success: true,
         scholarships: []
-      }),
+        }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200
