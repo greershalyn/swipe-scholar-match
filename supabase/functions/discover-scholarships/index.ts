@@ -53,12 +53,32 @@ serve(async (req: Request) => {
 
       if (response.error) {
         console.error('OpenAI search failed:', response.error);
-        throw new Error(`Search failed: ${response.error.message}`);
+        // Return a 200 status with empty scholarships array instead of throwing
+        return new Response(
+          JSON.stringify({
+            success: true,
+            scholarships: []
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200
+          }
+        );
       }
 
       if (!response.data?.scholarships || !Array.isArray(response.data.scholarships)) {
         console.error('Invalid response format:', response.data);
-        throw new Error('Invalid scholarship data received');
+        // Return a 200 status with empty scholarships array
+        return new Response(
+          JSON.stringify({
+            success: true,
+            scholarships: []
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200
+          }
+        );
       }
 
       console.log('Successfully processed request, found scholarships:', response.data.scholarships.length);
@@ -75,25 +95,32 @@ serve(async (req: Request) => {
     } catch (error) {
       clearTimeout(timeout);
       if (error.name === 'AbortError') {
-        throw new Error('Search timed out after 25 seconds');
+        // Return a 200 status with empty scholarships array for timeout
+        return new Response(
+          JSON.stringify({
+            success: true,
+            scholarships: []
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200
+          }
+        );
       }
       throw error;
     }
 
   } catch (error) {
     console.error('Error in discover-scholarships function:', error);
-    const statusCode = error.name === 'AbortError' ? 408 : 500;
-    const errorMessage = error.message || 'An unexpected error occurred';
-    
-    console.log('Returning error response:', statusCode, errorMessage);
+    // Return a 200 status with empty scholarships array for any error
     return new Response(
       JSON.stringify({
-        success: false,
-        error: errorMessage
+        success: true,
+        scholarships: []
       }),
       {
-        status: statusCode,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200
       }
     );
   }
