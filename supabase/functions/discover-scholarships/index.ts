@@ -36,30 +36,47 @@ serve(async (req: Request) => {
     // Create Supabase client
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Call OpenAI search
+    // Call OpenAI search with timeout
     console.log('Calling openai-scholarship-search...');
-    const response = await supabase.functions.invoke('openai-scholarship-search', {
-      body: { userProfile }
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
-    if (response.error) {
-      throw new Error(`Search failed: ${response.error.message}`);
-    }
+    try {
+      const response = await supabase.functions.invoke('openai-scholarship-search', {
+        body: { userProfile },
+        signal: controller.signal,
+      });
 
-    console.log('Successfully processed request');
-    return new Response(
-      JSON.stringify({
-        success: true,
-        scholarships: response.data?.scholarships || []
-      }),
-      {
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json',
-        },
-        status: 200
+      clearTimeout(timeout);
+
+      if (response.error) {
+        console.error('OpenAI search failed:', response.error);
+        throw new Error(`Search failed: ${response.error.message}`);
       }
-    );
+
+      if (!response.data?.scholarships) {
+        console.error('No scholarships returned from search');
+        throw new Error('No scholarships found');
+      }
+
+      console.log('Successfully processed request');
+      return new Response(
+        JSON.stringify({
+          success: true,
+          scholarships: response.data.scholarships
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200
+        }
+      );
+    } catch (error) {
+      clearTimeout(timeout);
+      if (error.name === 'AbortError') {
+        throw new Error('Search timed out after 30 seconds');
+      }
+      throw error;
+    }
 
   } catch (error) {
     console.error('Error in discover-scholarships function:', error);
@@ -69,11 +86,8 @@ serve(async (req: Request) => {
         error: error.message || 'An unexpected error occurred'
       }),
       {
-        status: 500,
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json',
-        }
+        status: error.name === 'AbortError' ? 408 : 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
   }
