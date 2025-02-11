@@ -45,6 +45,7 @@ async function verifyUrl(url: string): Promise<boolean> {
 }
 
 serve(async (req: Request) => {
+  // Always return CORS headers for OPTIONS requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { 
       headers: corsHeaders,
@@ -159,6 +160,15 @@ serve(async (req: Request) => {
       throw new Error('Failed to parse OpenAI response');
     }
 
+    // If we have no scholarships at all, return an empty array instead of throwing
+    if (!scholarships.scholarships || !Array.isArray(scholarships.scholarships)) {
+      console.log('No scholarships found in OpenAI response, returning empty array');
+      return new Response(JSON.stringify({ scholarships: [] }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200
+      });
+    }
+
     // Verify URLs before returning scholarships
     const verifiedScholarships = [];
     for (const scholarship of scholarships.scholarships) {
@@ -169,13 +179,8 @@ serve(async (req: Request) => {
         console.log(`Skipping scholarship with invalid URL: ${scholarship.url}`);
       }
     }
-
-    // Only return error if no valid scholarships were found
-    if (verifiedScholarships.length === 0) {
-      console.error('No valid scholarships found after URL verification');
-      throw new Error('No valid scholarships found after URL verification');
-    }
     
+    // Return empty array if no valid scholarships instead of throwing
     return new Response(JSON.stringify({ scholarships: verifiedScholarships }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200
