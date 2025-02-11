@@ -4,7 +4,7 @@ import { Scholarship } from '../types/scholarship';
 import { saveScholarshipToDb, recordScholarshipSwipe } from './scholarship/dbOperations';
 import { calculateMatchScore } from './scholarship/matchingLogic';
 
-export const fetchScholarships = async (): Promise<Scholarship[]> => {
+export const fetchScholarships = async (page: number = 1): Promise<Scholarship[]> => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Must be logged in to view scholarships');
@@ -21,11 +21,11 @@ export const fetchScholarships = async (): Promise<Scholarship[]> => {
       throw profileError;
     }
 
-    console.log('Calling discover-scholarships with user profile:', userProfile);
+    console.log('Calling discover-scholarships with user profile:', userProfile, 'page:', page);
 
     // Call the discover-scholarships function to get AI-powered recommendations
     const { data, error } = await supabase.functions.invoke('discover-scholarships', {
-      body: { userProfile }
+      body: { userProfile, page }
     });
 
     if (error) {

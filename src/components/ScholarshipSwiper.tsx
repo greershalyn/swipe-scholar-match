@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ScholarshipCard from './ScholarshipCard';
 import EmptyState from './scholarship/EmptyState';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -11,15 +11,24 @@ import { saveScholarship, recordLeftSwipe } from '@/utils/scholarshipUtils';
 const ScholarshipSwiper = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState<'left' | 'right' | null>(null);
+  const [page, setPage] = useState(1);
   const queryClient = useQueryClient();
 
-  const { data: scholarships = [], isLoading, error } = useScholarships();
+  const { data: scholarships = [], isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } = useScholarships(page);
+
+  useEffect(() => {
+    // Pre-fetch next page when user is 2 cards away from the end
+    if (scholarships.length - currentIndex <= 2 && !isFetchingNextPage && hasNextPage) {
+      fetchNextPage();
+    }
+  }, [currentIndex, scholarships.length, fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   console.log('ScholarshipSwiper state:', {
     scholarshipsLength: scholarships?.length,
     currentIndex,
     isLoading,
-    error
+    error,
+    page
   });
 
   const saveMutation = useMutation({
@@ -74,7 +83,7 @@ const ScholarshipSwiper = () => {
     }, 300);
   };
 
-  if (isLoading) {
+  if (isLoading && !scholarships.length) {
     return (
       <div className="flex items-center justify-center h-[600px]">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
@@ -101,7 +110,7 @@ const ScholarshipSwiper = () => {
     );
   }
 
-  if (currentIndex >= scholarships.length) {
+  if (currentIndex >= scholarships.length && !hasNextPage) {
     return (
       <EmptyState 
         title="You're All Caught Up!"
@@ -121,6 +130,11 @@ const ScholarshipSwiper = () => {
           />
         )}
       </AnimatePresence>
+      {isFetchingNextPage && (
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+        </div>
+      )}
     </div>
   );
 };

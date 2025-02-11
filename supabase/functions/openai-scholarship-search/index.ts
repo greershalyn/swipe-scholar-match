@@ -14,26 +14,32 @@ serve(async (req: Request) => {
   }
 
   try {
-    const { userProfile } = await req.json();
-    console.log('Received user profile for scholarship search:', userProfile);
+    const { userProfile, page = 1 } = await req.json();
+    console.log('Received user profile for scholarship search:', userProfile, 'page:', page);
 
     if (!openAiApiKey) {
       console.error('OpenAI API key not configured');
       throw new Error('OpenAI API key not configured');
     }
 
+    const currentDate = new Date();
+    const sixMonthsFromNow = new Date();
+    sixMonthsFromNow.setMonth(currentDate.getMonth() + 6);
+
     const searchPrompt = `
-      Find 3 current available scholarships for a student with the following profile:
+      Find 5 current available scholarships for a student with the following profile:
       - Major: ${userProfile.intended_major || 'Any'}
       - GPA: ${userProfile.gpa || 'Not specified'}
       - Education Level: ${userProfile.current_education_level || 'Any'}
       - Ethnicity: ${userProfile.ethnicity || 'Not specified'}
       - First Generation Student: ${userProfile.first_generation_student ? 'Yes' : 'No'}
       
+      IMPORTANT: Only provide scholarships with deadlines between ${currentDate.toISOString().split('T')[0]} and ${sixMonthsFromNow.toISOString().split('T')[0]}.
+      
       For each scholarship, provide:
       1. Title
       2. Amount (in USD)
-      3. Application deadline (specify a date within the next 6 months)
+      3. Application deadline (must be a date between today and 6 months from now)
       4. Eligibility requirements
       5. Provider/organization name
       6. Application URL (use a realistic URL)
@@ -70,7 +76,7 @@ serve(async (req: Request) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a scholarship research assistant. Generate realistic scholarship opportunities based on the student profile. Use realistic organizations, URLs, and future deadlines. Return only valid JSON with unique UUIDs for each scholarship.'
+            content: 'You are a scholarship research assistant. Generate realistic scholarship opportunities based on the student profile. Use realistic organizations, URLs, and ONLY future deadlines within the next 6 months. Return only valid JSON with unique UUIDs for each scholarship.'
           },
           {
             role: 'user',
