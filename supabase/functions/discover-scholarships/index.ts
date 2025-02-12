@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0';
+import { UserProfile } from './types.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,6 +9,18 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
   'Content-Type': 'application/json'
 };
+
+function validateUserProfile(profile: any): profile is UserProfile {
+  return (
+    profile &&
+    typeof profile.id === 'string' &&
+    typeof profile.full_name === 'string' &&
+    Array.isArray(profile.rewards_achievements) &&
+    Array.isArray(profile.volunteering_experience) &&
+    Array.isArray(profile.organizations) &&
+    Array.isArray(profile.keywords)
+  );
+}
 
 serve(async (req: Request) => {
   // Handle CORS preflight requests
@@ -41,6 +54,7 @@ serve(async (req: Request) => {
     let body;
     try {
       body = await req.json();
+      console.log('Received request body:', JSON.stringify(body, null, 2));
     } catch (error) {
       console.error('Error parsing request body:', error);
       return new Response(
@@ -59,11 +73,11 @@ serve(async (req: Request) => {
     const { userProfile, page = 1, timestamp = Date.now() } = body;
     console.log('Processing request for user profile:', userProfile?.id, 'page:', page, 'timestamp:', timestamp);
 
-    if (!userProfile?.id) {
-      console.error('Invalid user profile');
+    if (!userProfile || !validateUserProfile(userProfile)) {
+      console.error('Invalid user profile format:', userProfile);
       return new Response(
         JSON.stringify({
-          error: 'Invalid user profile',
+          error: 'Invalid user profile format',
           success: false,
           scholarships: []
         }),
