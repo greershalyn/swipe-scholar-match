@@ -10,11 +10,8 @@ const corsHeaders = {
 };
 
 serve(async (req: Request) => {
-  console.log('Received request:', req.method);
-
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    console.log('Handling OPTIONS request');
     return new Response(null, { 
       headers: corsHeaders,
       status: 204
@@ -80,7 +77,7 @@ serve(async (req: Request) => {
     // Create Supabase client
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Skip cache and always call OpenAI search when timestamp is provided
+    // Call OpenAI search with a timeout
     console.log('Calling OpenAI search...');
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 25000); // 25 second timeout
