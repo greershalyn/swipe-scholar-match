@@ -67,6 +67,16 @@ serve(async (req: Request) => {
 
     const trustedDomainsString = TRUSTED_SCHOLARSHIP_DOMAINS.map(domain => `- ${domain}`).join('\n');
 
+    // Build location context from user profile
+    const locationContext = [];
+    if (userProfile.city && userProfile.state) {
+      locationContext.push(`- City: ${userProfile.city}`);
+      locationContext.push(`- State: ${userProfile.state}`);
+    }
+    if (userProfile.college_university) {
+      locationContext.push(`- School: ${userProfile.college_university}`);
+    }
+
     const searchPrompt = `
       Find 5 currently available scholarships for a student with the following profile:
       - Major: ${userProfile.intended_major || 'Any'}
@@ -75,14 +85,22 @@ serve(async (req: Request) => {
       - Ethnicity: ${userProfile.ethnicity || 'Not specified'}
       - First Generation Student: ${userProfile.first_generation_student ? 'Yes' : 'No'}
       
+      Location Information:
+      ${locationContext.length > 0 ? locationContext.join('\n') : '- No location specified'}
+      
       IMPORTANT GUIDELINES:
       1. Only provide scholarships with deadlines between ${currentDate.toISOString().split('T')[0]} and ${sixMonthsFromNow.toISOString().split('T')[0]}.
-      2. Prioritize scholarships from these trusted domains:
+      2. PRIORITIZE LOCAL SCHOLARSHIPS:
+         - If city/state is provided, prioritize scholarships specific to that region
+         - If a school is specified, look for scholarships specific to that institution
+         - Include state-specific scholarships when available
+      3. Use these trusted domains:
       ${trustedDomainsString}
-      3. URLs must be from actual scholarship websites, not placeholder or example domains.
-      4. Each scholarship must have a specific, detailed title that matches the provider organization.
-      5. Requirements must be specific and match the actual scholarship criteria.
-      6. Description should include key details about the scholarship purpose and eligibility.
+      4. URLs must be from actual scholarship websites, not placeholder or example domains.
+      5. Each scholarship must have a specific, detailed title that matches the provider organization.
+      6. Requirements must be specific and match the actual scholarship criteria.
+      7. Description should include key details about the scholarship purpose and eligibility.
+      8. If location information is provided, explicitly mention any local relevance in the description.
       
       Return ONLY valid JSON with a "scholarships" array containing these fields:
       - id: string (UUID v4)
@@ -94,6 +112,7 @@ serve(async (req: Request) => {
       - url: string
       - description: string
       - is_active: boolean
+      - category: string (use "Local" for location-specific scholarships)
     `;
 
     console.log('Sending prompt to OpenAI');
@@ -109,7 +128,7 @@ serve(async (req: Request) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a scholarship research assistant. Generate scholarships ONLY from reputable scholarship websites and trusted sources. Focus on accuracy and verifiability. Each scholarship must be from a real organization with a valid, accessible URL. Ensure all dates are in the future and within the specified timeframe.'
+            content: 'You are a scholarship research assistant specializing in finding local and institutional scholarships. Generate scholarships ONLY from reputable scholarship websites and trusted sources, with a focus on location-specific opportunities when available. Focus on accuracy and verifiability. Each scholarship must be from a real organization with a valid, accessible URL. Ensure all dates are in the future and within the specified timeframe.'
           },
           {
             role: 'user',
@@ -161,14 +180,44 @@ serve(async (req: Request) => {
     for (const scholarship of scholarships.scholarships) {
       const isUrlValid = await verifyUrl(scholarship.url);
       if (isUrlValid) {
-        verifiedScholarships.push(scholarship);
+        // Add location relevance score based on user profile
+        let locationRelevance = 0;
+        if (userProfile.state && 
+            (scholarship.description.toLowerCase().includes(userProfile.state.toLowerCase()) ||
+             scholarship.title.toLowerCase().includes(userProfile.state.toLowerCase()))) {
+          locationRelevance += 30;
+        }
+        if (userProfile.city && 
+            (scholarship.description.toLowerCase().includes(userProfile.city.toLowerCase()) ||
+             scholarship.title.toLowerCase().includes(userProfile.city.toLowerCase()))) {
+          locationRelevance += 40;
+        }
+        if (userProfile.college_university && 
+            (scholarship.description.toLowerCase().includes(userProfile.college_university.toLowerCase()) ||
+             scholarship.title.toLowerCase().includes(userProfile.college_university.toLowerCase()))) {
+          locationRelevance += 50;
+        }
+        
+        verifiedScholarships.push({
+          ...scholarship,
+          location_relevance: locationRelevance
+        });
       } else {
         console.log(`Skipping scholarship with invalid URL: ${scholarship.url}`);
       }
     }
+
+    // Sort scholarships by location relevance, with ties broken by other factors
+    const sortedScholarships = verifiedScholarships.sort((a, b) => {
+      if (a.location_relevance !== b.location_relevance) {
+        return b.location_relevance - a.location_relevance;
+      }
+      // If location relevance is the same, sort by amount
+      return b.amount - a.amount;
+    });
     
     return new Response(
-      JSON.stringify({ scholarships: verifiedScholarships }), 
+      JSON.stringify({ scholarships: sortedScholarships }), 
       {
         headers: corsHeaders,
         status: 200
