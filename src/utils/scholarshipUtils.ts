@@ -21,11 +21,45 @@ export const fetchScholarships = async (page: number = 1, timestamp: number = Da
       throw profileError;
     }
 
-    console.log('Calling discover-scholarships with user profile:', userProfile, 'page:', page, 'timestamp:', timestamp);
+    if (!userProfile) {
+      console.error('No user profile found');
+      throw new Error('User profile not found');
+    }
+
+    // Ensure all required fields are present with default values if needed
+    const normalizedUserProfile = {
+      id: userProfile.id,
+      full_name: userProfile.full_name || '',
+      birth_date: userProfile.birth_date || '',
+      gender: userProfile.gender || '',
+      ethnicity: userProfile.ethnicity || '',
+      address: userProfile.address || '',
+      city: userProfile.city || '',
+      state: userProfile.state || '',
+      zip_code: userProfile.zip_code || '',
+      gpa: userProfile.gpa || null,
+      sat_score: userProfile.sat_score || null,
+      act_score: userProfile.act_score || null,
+      current_education_level: userProfile.current_education_level || '',
+      intended_major: userProfile.intended_major || '',
+      first_generation_student: userProfile.first_generation_student || false,
+      essay_personal_statement: userProfile.essay_personal_statement || '',
+      rewards_achievements: userProfile.rewards_achievements || [],
+      volunteering_experience: userProfile.volunteering_experience || [],
+      organizations: userProfile.organizations || [],
+      keywords: userProfile.keywords || [],
+      high_school_graduated: userProfile.high_school_graduated || false
+    };
+
+    console.log('Calling discover-scholarships with normalized user profile:', normalizedUserProfile, 'page:', page, 'timestamp:', timestamp);
 
     // Call the discover-scholarships function to get AI-powered recommendations
     const { data, error } = await supabase.functions.invoke('discover-scholarships', {
-      body: { userProfile, page, timestamp },
+      body: { 
+        userProfile: normalizedUserProfile,
+        page, 
+        timestamp 
+      },
       headers: {
         'Content-Type': 'application/json',
       }
