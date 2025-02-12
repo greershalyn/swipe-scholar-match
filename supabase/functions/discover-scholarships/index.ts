@@ -11,6 +11,9 @@ const corsHeaders = {
 };
 
 function validateUserProfile(profile: any): profile is UserProfile {
+  // Log the profile for debugging
+  console.log('Validating profile:', JSON.stringify(profile, null, 2));
+
   if (!profile) {
     console.error('Profile is null or undefined');
     return false;
@@ -26,10 +29,14 @@ function validateUserProfile(profile: any): profile is UserProfile {
 
   const missingFields = requiredFields.filter(field => {
     const value = profile[field];
+    // Allow null for birth_date
+    if (field === 'birth_date') {
+      return false;
+    }
     if (Array.isArray(value)) {
       return false; // Arrays can be empty but must exist
     }
-    return value === undefined || value === null;
+    return value === undefined;
   });
 
   if (missingFields.length > 0) {
@@ -82,16 +89,39 @@ serve(async (req: Request) => {
       );
     }
 
-    // Parse request body
+    // Parse request body with more detailed error handling
     let body;
+    const contentType = req.headers.get('content-type');
+    console.log('Request content type:', contentType);
+    
     try {
-      body = await req.json();
-      console.log('Received request body:', JSON.stringify(body, null, 2));
+      const text = await req.text();
+      console.log('Raw request body:', text);
+      
+      try {
+        body = JSON.parse(text);
+        console.log('Parsed request body:', JSON.stringify(body, null, 2));
+      } catch (parseError) {
+        console.error('JSON parse error:', parseError);
+        return new Response(
+          JSON.stringify({
+            error: 'Invalid JSON format',
+            details: parseError.message,
+            success: false,
+            scholarships: []
+          }),
+          {
+            headers: { ...corsHeaders },
+            status: 400
+          }
+        );
+      }
     } catch (error) {
-      console.error('Error parsing request body:', error);
+      console.error('Error reading request body:', error);
       return new Response(
         JSON.stringify({
-          error: 'Invalid request body format',
+          error: 'Error reading request body',
+          details: error.message,
           success: false,
           scholarships: []
         }),
@@ -103,10 +133,14 @@ serve(async (req: Request) => {
     }
 
     const { userProfile, page = 1, timestamp = Date.now() } = body;
-    console.log('Processing request for user profile:', JSON.stringify(userProfile, null, 2));
+    console.log('Processing request with parameters:', {
+      page,
+      timestamp,
+      userProfile: userProfile ? 'present' : 'missing'
+    });
 
     if (!userProfile || !validateUserProfile(userProfile)) {
-      console.error('Invalid user profile format:', userProfile);
+      console.error('Invalid user profile format:', JSON.stringify(userProfile, null, 2));
       return new Response(
         JSON.stringify({
           error: 'Invalid user profile format - check function logs for details',
