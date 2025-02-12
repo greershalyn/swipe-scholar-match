@@ -11,15 +11,47 @@ const corsHeaders = {
 };
 
 function validateUserProfile(profile: any): profile is UserProfile {
-  return (
-    profile &&
+  if (!profile) {
+    console.error('Profile is null or undefined');
+    return false;
+  }
+
+  const requiredFields = [
+    'id', 'full_name', 'birth_date', 'gender', 'ethnicity',
+    'address', 'city', 'state', 'zip_code', 'current_education_level',
+    'intended_major', 'first_generation_student', 'essay_personal_statement',
+    'rewards_achievements', 'volunteering_experience', 'organizations',
+    'keywords', 'high_school_graduated'
+  ];
+
+  const missingFields = requiredFields.filter(field => {
+    const value = profile[field];
+    if (Array.isArray(value)) {
+      return false; // Arrays can be empty but must exist
+    }
+    return value === undefined || value === null;
+  });
+
+  if (missingFields.length > 0) {
+    console.error('Missing required fields:', missingFields);
+    return false;
+  }
+
+  // Validate types
+  const validTypes = 
     typeof profile.id === 'string' &&
     typeof profile.full_name === 'string' &&
     Array.isArray(profile.rewards_achievements) &&
     Array.isArray(profile.volunteering_experience) &&
     Array.isArray(profile.organizations) &&
-    Array.isArray(profile.keywords)
-  );
+    Array.isArray(profile.keywords);
+
+  if (!validTypes) {
+    console.error('Invalid field types in profile');
+    return false;
+  }
+
+  return true;
 }
 
 serve(async (req: Request) => {
@@ -59,7 +91,7 @@ serve(async (req: Request) => {
       console.error('Error parsing request body:', error);
       return new Response(
         JSON.stringify({
-          error: 'Invalid request body',
+          error: 'Invalid request body format',
           success: false,
           scholarships: []
         }),
@@ -71,13 +103,13 @@ serve(async (req: Request) => {
     }
 
     const { userProfile, page = 1, timestamp = Date.now() } = body;
-    console.log('Processing request for user profile:', userProfile?.id, 'page:', page, 'timestamp:', timestamp);
+    console.log('Processing request for user profile:', JSON.stringify(userProfile, null, 2));
 
     if (!userProfile || !validateUserProfile(userProfile)) {
       console.error('Invalid user profile format:', userProfile);
       return new Response(
         JSON.stringify({
-          error: 'Invalid user profile format',
+          error: 'Invalid user profile format - check function logs for details',
           success: false,
           scholarships: []
         }),
