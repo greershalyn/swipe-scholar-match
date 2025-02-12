@@ -121,6 +121,7 @@ When you create a profile and complete the questionnaire on SwipeScholar, we may
 - Academic details (such as GPA, test scores, and major)
 - Demographic information (such as residency status and extracurricular activities)
 - Any other information you voluntarily provide to enhance scholarship matching
+- Usage and device information through cookies and similar technologies
 
 3. How We Use Your Information
 We use your information to:
@@ -128,26 +129,59 @@ We use your information to:
 - Improve our scholarship recommendation algorithm
 - Communicate with you regarding scholarships and platform updates
 - Provide customer support
+- Deliver relevant advertising content
+- Analyze and improve our services
 
-4. Voluntary Submission of Academic Information
+4. Advertising
+Our platform includes third-party advertising to support our services. We work with third-party advertising partners who may use cookies and similar technologies to:
+- Serve you with personalized ads
+- Measure ad effectiveness
+- Prevent repeated ads
+- Better target advertisements to your interests
+
+Google AdSense and other advertising partners may use cookies to serve ads based on your prior visits to our website or other websites. You can opt out of personalized advertising by visiting:
+- Google's Ads Settings (https://www.google.com/settings/ads)
+- Network Advertising Initiative opt-out page (http://optout.networkadvertising.org/)
+
+5. Cookies and Tracking Technologies
+We and our advertising partners use cookies and similar tracking technologies to:
+- Remember your preferences
+- Understand how you use our platform
+- Deliver relevant advertisements
+- Measure the effectiveness of our services and advertising
+
+You can control cookies through your browser settings. However, disabling cookies may limit some features of our platform.
+
+6. Voluntary Submission of Academic Information
 SwipeScholar allows users to input academic details such as GPA and test scores at their own free will. This information is used solely to provide the most relevant scholarship matches. You are not required to submit academic information to use our platform, though doing so may enhance the accuracy of your matches.
 
-5. How We Protect Your Information
+7. How We Protect Your Information
 We implement industry-standard security measures to protect your personal data from unauthorized access, disclosure, or alteration. However, no method of electronic storage or transmission over the internet is 100% secure, and we cannot guarantee absolute security.
 
-6. Sharing Your Information
-SwipeScholar does not sell, rent, or trade your personal information. We may share your data only with:
+8. Sharing Your Information
+SwipeScholar does not sell your personal information. We may share your data with:
 - Scholarship providers and partners, but only with your consent
 - Service providers who assist us in operating our platform (under confidentiality agreements)
+- Advertising partners for targeted advertising purposes
 - Legal authorities if required by law
 
-7. Your Choices and Rights
-You may update or delete your profile information at any time. If you wish to opt out of communications or delete your account, you may do so through your account settings or by contacting us at contact@lewte.com.
+9. Your Choices and Rights
+You have the right to:
+- Update or delete your profile information
+- Opt out of marketing communications
+- Opt out of personalized advertising
+- Request access to your personal data
+- Delete your account
 
-8. Changes to This Privacy Policy
+To exercise these rights, contact us at contact@lewte.com.
+
+10. Children's Privacy
+Our service is not directed to children under 13. We do not knowingly collect information from children under 13. If you believe we have collected information from a child under 13, please contact us immediately.
+
+11. Changes to This Privacy Policy
 We may update this Privacy Policy from time to time. If we make significant changes, we will notify you via email or a notice on our platform.
 
-9. Contact Us
+12. Contact Us
 If you have any questions about this Privacy Policy, please contact us at contact@lewte.com.`,
     },
   };
