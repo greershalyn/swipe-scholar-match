@@ -102,6 +102,10 @@ const WalletPage = () => {
     };
   };
 
+  const handleBack = () => {
+    navigate('/');
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-4">
@@ -116,7 +120,7 @@ const WalletPage = () => {
         <Button 
           variant="ghost" 
           className="mr-4"
-          onClick={() => navigate(-1)}
+          onClick={handleBack}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
