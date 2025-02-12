@@ -26,43 +26,29 @@ export const fetchScholarships = async (page: number = 1, timestamp: number = Da
       throw new Error('User profile not found');
     }
 
-    // Ensure all required fields are present with default values if needed
+    // Convert numeric fields to proper format
     const normalizedUserProfile = {
-      id: userProfile.id,
-      full_name: userProfile.full_name || '',
-      birth_date: userProfile.birth_date || '',
-      gender: userProfile.gender || '',
-      ethnicity: userProfile.ethnicity || '',
-      address: userProfile.address || '',
-      city: userProfile.city || '',
-      state: userProfile.state || '',
-      zip_code: userProfile.zip_code || '',
-      gpa: userProfile.gpa || null,
-      sat_score: userProfile.sat_score || null,
-      act_score: userProfile.act_score || null,
-      current_education_level: userProfile.current_education_level || '',
-      intended_major: userProfile.intended_major || '',
-      first_generation_student: userProfile.first_generation_student || false,
-      essay_personal_statement: userProfile.essay_personal_statement || '',
-      rewards_achievements: userProfile.rewards_achievements || [],
-      volunteering_experience: userProfile.volunteering_experience || [],
-      organizations: userProfile.organizations || [],
-      keywords: userProfile.keywords || [],
-      high_school_graduated: userProfile.high_school_graduated || false
+      ...userProfile,
+      gpa: userProfile.gpa ? parseFloat(userProfile.gpa.toString()) : null,
+      sat_score: userProfile.sat_score ? parseInt(userProfile.sat_score.toString()) : null,
+      act_score: userProfile.act_score ? parseInt(userProfile.act_score.toString()) : null,
+      rewards_achievements: Array.isArray(userProfile.rewards_achievements) ? userProfile.rewards_achievements : [],
+      volunteering_experience: Array.isArray(userProfile.volunteering_experience) ? userProfile.volunteering_experience : [],
+      organizations: Array.isArray(userProfile.organizations) ? userProfile.organizations : [],
+      keywords: Array.isArray(userProfile.keywords) ? userProfile.keywords : [],
+      first_generation_student: Boolean(userProfile.first_generation_student),
+      high_school_graduated: Boolean(userProfile.high_school_graduated)
     };
 
     console.log('Calling discover-scholarships with normalized user profile:', normalizedUserProfile, 'page:', page, 'timestamp:', timestamp);
 
     // Call the discover-scholarships function to get AI-powered recommendations
     const { data, error } = await supabase.functions.invoke('discover-scholarships', {
-      body: { 
+      body: JSON.stringify({ 
         userProfile: normalizedUserProfile,
         page, 
         timestamp 
-      },
-      headers: {
-        'Content-Type': 'application/json',
-      }
+      })
     });
 
     if (error) {
