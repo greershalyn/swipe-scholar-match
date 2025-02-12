@@ -31,7 +31,7 @@ serve(async (req: Request) => {
           scholarships: []
         }),
         {
-          headers: corsHeaders,
+          headers: { ...corsHeaders },
           status: 500
         }
       );
@@ -50,7 +50,7 @@ serve(async (req: Request) => {
           scholarships: []
         }),
         {
-          headers: corsHeaders,
+          headers: { ...corsHeaders },
           status: 400
         }
       );
@@ -68,7 +68,7 @@ serve(async (req: Request) => {
           scholarships: []
         }),
         {
-          headers: corsHeaders,
+          headers: { ...corsHeaders },
           status: 400
         }
       );
@@ -100,7 +100,7 @@ serve(async (req: Request) => {
             scholarships: []
           }),
           {
-            headers: corsHeaders,
+            headers: { ...corsHeaders },
             status: 500
           }
         );
@@ -115,7 +115,7 @@ serve(async (req: Request) => {
             scholarships: []
           }),
           {
-            headers: corsHeaders,
+            headers: { ...corsHeaders },
             status: 500
           }
         );
@@ -128,7 +128,7 @@ serve(async (req: Request) => {
           scholarships: response.data.scholarships
         }),
         {
-          headers: corsHeaders,
+          headers: { ...corsHeaders },
           status: 200
         }
       );
@@ -142,7 +142,7 @@ serve(async (req: Request) => {
           scholarships: []
         }),
         {
-          headers: corsHeaders,
+          headers: { ...corsHeaders },
           status: 500
         }
       );
@@ -157,7 +157,7 @@ serve(async (req: Request) => {
         scholarships: []
       }),
       {
-        headers: corsHeaders,
+        headers: { ...corsHeaders },
         status: 500
       }
     );
