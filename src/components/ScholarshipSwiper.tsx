@@ -13,9 +13,10 @@ import { RefreshCw } from 'lucide-react';
 const ScholarshipSwiper = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState<'left' | 'right' | null>(null);
+  const [refreshTimestamp, setRefreshTimestamp] = useState(Date.now());
   const queryClient = useQueryClient();
 
-  const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage, refetch } = useScholarships();
+  const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } = useScholarships();
 
   // Flatten all pages of scholarships into a single array
   const allScholarships = data?.pages.flatMap(page => page.scholarships) || [];
@@ -34,7 +35,8 @@ const ScholarshipSwiper = () => {
     isLoading,
     error,
     hasNextPage,
-    isFetchingNextPage
+    isFetchingNextPage,
+    refreshTimestamp
   });
 
   const saveMutation = useMutation({
@@ -91,10 +93,11 @@ const ScholarshipSwiper = () => {
 
   const handleRefresh = async () => {
     setCurrentIndex(0);
+    setRefreshTimestamp(Date.now());
     // Remove all existing scholarship data from the cache
     queryClient.removeQueries({ queryKey: ['scholarships'] });
-    // Then refetch with fresh data
-    await refetch();
+    // Force a new fetch by invalidating the queries
+    queryClient.invalidateQueries({ queryKey: ['scholarships'] });
     toast({
       title: "Refreshing Scholarships",
       description: "Looking for new scholarship opportunities...",
@@ -149,7 +152,7 @@ const ScholarshipSwiper = () => {
       <AnimatePresence mode="wait">
         {allScholarships[currentIndex] && (
           <ScholarshipCard
-            key={currentIndex}
+            key={`${currentIndex}-${refreshTimestamp}`}
             scholarship={allScholarships[currentIndex]}
             onSwipe={handleSwipe}
           />
