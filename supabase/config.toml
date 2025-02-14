@@ -8,6 +8,3 @@ verify_jwt = false
 [functions.openai-scholarship-search]
 verify_jwt = false
 
-[functions.store-scholarships]
-verify_jwt = false
-
