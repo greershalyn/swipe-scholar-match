@@ -34,15 +34,24 @@ export function transformScholarships(scholarshipsData: any) {
         // Check for common scholarship domains
         const validDomains = [
           '.edu',
+          '.gov',
           'fastweb.com',
           'scholarships.com',
           'unigo.com',
           'cappex.com',
           'chegg.com',
-          'collegeboard.org'
+          'collegeboard.org',
+          'petersons.com',
+          'niche.com',
+          'salliemae.com',
+          'studentaid.gov',
+          'nsf.gov',
+          'nacme.org'
         ];
         return validDomains.some(domain => parsedUrl.hostname.endsWith(domain)) ||
-               parsedUrl.protocol === 'https:';
+               (parsedUrl.protocol === 'https:' && 
+                !parsedUrl.hostname.includes('example.com') &&
+                !parsedUrl.hostname.includes('placeholder'));
       } catch {
         return false;
       }
@@ -50,7 +59,7 @@ export function transformScholarships(scholarshipsData: any) {
 
     // Generate a fallback URL for search
     const getFallbackUrl = (title: string, provider: string): string => {
-      const searchQuery = encodeURIComponent(`${title} ${provider} scholarship`);
+      const searchQuery = encodeURIComponent(`${title} ${provider} scholarship application`);
       return `https://www.google.com/search?q=${searchQuery}`;
     };
 
