@@ -24,7 +24,7 @@ export const fetchScholarships = async (page: number = 1, timestamp: number = Da
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       if (profileError) {
         console.error('Error fetching user profile:', profileError);
@@ -47,7 +47,7 @@ export const fetchScholarships = async (page: number = 1, timestamp: number = Da
             userProfile,
             page,
             timestamp,
-            forceRefresh: true // Always force refresh to get new scholarships
+            forceRefresh: page === 1 // Only force refresh on first page
           }
         }
       );
@@ -65,18 +65,28 @@ export const fetchScholarships = async (page: number = 1, timestamp: number = Da
       }
 
       // Get all swiped scholarship IDs for the current user
-      const { data: swipedScholarships } = await supabase
+      const { data: swipedScholarships, error: swipeError } = await supabase
         .from('swiped_scholarships')
         .select('scholarship_id, swiped_right')
         .eq('profile_id', user.id);
 
+      if (swipeError) {
+        console.error('Error fetching swiped scholarships:', swipeError);
+        throw swipeError;
+      }
+
       console.log('Swiped scholarships:', swipedScholarships);
 
       // Get saved scholarship IDs
-      const { data: savedScholarships } = await supabase
+      const { data: savedScholarships, error: savedError } = await supabase
         .from('saved_scholarships')
         .select('scholarship_id')
         .eq('profile_id', user.id);
+
+      if (savedError) {
+        console.error('Error fetching saved scholarships:', savedError);
+        throw savedError;
+      }
 
       console.log('Saved scholarships:', savedScholarships);
 

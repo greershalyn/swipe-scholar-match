@@ -1,4 +1,5 @@
 
 project_id = "cewxnkpihtujqbwbzjcv"
-[discover-scholarships]
-verify_jwt = false
+
+[functions.discover-scholarships]
+verify_jwt = true
