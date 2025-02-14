@@ -91,9 +91,6 @@ serve(async (req: Request) => {
 
     // Parse request body with more detailed error handling
     let body;
-    const contentType = req.headers.get('content-type');
-    console.log('Request content type:', contentType);
-    
     try {
       const text = await req.text();
       console.log('Raw request body:', text);

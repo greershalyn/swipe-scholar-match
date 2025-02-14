@@ -2,14 +2,14 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
+const openAiApiKey = Deno.env.get('OPENAI_API_KEY');
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
   'Content-Type': 'application/json'
 };
-
-const openAiApiKey = Deno.env.get('OPENAI_API_KEY')!;
 
 const TRUSTED_SCHOLARSHIP_DOMAINS = [
   'scholarshipowl.com',
@@ -115,7 +115,7 @@ serve(async (req: Request) => {
       - category: string (use "Local" for location-specific scholarships)
     `;
 
-    console.log('Sending prompt to OpenAI');
+    console.log('Sending prompt to OpenAI:', searchPrompt);
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -148,7 +148,7 @@ serve(async (req: Request) => {
     }
 
     const data = await response.json();
-    console.log('OpenAI API response received');
+    console.log('OpenAI API response received:', data);
     
     if (!data.choices?.[0]?.message?.content) {
       throw new Error('Invalid response format from OpenAI');
@@ -157,7 +157,7 @@ serve(async (req: Request) => {
     let scholarships;
     try {
       scholarships = JSON.parse(data.choices[0].message.content);
-      console.log('Successfully parsed scholarships data');
+      console.log('Successfully parsed scholarships data:', scholarships);
     } catch (parseError) {
       console.error('Error parsing OpenAI response:', parseError);
       throw new Error('Failed to parse OpenAI response');
@@ -215,6 +215,8 @@ serve(async (req: Request) => {
       // If location relevance is the same, sort by amount
       return b.amount - a.amount;
     });
+    
+    console.log('Returning sorted and verified scholarships:', sortedScholarships);
     
     return new Response(
       JSON.stringify({ scholarships: sortedScholarships }), 
