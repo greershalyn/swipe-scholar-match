@@ -60,7 +60,7 @@ serve(async (req: Request) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4',
         messages: [
           {
             role: 'system',
@@ -80,15 +80,25 @@ serve(async (req: Request) => {
     }
 
     const data = await response.json();
-    const scholarships = JSON.parse(data.choices[0].message.content);
+    
+    if (!data.choices?.[0]?.message?.content) {
+      throw new Error('No content in OpenAI response');
+    }
 
-    return new Response(
-      JSON.stringify(scholarships),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      }
-    );
+    try {
+      const scholarships = JSON.parse(data.choices[0].message.content);
+      return new Response(
+        JSON.stringify(scholarships),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200 
+        }
+      );
+    } catch (parseError) {
+      console.error('Error parsing OpenAI response:', parseError);
+      console.log('Raw content:', data.choices[0].message.content);
+      throw new Error('Invalid JSON in OpenAI response');
+    }
   } catch (error) {
     console.error('Error in openai-scholarship-search function:', error);
     return new Response(

@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Scholarship } from '../types/scholarship';
 import { saveScholarshipToDb, recordScholarshipSwipe } from './scholarship/dbOperations';
@@ -60,7 +61,6 @@ export const fetchScholarships = async (page: number = 1, timestamp: number = Da
 
       console.log('Calling discover-scholarships with normalized user profile:', normalizedUserProfile, 'page:', page, 'timestamp:', timestamp);
 
-      // Call the discover-scholarships function with proper headers
       const { data, error } = await supabase.functions.invoke(
         'discover-scholarships',
         {
@@ -68,9 +68,6 @@ export const fetchScholarships = async (page: number = 1, timestamp: number = Da
             userProfile: normalizedUserProfile,
             page,
             timestamp
-          },
-          headers: {
-            'Content-Type': 'application/json',
           }
         }
       );
