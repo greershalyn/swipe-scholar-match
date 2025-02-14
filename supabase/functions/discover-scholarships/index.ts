@@ -29,13 +29,12 @@ serve(async (req: Request) => {
       throw new Error('Content-Type must be application/json');
     }
 
-    const { userProfile } = await req.json();
+    const requestData = await req.json();
+    console.log('Request data:', JSON.stringify(requestData, null, 2));
 
-    if (!userProfile) {
+    if (!requestData.userProfile) {
       throw new Error('User profile is required');
     }
-
-    console.log('Received request with userProfile:', JSON.stringify(userProfile, null, 2));
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -48,57 +47,73 @@ serve(async (req: Request) => {
 
     console.log('Calling openai-scholarship-search function...');
 
-    // Call openai-scholarship-search function
-    const { data: aiResponse, error: aiError } = await supabase.functions.invoke(
-      'openai-scholarship-search',
-      {
-        body: { userProfile }
+    // Call openai-scholarship-search function with explicit error handling
+    try {
+      const { data: aiResponse, error: aiError } = await supabase.functions.invoke(
+        'openai-scholarship-search',
+        {
+          body: { userProfile: requestData.userProfile }
+        }
+      );
+
+      if (aiError) {
+        console.error('Error from openai-scholarship-search:', aiError);
+        throw aiError;
       }
-    );
 
-    if (aiError) {
-      console.error('Error from openai-scholarship-search:', aiError);
-      throw aiError;
-    }
+      if (!aiResponse) {
+        throw new Error('No response from AI search');
+      }
 
-    if (!aiResponse?.scholarships) {
-      console.log('No scholarships returned from AI search');
+      console.log('AI Response:', JSON.stringify(aiResponse, null, 2));
+
+      if (!aiResponse.scholarships || !Array.isArray(aiResponse.scholarships)) {
+        console.log('No scholarships or invalid format returned from AI search');
+        return new Response(
+          JSON.stringify({ 
+            success: true,
+            scholarships: [] 
+          }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200 
+          }
+        );
+      }
+
+      // Process scholarships to ensure they have valid data
+      const scholarships = aiResponse.scholarships.map(scholarship => {
+        // Remove any existing ID to let Supabase handle UUID generation
+        const { id, ...rest } = scholarship;
+        return {
+          ...rest,
+          url: rest.url || `https://example.com/scholarship/${crypto.randomUUID()}`,
+          requirements: Array.isArray(rest.requirements) ? rest.requirements : [],
+          category: rest.category || 'General',
+          amount: typeof rest.amount === 'number' ? rest.amount : 0,
+          deadline: rest.deadline || new Date().toISOString(),
+          description: rest.description || '',
+          provider: rest.provider || 'Unknown Provider',
+          title: rest.title || 'Untitled Scholarship'
+        };
+      });
+
+      console.log('Processed scholarships:', JSON.stringify(scholarships, null, 2));
+
       return new Response(
         JSON.stringify({ 
           success: true,
-          scholarships: [] 
+          scholarships 
         }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 200 
         }
       );
+    } catch (aiError) {
+      console.error('Error in AI scholarship search:', aiError);
+      throw new Error(`AI search failed: ${aiError.message}`);
     }
-
-    // Process scholarships to ensure they have valid data
-    const scholarships = aiResponse.scholarships.map(scholarship => {
-      // Remove any existing ID to let Supabase handle UUID generation
-      const { id, ...rest } = scholarship;
-      return {
-        ...rest,
-        url: rest.url || `https://example.com/scholarship/${crypto.randomUUID()}`,
-        requirements: Array.isArray(rest.requirements) ? rest.requirements : [],
-        category: rest.category || 'General'
-      };
-    });
-
-    console.log('Processed scholarships:', JSON.stringify(scholarships, null, 2));
-
-    return new Response(
-      JSON.stringify({ 
-        success: true,
-        scholarships 
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      }
-    );
   } catch (error) {
     console.error('Error in discover-scholarships function:', error);
     return new Response(
@@ -109,7 +124,7 @@ serve(async (req: Request) => {
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: error.status || 500 
+        status: 200 // Return 200 even for errors to ensure the error message gets through
       }
     );
   }
