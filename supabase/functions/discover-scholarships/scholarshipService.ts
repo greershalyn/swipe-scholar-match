@@ -86,9 +86,3 @@ export async function insertScholarships(supabase: ReturnType<typeof createClien
   console.log(`Successfully inserted ${insertedScholarships.length} new scholarships`);
   return insertedScholarships;
 }
-
-export function generateScholarshipUrl(title: string, provider: string): string {
-  const normalizedProvider = provider.toLowerCase().replace(/\s+/g, '-');
-  const normalizedTitle = title.toLowerCase().replace(/\s+/g, '-');
-  return `https://www.scholarships.com/${normalizedProvider}/${normalizedTitle}`;
-}

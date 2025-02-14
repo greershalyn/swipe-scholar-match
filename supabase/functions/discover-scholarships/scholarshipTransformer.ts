@@ -1,6 +1,4 @@
 
-import { generateScholarshipUrl } from './scholarshipService.ts';
-
 export function transformScholarships(scholarshipsData: any) {
   console.log('Transforming scholarships data:', JSON.stringify(scholarshipsData, null, 2));
 
@@ -23,6 +21,22 @@ export function transformScholarships(scholarshipsData: any) {
     const deadline = new Date();
     deadline.setMonth(deadline.getMonth() + 3);
 
+    // Validate and clean URL
+    const url = s.source_url && typeof s.source_url === 'string' ? 
+      s.source_url.trim() : 
+      null;
+
+    // Basic URL validation
+    const isValidUrl = (url: string | null): boolean => {
+      if (!url) return false;
+      try {
+        new URL(url);
+        return true;
+      } catch {
+        return false;
+      }
+    };
+
     const transformed = {
       id: crypto.randomUUID(),
       title: String(s.title || '').trim(),
@@ -32,13 +46,13 @@ export function transformScholarships(scholarshipsData: any) {
         s.requirements.map((r: any) => String(r)) : 
         [],
       provider: String(s.provider || 'Unknown Provider').trim(),
-      url: generateScholarshipUrl(s.title || '', s.provider || 'Unknown Provider'),
+      url: isValidUrl(url) ? url : null, // Use the actual source URL if valid
       description: String(s.description || '').trim(),
       category: String(s.category || 'General').trim(),
       is_active: true,
       verified: false,
       last_verified_at: new Date().toISOString(),
-      source_url: null,
+      source_url: isValidUrl(url) ? url : null,
       match_score: null,
       created_at: new Date().toISOString()
     };

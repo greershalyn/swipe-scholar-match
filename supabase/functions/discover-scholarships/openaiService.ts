@@ -1,4 +1,3 @@
-
 import { UserProfile } from './types.ts';
 
 export async function generateScholarships(openAiApiKey: string, userProfile: UserProfile) {
@@ -18,7 +17,7 @@ export async function generateScholarships(openAiApiKey: string, userProfile: Us
         {
           role: 'system',
           content: `You are a scholarship database API. Always return a JSON object with a "scholarships" array containing exactly 10 scholarships.
-            Each scholarship must include all required fields and be properly formatted.`
+            Each scholarship must include all required fields and be properly formatted. Include real URLs where students can apply.`
         },
         {
           role: 'user',
@@ -32,7 +31,8 @@ export async function generateScholarships(openAiApiKey: string, userProfile: Us
               "requirements": string[],
               "provider": "string",
               "description": "string",
-              "category": "Local" | "State" | "Field-specific" | "Demographic" | "General"
+              "category": "Local" | "State" | "Field-specific" | "Demographic" | "General",
+              "source_url": "string (direct URL to the scholarship application/information page)"
             }`
         }
       ],
