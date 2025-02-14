@@ -10,3 +10,4 @@ verify_jwt = false
 
 [functions.store-scholarships]
 verify_jwt = false
+
