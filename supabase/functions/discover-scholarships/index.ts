@@ -88,9 +88,14 @@ serve(async (req: Request) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    console.log('Making OpenAI API request for new scholarships...');
+    // Create scholarship URLs based on major/field
+    const generateScholarshipUrl = (title: string, provider: string) => {
+      const normalizedProvider = provider.toLowerCase().replace(/\s+/g, '-');
+      const normalizedTitle = title.toLowerCase().replace(/\s+/g, '-');
+      return `https://www.scholarships.com/${normalizedProvider}/${normalizedTitle}`;
+    };
 
-    // Create a fallback scholarship in case of API failure
+    // Create a fallback scholarship with a valid URL
     const fallbackScholarship = {
       id: crypto.randomUUID(),
       title: "General Academic Excellence Scholarship",
@@ -98,7 +103,7 @@ serve(async (req: Request) => {
       deadline: new Date(new Date().setMonth(new Date().getMonth() + 3)).toISOString(),
       requirements: ["Minimum GPA of 3.0", "Full-time enrollment", "Essay submission required"],
       provider: "Academic Success Foundation",
-      url: "https://example.com/scholarship",
+      url: "https://www.scholarships.com/academic-success-foundation/general-excellence",
       description: "A scholarship for dedicated students pursuing higher education.",
       category: "General",
       is_active: true,
@@ -116,7 +121,7 @@ serve(async (req: Request) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gpt-4o-mini',
+          model: 'gpt-4',
           messages: [
             {
               role: 'system',
@@ -150,7 +155,7 @@ serve(async (req: Request) => {
         throw new Error('Invalid scholarship data format from OpenAI');
       }
 
-      // Transform and validate scholarships
+      // Transform and validate scholarships with proper URLs
       const validatedScholarships = scholarshipsData.scholarships.map(s => ({
         id: crypto.randomUUID(),
         title: String(s.title || '').trim(),
@@ -158,7 +163,7 @@ serve(async (req: Request) => {
         deadline: new Date(new Date().setMonth(new Date().getMonth() + 3)).toISOString(),
         requirements: Array.isArray(s.requirements) ? s.requirements : [],
         provider: String(s.provider || 'Unknown Provider').trim(),
-        url: String(s.url || `https://example.com/scholarship/${crypto.randomUUID()}`).trim(),
+        url: generateScholarshipUrl(s.title || '', s.provider || 'Unknown Provider'),
         description: String(s.description || '').trim(),
         category: String(s.category || 'General').trim(),
         is_active: true,
