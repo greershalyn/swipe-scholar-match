@@ -78,7 +78,7 @@ serve(async (req: Request) => {
     }
 
     const searchPrompt = `
-      Find 5 currently available scholarships for a student with the following profile:
+      Find 10 currently available scholarships for a student with the following profile:
       - Major: ${userProfile.intended_major || 'Any'}
       - GPA: ${userProfile.gpa || 'Not specified'}
       - Education Level: ${userProfile.current_education_level || 'Any'}
@@ -101,6 +101,7 @@ serve(async (req: Request) => {
       6. Requirements must be specific and match the actual scholarship criteria.
       7. Description should include key details about the scholarship purpose and eligibility.
       8. If location information is provided, explicitly mention any local relevance in the description.
+      9. Make sure to provide EXACTLY 10 unique scholarships, each with different requirements and amounts.
       
       Return ONLY valid JSON with a "scholarships" array containing these fields:
       - id: string (UUID v4)

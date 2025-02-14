@@ -22,8 +22,8 @@ const ScholarshipSwiper = () => {
   const allScholarships = data?.pages.flatMap(page => page.scholarships) || [];
 
   useEffect(() => {
-    // Pre-fetch next page when user is 2 cards away from the end
-    if (allScholarships.length - currentIndex <= 2 && !isFetchingNextPage && hasNextPage) {
+    // Pre-fetch next page when user is 4 cards away from the end
+    if (allScholarships.length - currentIndex <= 4 && !isFetchingNextPage && hasNextPage) {
       console.log('Fetching next page of scholarships...');
       fetchNextPage();
     }

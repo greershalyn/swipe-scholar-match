@@ -17,8 +17,8 @@ export const useScholarships = () => {
         // Add timestamp to ensure we get fresh data on refresh
         const data = await fetchScholarships(pageParam as number, Date.now());
         console.log('Received scholarships data:', data);
-        // If we got less than 5 scholarships, there are no more pages
-        const hasMorePages = data && data.length === 5;
+        // If we got less than 10 scholarships, there are no more pages
+        const hasMorePages = data && data.length === 10;
         return {
           scholarships: data || [],
           nextPage: hasMorePages ? (pageParam as number) + 1 : undefined,
