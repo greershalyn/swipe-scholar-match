@@ -152,7 +152,10 @@ serve(async (req: Request) => {
         try {
           const { error: insertError } = await supabase
             .from('scholarships')
-            .insert([scholarship])
+            .upsert([scholarship], { 
+              onConflict: 'id',
+              ignoreDuplicates: false 
+            })
             .select()
             .single();
 
