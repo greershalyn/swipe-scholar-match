@@ -17,7 +17,7 @@ const ScholarshipSwiper = () => {
   const [refreshTimestamp, setRefreshTimestamp] = useState(Date.now());
   const queryClient = useQueryClient();
 
-  const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } = useScholarships();
+  const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage, refetch } = useScholarships(refreshTimestamp);
 
   // Flatten all pages of scholarships into a single array
   const allScholarships = data?.pages.flatMap(page => page.scholarships) || [];
@@ -104,9 +104,10 @@ const ScholarshipSwiper = () => {
 
   const handleRefresh = async () => {
     setCurrentIndex(0);
-    setRefreshTimestamp(Date.now());
+    const newTimestamp = Date.now();
+    setRefreshTimestamp(newTimestamp);
     queryClient.removeQueries({ queryKey: ['scholarships'] });
-    queryClient.invalidateQueries({ queryKey: ['scholarships'] });
+    await refetch();
     toast({
       title: "Refreshing Scholarships",
       description: "Looking for new scholarship opportunities...",
@@ -140,7 +141,7 @@ const ScholarshipSwiper = () => {
     );
   }
 
-  if (currentIndex >= allScholarships.length && !hasNextPage) {
+  if (currentIndex >= allScholarships.length) {
     return (
       <div className="flex items-center justify-center h-[600px]">
         <Button 
