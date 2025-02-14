@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Scholarship } from '../types/scholarship';
 import { saveScholarshipToDb, recordScholarshipSwipe } from './scholarship/dbOperations';
@@ -76,47 +75,30 @@ export const fetchScholarships = async (page: number = 1, timestamp: number = Da
       return [];
     }
 
-    // First, insert the scholarships into the scholarships table if they don't exist
-    for (const scholarship of data.scholarships) {
-      const { id: _, ...scholarshipData } = scholarship;
-      
-      // First try to find existing scholarship by URL using maybeSingle()
-      const { data: existingScholarship, error: queryError } = await supabase
+    // Batch insert new scholarships
+    const newScholarships = data.scholarships.map(({ id: _, ...scholarship }) => ({
+      ...scholarship,
+      title: scholarship.title,
+      amount: scholarship.amount,
+      deadline: scholarship.deadline,
+      provider: scholarship.provider,
+      url: scholarship.url,
+      description: scholarship.description,
+      category: scholarship.category || 'General',
+      requirements: scholarship.requirements || [],
+    }));
+
+    // Use upsert with the url as the conflict target
+    if (newScholarships.length > 0) {
+      const { error: upsertError } = await supabase
         .from('scholarships')
-        .select('id')
-        .eq('url', scholarshipData.url)
-        .maybeSingle();
+        .upsert(newScholarships, {
+          onConflict: 'url',
+          ignoreDuplicates: true
+        });
 
-      if (queryError) {
-        console.error('Error checking existing scholarship:', queryError);
-        continue; // Skip this scholarship if there's an error checking it
-      }
-
-      if (!existingScholarship) {
-        try {
-          // If it doesn't exist, insert new scholarship
-          const { error: insertError } = await supabase
-            .from('scholarships')
-            .insert([{
-              ...scholarshipData,
-              title: scholarshipData.title,
-              amount: scholarshipData.amount,
-              deadline: scholarshipData.deadline,
-              provider: scholarshipData.provider,
-              url: scholarshipData.url,
-              description: scholarshipData.description,
-              category: scholarshipData.category || 'General',
-              requirements: scholarshipData.requirements || [],
-            }]);
-
-          if (insertError) {
-            console.error('Error inserting scholarship:', insertError, scholarshipData);
-            continue; // Skip this scholarship if insertion fails
-          }
-        } catch (insertError) {
-          console.error('Exception inserting scholarship:', insertError);
-          continue; // Skip this scholarship if insertion throws
-        }
+      if (upsertError) {
+        console.error('Error upserting scholarships:', upsertError);
       }
     }
 

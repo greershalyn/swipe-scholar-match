@@ -71,6 +71,8 @@ serve(async (req: Request) => {
       };
     });
 
+    console.log('Processed scholarships:', scholarships);
+
     return new Response(
       JSON.stringify({ 
         success: true,
