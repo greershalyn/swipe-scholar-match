@@ -54,20 +54,13 @@ export const fetchScholarships = async (page: number = 1, timestamp: number = Da
     console.log('Calling discover-scholarships with normalized user profile:', normalizedUserProfile, 'page:', page, 'timestamp:', timestamp);
 
     // Call the discover-scholarships function to get AI-powered recommendations
-    const requestBody = {
-      userProfile: normalizedUserProfile,
-      page,
-      timestamp
-    };
-
-    console.log('Sending request body:', JSON.stringify(requestBody, null, 2));
-
     const { data, error } = await supabase.functions.invoke(
       'discover-scholarships',
       {
-        body: requestBody,
-        headers: {
-          'Content-Type': 'application/json'
+        body: {
+          userProfile: normalizedUserProfile,
+          page,
+          timestamp
         }
       }
     );

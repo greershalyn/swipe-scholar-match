@@ -13,8 +13,10 @@ export const useScholarships = () => {
     queryKey: ['scholarships'],
     queryFn: async ({ pageParam = 1 }) => {
       try {
+        console.log('Fetching scholarships page:', pageParam);
         // Add timestamp to ensure we get fresh data on refresh
         const data = await fetchScholarships(pageParam as number, Date.now());
+        console.log('Received scholarships data:', data);
         // If we got less than 5 scholarships, there are no more pages
         const hasMorePages = data && data.length === 5;
         return {
@@ -23,11 +25,7 @@ export const useScholarships = () => {
         };
       } catch (error) {
         console.error('Error in useScholarships:', error);
-        // Return empty data instead of throwing
-        return {
-          scholarships: [],
-          nextPage: undefined,
-        };
+        throw error; // Let the error boundary handle it
       }
     },
     getNextPageParam: (lastPage) => lastPage.nextPage,
