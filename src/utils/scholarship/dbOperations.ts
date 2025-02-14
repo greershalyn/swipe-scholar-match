@@ -7,7 +7,19 @@ export const saveScholarshipToDb = async (scholarshipId: string) => {
   if (!user) throw new Error('Must be logged in to save scholarships');
 
   try {
-    // First check if scholarship is already swiped
+    // First check if the scholarship exists
+    const { data: existingScholarship, error: scholarshipError } = await supabase
+      .from('scholarships')
+      .select('id')
+      .eq('id', scholarshipId)
+      .single();
+
+    if (scholarshipError || !existingScholarship) {
+      console.error('Scholarship does not exist:', scholarshipError);
+      throw new Error('This scholarship is no longer available');
+    }
+
+    // Check if scholarship is already swiped
     const { data: existingSwipe, error: swipeError } = await supabase
       .from('swiped_scholarships')
       .select('id')
@@ -78,6 +90,18 @@ export const recordScholarshipSwipe = async (scholarshipId: string, swipedRight:
   if (!user) throw new Error('Must be logged in');
 
   try {
+    // First check if the scholarship exists
+    const { data: existingScholarship, error: scholarshipError } = await supabase
+      .from('scholarships')
+      .select('id')
+      .eq('id', scholarshipId)
+      .single();
+
+    if (scholarshipError || !existingScholarship) {
+      console.error('Scholarship does not exist:', scholarshipError);
+      throw new Error('This scholarship is no longer available');
+    }
+
     // First check if scholarship is already swiped
     const { data: existingSwipe, error: checkError } = await supabase
       .from('swiped_scholarships')
