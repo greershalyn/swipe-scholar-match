@@ -77,12 +77,22 @@ const ScholarshipSwiper = () => {
   const handleSwipe = async (direction: 'left' | 'right') => {
     setDirection(direction);
     
-    if (allScholarships[currentIndex]) {
+    const currentScholarship = allScholarships[currentIndex];
+    
+    if (currentScholarship?.id) { // Add null check for scholarship and its ID
+      console.log('Handling swipe for scholarship:', currentScholarship.id);
       if (direction === 'right') {
-        saveMutation.mutate(allScholarships[currentIndex].id);
+        saveMutation.mutate(currentScholarship.id);
       } else {
-        leftSwipeMutation.mutate(allScholarships[currentIndex].id);
+        leftSwipeMutation.mutate(currentScholarship.id);
       }
+    } else {
+      console.error('No valid scholarship ID found for current index:', currentIndex);
+      toast({
+        title: "Error",
+        description: "Could not process this scholarship. Please try again.",
+        variant: "destructive",
+      });
     }
     
     setTimeout(() => {
