@@ -6,20 +6,15 @@ const openAiApiKey = Deno.env.get('OPENAI_API_KEY');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': '*',
-  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-  'Access-Control-Request-Headers': '*',
-  'Content-Type': 'application/json'
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
 serve(async (req: Request) => {
-  console.log('Received request to openai-scholarship-search:', req.method);
-  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 204,
-      headers: corsHeaders
+    return new Response(null, { 
+      headers: corsHeaders,
+      status: 204
     });
   }
 
@@ -29,24 +24,16 @@ serve(async (req: Request) => {
     }
 
     const { userProfile } = await req.json();
-    console.log('Processing scholarship search for user profile:', userProfile);
 
     const currentDate = new Date();
     const sixMonthsFromNow = new Date();
     sixMonthsFromNow.setMonth(currentDate.getMonth() + 6);
 
-    // Build location context from user profile
-    const locationContext = [];
-    if (userProfile.city && userProfile.state) {
-      locationContext.push(`- City: ${userProfile.city}`);
-      locationContext.push(`- State: ${userProfile.state}`);
-    }
-
     const searchPrompt = `
       Find 10 currently available scholarships for a student with the following profile:
       - Major: ${userProfile.intended_major || 'Any'}
       - Education Level: ${userProfile.current_education_level || 'Any'}
-      - Location: ${locationContext.join(', ') || 'Not specified'}
+      - Location: ${userProfile.state ? `${userProfile.state}, USA` : 'Any'}
       
       Requirements:
       1. Provide EXACTLY 10 unique scholarships
@@ -56,18 +43,16 @@ serve(async (req: Request) => {
       5. Include specific eligibility criteria
       
       Return ONLY valid JSON with a "scholarships" array containing these fields for each scholarship:
-      - id (UUID v4)
-      - title
+      - title (string)
       - amount (number)
-      - deadline (ISO date)
+      - deadline (ISO date string)
       - requirements (string array)
-      - provider
-      - url
-      - description
-      - category
+      - provider (string)
+      - url (string)
+      - description (string)
+      - category (string)
     `;
 
-    console.log('Sending request to OpenAI...');
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -91,38 +76,29 @@ serve(async (req: Request) => {
     });
 
     if (!response.ok) {
-      const errorData = await response.text();
-      console.error('OpenAI API error:', errorData);
       throw new Error(`OpenAI API error: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log('OpenAI API response received:', data);
-
-    if (!data.choices?.[0]?.message?.content) {
-      throw new Error('Invalid response format from OpenAI');
-    }
-
     const scholarships = JSON.parse(data.choices[0].message.content);
-    console.log('Successfully parsed scholarships:', scholarships);
 
     return new Response(
       JSON.stringify(scholarships),
-      {
-        headers: corsHeaders,
-        status: 200
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200 
       }
     );
   } catch (error) {
     console.error('Error in openai-scholarship-search function:', error);
     return new Response(
-      JSON.stringify({
-        error: error.message || 'An unexpected error occurred',
-        scholarships: []
+      JSON.stringify({ 
+        error: error.message,
+        scholarships: [] 
       }),
-      {
-        headers: corsHeaders,
-        status: 500
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500 
       }
     );
   }

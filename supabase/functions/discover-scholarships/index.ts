@@ -5,146 +5,93 @@ import { UserProfile } from './types.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': '*',
-  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-  'Access-Control-Request-Headers': '*',
-  'Content-Type': 'application/json'
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-function validateUserProfile(profile: any): profile is UserProfile {
-  if (!profile) {
-    console.error('Profile is null or undefined');
-    return false;
-  }
-
-  const requiredFields = [
-    'id', 'full_name', 'birth_date', 'gender', 'ethnicity',
-    'address', 'city', 'state', 'zip_code', 'current_education_level',
-    'intended_major', 'first_generation_student', 'essay_personal_statement',
-    'rewards_achievements', 'volunteering_experience', 'organizations',
-    'keywords', 'high_school_graduated'
-  ];
-
-  const missingFields = requiredFields.filter(field => {
-    const value = profile[field];
-    if (field === 'birth_date') return false;
-    if (Array.isArray(value)) return false;
-    return value === undefined;
-  });
-
-  if (missingFields.length > 0) {
-    console.error('Missing required fields:', missingFields);
-    return false;
-  }
-
-  return true;
-}
-
 serve(async (req: Request) => {
-  console.log('Received request:', req.method);
-  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 204,
-      headers: corsHeaders
+    return new Response(null, { 
+      headers: corsHeaders,
+      status: 204
     });
   }
 
   try {
-    console.log('Processing request body...');
-    const body = await req.json().catch(err => {
-      console.error('Error parsing request body:', err);
-      throw new Error('Invalid request body');
-    });
+    const { userProfile } = await req.json();
 
-    console.log('Received body:', body);
-
-    const { userProfile } = body;
-    
     if (!userProfile) {
-      console.error('No user profile provided');
-      return new Response(
-        JSON.stringify({
-          error: 'No user profile provided',
-          success: false,
-          scholarships: []
-        }),
-        {
-          headers: corsHeaders,
-          status: 400
-        }
-      );
-    }
-
-    if (!validateUserProfile(userProfile)) {
-      console.error('Invalid user profile format:', userProfile);
-      return new Response(
-        JSON.stringify({
-          error: 'Invalid user profile format',
-          success: false,
-          scholarships: []
-        }),
-        {
-          headers: corsHeaders,
-          status: 400
-        }
-      );
+      throw new Error('User profile is required');
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     if (!supabaseUrl || !supabaseKey) {
-      console.error('Missing Supabase configuration');
+      throw new Error('Missing Supabase configuration');
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Call openai-scholarship-search function
+    const { data: aiResponse, error: aiError } = await supabase.functions.invoke(
+      'openai-scholarship-search',
+      {
+        body: { userProfile }
+      }
+    );
+
+    if (aiError) {
+      console.error('Error from openai-scholarship-search:', aiError);
+      throw aiError;
+    }
+
+    if (!aiResponse?.scholarships) {
       return new Response(
-        JSON.stringify({
-          error: 'Server configuration error',
-          success: false,
-          scholarships: []
+        JSON.stringify({ 
+          success: true,
+          scholarships: [] 
         }),
-        {
-          headers: corsHeaders,
-          status: 500
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200 
         }
       );
     }
 
-    console.log('Creating Supabase client...');
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    console.log('Calling openai-scholarship-search function...');
-    const response = await supabase.functions.invoke('openai-scholarship-search', {
-      body: { userProfile }
+    // Process scholarships to ensure they have valid data
+    const scholarships = aiResponse.scholarships.map(scholarship => {
+      // Remove any existing ID to let Supabase handle UUID generation
+      const { id, ...rest } = scholarship;
+      return {
+        ...rest,
+        url: rest.url || `https://example.com/scholarship/${crypto.randomUUID()}`,
+        requirements: Array.isArray(rest.requirements) ? rest.requirements : [],
+        category: rest.category || 'General'
+      };
     });
 
-    if (response.error) {
-      console.error('Error from openai-scholarship-search:', response.error);
-      throw response.error;
-    }
-
-    console.log('Successfully received scholarships:', response.data);
     return new Response(
-      JSON.stringify({
+      JSON.stringify({ 
         success: true,
-        scholarships: response.data?.scholarships || []
+        scholarships 
       }),
-      {
-        headers: corsHeaders,
-        status: 200
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200 
       }
     );
   } catch (error) {
     console.error('Error in discover-scholarships function:', error);
     return new Response(
-      JSON.stringify({
-        error: error.message || 'An unexpected error occurred',
+      JSON.stringify({ 
         success: false,
-        scholarships: []
+        error: error.message,
+        scholarships: [] 
       }),
-      {
-        headers: corsHeaders,
-        status: 500
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500 
       }
     );
   }
