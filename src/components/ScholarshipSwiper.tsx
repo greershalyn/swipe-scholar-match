@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import ScholarshipCard from './ScholarshipCard';
 import EmptyState from './scholarship/EmptyState';
@@ -9,6 +8,7 @@ import { useScholarships } from '@/hooks/useScholarships';
 import { saveScholarship, recordLeftSwipe } from '@/utils/scholarshipUtils';
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from 'lucide-react';
+import { Scholarship } from '@/types/scholarship';
 
 const ScholarshipSwiper = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -79,7 +79,7 @@ const ScholarshipSwiper = () => {
     
     const currentScholarship = allScholarships[currentIndex];
     
-    if (currentScholarship?.id) { // Add null check for scholarship and its ID
+    if (currentScholarship?.id) {
       console.log('Handling swipe for scholarship:', currentScholarship.id);
       if (direction === 'right') {
         saveMutation.mutate(currentScholarship.id);
@@ -104,9 +104,7 @@ const ScholarshipSwiper = () => {
   const handleRefresh = async () => {
     setCurrentIndex(0);
     setRefreshTimestamp(Date.now());
-    // Remove all existing scholarship data from the cache
     queryClient.removeQueries({ queryKey: ['scholarships'] });
-    // Force a new fetch by invalidating the queries
     queryClient.invalidateQueries({ queryKey: ['scholarships'] });
     toast({
       title: "Refreshing Scholarships",
