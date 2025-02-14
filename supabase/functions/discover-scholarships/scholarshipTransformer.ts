@@ -26,16 +26,35 @@ export function transformScholarships(scholarshipsData: any) {
       s.source_url.trim() : 
       null;
 
-    // Basic URL validation
+    // Enhanced URL validation
     const isValidUrl = (url: string | null): boolean => {
       if (!url) return false;
       try {
-        new URL(url);
-        return true;
+        const parsedUrl = new URL(url);
+        // Check for common scholarship domains
+        const validDomains = [
+          '.edu',
+          'fastweb.com',
+          'scholarships.com',
+          'unigo.com',
+          'cappex.com',
+          'chegg.com',
+          'collegeboard.org'
+        ];
+        return validDomains.some(domain => parsedUrl.hostname.endsWith(domain)) ||
+               parsedUrl.protocol === 'https:';
       } catch {
         return false;
       }
     };
+
+    // Generate a fallback URL for search
+    const getFallbackUrl = (title: string, provider: string): string => {
+      const searchQuery = encodeURIComponent(`${title} ${provider} scholarship`);
+      return `https://www.google.com/search?q=${searchQuery}`;
+    };
+
+    const validatedUrl = isValidUrl(url) ? url : getFallbackUrl(s.title, s.provider);
 
     const transformed = {
       id: crypto.randomUUID(),
@@ -46,13 +65,13 @@ export function transformScholarships(scholarshipsData: any) {
         s.requirements.map((r: any) => String(r)) : 
         [],
       provider: String(s.provider || 'Unknown Provider').trim(),
-      url: isValidUrl(url) ? url : null, // Use the actual source URL if valid
+      url: validatedUrl,
       description: String(s.description || '').trim(),
       category: String(s.category || 'General').trim(),
       is_active: true,
       verified: false,
       last_verified_at: new Date().toISOString(),
-      source_url: isValidUrl(url) ? url : null,
+      source_url: validatedUrl,
       match_score: null,
       created_at: new Date().toISOString()
     };

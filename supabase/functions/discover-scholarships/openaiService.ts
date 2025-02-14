@@ -1,3 +1,4 @@
+
 import { UserProfile } from './types.ts';
 
 export async function generateScholarships(openAiApiKey: string, userProfile: UserProfile) {
@@ -16,8 +17,14 @@ export async function generateScholarships(openAiApiKey: string, userProfile: Us
       messages: [
         {
           role: 'system',
-          content: `You are a scholarship database API. Always return a JSON object with a "scholarships" array containing exactly 10 scholarships.
-            Each scholarship must include all required fields and be properly formatted. Include real URLs where students can apply.`
+          content: `You are a scholarship database API. Return real, verifiable scholarships with working application URLs.
+            Focus on well-known organizations and universities that offer scholarships.
+            Always include URLs from reputable sources like:
+            - University websites (.edu domains)
+            - Official scholarship foundation websites
+            - Well-known scholarship platforms (e.g., fastweb.com, scholarships.com)
+            - Professional organizations in the student's field
+            DO NOT generate fake URLs or placeholder websites.`
         },
         {
           role: 'user',
@@ -27,12 +34,12 @@ export async function generateScholarships(openAiApiKey: string, userProfile: Us
             Return a JSON object with a "scholarships" array. Each scholarship must include:
             {
               "title": "string",
-              "amount": number (no currency symbols or commas),
+              "amount": number,
               "requirements": string[],
-              "provider": "string",
+              "provider": "string (organization name)",
               "description": "string",
               "category": "Local" | "State" | "Field-specific" | "Demographic" | "General",
-              "source_url": "string (direct URL to the scholarship application/information page)"
+              "source_url": "string (MUST be a real, working URL to the actual scholarship page)"
             }`
         }
       ],
