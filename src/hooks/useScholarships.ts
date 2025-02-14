@@ -9,15 +9,16 @@ interface ScholarshipPage {
 }
 
 export function useScholarships() {
-  return useInfiniteQuery<ScholarshipPage, Error>({
+  return useInfiniteQuery<ScholarshipPage>({
     queryKey: ['scholarships'],
-    queryFn: async ({ pageParam }) => {
-      const scholarships = await fetchScholarships(Number(pageParam ?? 1));
+    queryFn: async ({ pageParam = 1 }) => {
+      const scholarships = await fetchScholarships(Number(pageParam));
       return {
         scholarships,
-        nextPage: scholarships.length > 0 ? Number(pageParam ?? 1) + 1 : undefined
+        nextPage: scholarships.length > 0 ? Number(pageParam) + 1 : undefined
       };
     },
+    initialPageParam: 1,
     getNextPageParam: (lastPage) => lastPage.nextPage,
   });
 }
