@@ -31,28 +31,30 @@ serve(async (req: Request) => {
     sixMonthsFromNow.setMonth(currentDate.getMonth() + 6);
 
     const searchPrompt = `
-      Find 10 currently available scholarships for a student with the following profile:
+      As a scholarship search assistant, find 10 currently available scholarships for a student with the following profile:
       - Major: ${userProfile.intended_major || 'Any'}
       - Education Level: ${userProfile.current_education_level || 'Any'}
       - Location: ${userProfile.state ? `${userProfile.state}, USA` : 'Any'}
+      - GPA: ${userProfile.gpa || 'Not specified'}
+      - SAT Score: ${userProfile.sat_score || 'Not specified'}
+      - ACT Score: ${userProfile.act_score || 'Not specified'}
       
-      Requirements:
-      1. Provide EXACTLY 10 unique scholarships
-      2. Each scholarship must have different requirements and amounts
-      3. All deadlines must be between ${currentDate.toISOString().split('T')[0]} and ${sixMonthsFromNow.toISOString().split('T')[0]}
-      4. Focus on local scholarships if location is provided
-      5. Include specific eligibility criteria
+      Please provide recommendations that meet these requirements:
+      1. Each scholarship must be unique
+      2. Include scholarships with varying award amounts
+      3. Deadlines should be between ${currentDate.toISOString().split('T')[0]} and ${sixMonthsFromNow.toISOString().split('T')[0]}
+      4. Include specific eligibility criteria
+      5. Focus on local scholarships if location is provided
       
-      Return ONLY valid JSON with a "scholarships" array containing these fields for each scholarship:
+      Format the response as a JSON object with a "scholarships" array. Each scholarship should include:
       - title (string)
-      - amount (number)
+      - amount (number, just the number without $ or commas)
       - deadline (ISO date string)
-      - requirements (string array)
+      - requirements (array of strings)
       - provider (string)
       - url (string)
       - description (string)
-      - category (string)
-    `;
+      - category (string: e.g., "Academic", "Athletic", "Merit-based", "Need-based", "Field-specific")`;
 
     console.log('Sending prompt to OpenAI:', searchPrompt);
 
@@ -63,7 +65,7 @@ serve(async (req: Request) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4',
+        model: 'gpt-4o',
         messages: [
           {
             role: 'system',
@@ -74,32 +76,49 @@ serve(async (req: Request) => {
             content: searchPrompt
           }
         ],
+        temperature: 0.7,
         response_format: { type: "json_object" }
       }),
     });
 
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error('OpenAI API error response:', errorText);
+      throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
     }
 
     const openAIData = await response.json();
+    console.log('OpenAI raw response:', openAIData);
     
     if (!openAIData.choices?.[0]?.message?.content) {
       throw new Error('No content in OpenAI response');
     }
 
-    console.log('Raw OpenAI response:', openAIData.choices[0].message.content);
-
     const scholarships = JSON.parse(openAIData.choices[0].message.content);
+    console.log('Parsed scholarships:', scholarships);
 
     if (!scholarships.scholarships || !Array.isArray(scholarships.scholarships)) {
       throw new Error('Invalid scholarship data format from OpenAI');
     }
 
-    console.log('Processed scholarships:', JSON.stringify(scholarships, null, 2));
+    // Validate and clean each scholarship
+    const validatedScholarships = scholarships.scholarships.map(s => ({
+      title: String(s.title || 'Untitled Scholarship'),
+      amount: Number(s.amount) || 0,
+      deadline: new Date(s.deadline).toISOString(),
+      requirements: Array.isArray(s.requirements) ? s.requirements.map(String) : [],
+      provider: String(s.provider || 'Unknown Provider'),
+      url: String(s.url || `https://example.com/scholarship/${crypto.randomUUID()}`),
+      description: String(s.description || ''),
+      category: String(s.category || 'General')
+    }));
+
+    console.log('Returning validated scholarships:', validatedScholarships);
 
     return new Response(
-      JSON.stringify(scholarships),
+      JSON.stringify({
+        scholarships: validatedScholarships
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200 
