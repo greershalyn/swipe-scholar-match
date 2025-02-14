@@ -45,7 +45,8 @@ export const fetchScholarships = async (page: number = 1, timestamp: number = Da
           body: {
             userProfile,
             page,
-            timestamp
+            timestamp,
+            forceRefresh: page === 1 // Force refresh on first page load
           }
         }
       );
