@@ -42,7 +42,17 @@ serve(async (req: Request) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
     
-    // Fetch scholarships from the database
+    // First, clear any test data that might be causing issues
+    const { error: cleanupError } = await supabase
+      .from('scholarships')
+      .delete()
+      .eq('is_active', false);
+
+    if (cleanupError) {
+      console.error('Error cleaning up test data:', cleanupError);
+    }
+    
+    // Fetch active scholarships from the database
     const { data: existingScholarships, error: fetchError } = await supabase
       .from('scholarships')
       .select('*')
@@ -59,7 +69,7 @@ serve(async (req: Request) => {
 
     // If we have enough scholarships, return them
     if (existingScholarships && existingScholarships.length > 0) {
-      console.log('Returning existing scholarships:', existingScholarships);
+      console.log('Returning existing scholarships:', existingScholarships.length);
       return new Response(
         JSON.stringify({
           success: true,
@@ -80,29 +90,6 @@ serve(async (req: Request) => {
 
     console.log('Making OpenAI API request for new scholarships...');
 
-    const searchPrompt = `
-      Generate 5 realistic scholarship opportunities for this student profile:
-      - Major: ${userProfile.intended_major || 'Any'}
-      - Education Level: ${userProfile.current_education_level || 'Any'}
-      - Location: ${userProfile.state ? `${userProfile.state}, USA` : 'Any'}
-      - GPA: ${userProfile.gpa || 'Not specified'}
-      
-      Return ONLY a valid JSON array of scholarships with this structure:
-      {
-        "scholarships": [
-          {
-            "title": "string",
-            "amount": number,
-            "deadline": "YYYY-MM-DD",
-            "requirements": ["string"],
-            "provider": "string",
-            "url": "string",
-            "description": "string",
-            "category": "string"
-          }
-        ]
-      }`;
-
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -114,11 +101,13 @@ serve(async (req: Request) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a JSON-only response API. Only return valid JSON objects with scholarships data.'
+            content: 'You are a scholarship database API that returns only valid JSON data for scholarship opportunities.'
           },
           {
             role: 'user',
-            content: searchPrompt
+            content: `Generate 5 realistic scholarships for a ${userProfile.current_education_level || 'college'} student 
+                     studying ${userProfile.intended_major || 'any major'} with a GPA of ${userProfile.gpa || 'any GPA'}.
+                     Format as JSON with exact structure shown in the example.`
           }
         ],
         temperature: 0.7,
@@ -128,19 +117,25 @@ serve(async (req: Request) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenAI API error response:', errorText);
+      console.error('OpenAI API error:', errorText);
       throw new Error(`OpenAI API error: ${response.status}`);
     }
 
     const openAIData = await response.json();
-    console.log('OpenAI raw response:', openAIData);
-    
+    console.log('OpenAI response received');
+
     if (!openAIData.choices?.[0]?.message?.content) {
-      throw new Error('No content in OpenAI response');
+      throw new Error('Invalid response format from OpenAI');
     }
 
-    const scholarshipsData = JSON.parse(openAIData.choices[0].message.content);
-    console.log('Parsed scholarships data:', scholarshipsData);
+    let scholarshipsData;
+    try {
+      scholarshipsData = JSON.parse(openAIData.choices[0].message.content);
+      console.log('Successfully parsed OpenAI response');
+    } catch (error) {
+      console.error('Error parsing OpenAI response:', error);
+      throw new Error('Failed to parse OpenAI response');
+    }
 
     if (!scholarshipsData.scholarships || !Array.isArray(scholarshipsData.scholarships)) {
       throw new Error('Invalid scholarship data format from OpenAI');
@@ -149,21 +144,24 @@ serve(async (req: Request) => {
     // Transform and validate scholarships
     const validatedScholarships = scholarshipsData.scholarships.map(s => ({
       id: crypto.randomUUID(),
-      title: s.title,
-      amount: Number(s.amount),
-      deadline: new Date(s.deadline).toISOString(),
-      requirements: s.requirements || [],
-      provider: s.provider || 'Unknown Provider',
-      url: s.url || `https://example.com/scholarship/${crypto.randomUUID()}`,
-      description: s.description || '',
-      category: s.category || 'General',
+      title: String(s.title || '').trim(),
+      amount: Number(s.amount) || 0,
+      deadline: new Date(new Date().setMonth(new Date().getMonth() + 3)).toISOString(), // Set deadline 3 months from now
+      requirements: Array.isArray(s.requirements) ? s.requirements : [],
+      provider: String(s.provider || 'Unknown Provider').trim(),
+      url: String(s.url || `https://example.com/scholarship/${crypto.randomUUID()}`).trim(),
+      description: String(s.description || '').trim(),
+      category: String(s.category || 'General').trim(),
       is_active: true,
       verified: false,
-      last_verified_at: new Date().toISOString()
+      last_verified_at: new Date().toISOString(),
+      source_url: null,
+      match_score: null
     }));
 
     // Insert new scholarships
-    console.log('Inserting validated scholarships:', validatedScholarships);
+    console.log(`Attempting to insert ${validatedScholarships.length} scholarships`);
+    
     for (const scholarship of validatedScholarships) {
       const { error: insertError } = await supabase
         .from('scholarships')
