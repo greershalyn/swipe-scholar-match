@@ -24,6 +24,7 @@ serve(async (req: Request) => {
     }
 
     const { userProfile } = await req.json();
+    console.log('Received user profile:', JSON.stringify(userProfile, null, 2));
 
     const currentDate = new Date();
     const sixMonthsFromNow = new Date();
@@ -53,6 +54,8 @@ serve(async (req: Request) => {
       - category (string)
     `;
 
+    console.log('Sending prompt to OpenAI:', searchPrompt);
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -64,7 +67,7 @@ serve(async (req: Request) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a scholarship search assistant that provides detailed, accurate scholarship information.'
+            content: 'You are a scholarship search assistant that provides detailed, accurate scholarship information in JSON format.'
           },
           {
             role: 'user',
@@ -79,26 +82,29 @@ serve(async (req: Request) => {
       throw new Error(`OpenAI API error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const openAIData = await response.json();
     
-    if (!data.choices?.[0]?.message?.content) {
+    if (!openAIData.choices?.[0]?.message?.content) {
       throw new Error('No content in OpenAI response');
     }
 
-    try {
-      const scholarships = JSON.parse(data.choices[0].message.content);
-      return new Response(
-        JSON.stringify(scholarships),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200 
-        }
-      );
-    } catch (parseError) {
-      console.error('Error parsing OpenAI response:', parseError);
-      console.log('Raw content:', data.choices[0].message.content);
-      throw new Error('Invalid JSON in OpenAI response');
+    console.log('Raw OpenAI response:', openAIData.choices[0].message.content);
+
+    const scholarships = JSON.parse(openAIData.choices[0].message.content);
+
+    if (!scholarships.scholarships || !Array.isArray(scholarships.scholarships)) {
+      throw new Error('Invalid scholarship data format from OpenAI');
     }
+
+    console.log('Processed scholarships:', JSON.stringify(scholarships, null, 2));
+
+    return new Response(
+      JSON.stringify(scholarships),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200 
+      }
+    );
   } catch (error) {
     console.error('Error in openai-scholarship-search function:', error);
     return new Response(
@@ -108,7 +114,7 @@ serve(async (req: Request) => {
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500 
+        status: 200 // Return 200 to ensure error message gets through
       }
     );
   }

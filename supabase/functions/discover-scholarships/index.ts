@@ -49,12 +49,17 @@ serve(async (req: Request) => {
 
     // Call openai-scholarship-search function with explicit error handling
     try {
+      console.log('Sending user profile to AI search:', JSON.stringify(requestData.userProfile, null, 2));
+
       const { data: aiResponse, error: aiError } = await supabase.functions.invoke(
         'openai-scholarship-search',
         {
           body: { userProfile: requestData.userProfile }
         }
       );
+
+      console.log('AI Search Response:', JSON.stringify(aiResponse, null, 2));
+      console.log('AI Search Error:', aiError);
 
       if (aiError) {
         console.error('Error from openai-scholarship-search:', aiError);
@@ -64,8 +69,6 @@ serve(async (req: Request) => {
       if (!aiResponse) {
         throw new Error('No response from AI search');
       }
-
-      console.log('AI Response:', JSON.stringify(aiResponse, null, 2));
 
       if (!aiResponse.scholarships || !Array.isArray(aiResponse.scholarships)) {
         console.log('No scholarships or invalid format returned from AI search');
@@ -82,10 +85,10 @@ serve(async (req: Request) => {
       }
 
       // Process scholarships to ensure they have valid data
-      const scholarships = aiResponse.scholarships.map(scholarship => {
+      const processedScholarships = aiResponse.scholarships.map(scholarship => {
         // Remove any existing ID to let Supabase handle UUID generation
         const { id, ...rest } = scholarship;
-        return {
+        const processedScholarship = {
           ...rest,
           url: rest.url || `https://example.com/scholarship/${crypto.randomUUID()}`,
           requirements: Array.isArray(rest.requirements) ? rest.requirements : [],
@@ -96,14 +99,30 @@ serve(async (req: Request) => {
           provider: rest.provider || 'Unknown Provider',
           title: rest.title || 'Untitled Scholarship'
         };
+        console.log('Processed scholarship:', JSON.stringify(processedScholarship, null, 2));
+        return processedScholarship;
       });
 
-      console.log('Processed scholarships:', JSON.stringify(scholarships, null, 2));
+      for (const scholarship of processedScholarships) {
+        try {
+          const { error: insertError } = await supabase
+            .from('scholarships')
+            .insert([scholarship]);
+
+          if (insertError) {
+            console.error('Error inserting scholarship:', insertError, scholarship);
+          } else {
+            console.log('Successfully inserted scholarship:', scholarship.title);
+          }
+        } catch (error) {
+          console.error('Exception inserting scholarship:', error, scholarship);
+        }
+      }
 
       return new Response(
         JSON.stringify({ 
           success: true,
-          scholarships 
+          scholarships: processedScholarships 
         }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
