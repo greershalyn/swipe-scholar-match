@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Scholarship } from '../types/scholarship';
 import { saveScholarshipToDb, recordScholarshipSwipe } from './scholarship/dbOperations';
@@ -75,30 +76,50 @@ export const fetchScholarships = async (page: number = 1, timestamp: number = Da
       return [];
     }
 
-    // Batch insert new scholarships
-    const newScholarships = data.scholarships.map(({ id: _, ...scholarship }) => ({
-      ...scholarship,
-      title: scholarship.title,
-      amount: scholarship.amount,
-      deadline: scholarship.deadline,
-      provider: scholarship.provider,
-      url: scholarship.url,
-      description: scholarship.description,
-      category: scholarship.category || 'General',
-      requirements: scholarship.requirements || [],
-    }));
+    // Process scholarships one by one to ensure proper handling
+    for (const scholarship of data.scholarships) {
+      const { id: _, ...scholarshipData } = scholarship;
+      
+      try {
+        // Try to insert first
+        const { error: insertError } = await supabase
+          .from('scholarships')
+          .insert([{
+            ...scholarshipData,
+            title: scholarshipData.title,
+            amount: scholarshipData.amount,
+            deadline: scholarshipData.deadline,
+            provider: scholarshipData.provider,
+            url: scholarshipData.url,
+            description: scholarshipData.description,
+            category: scholarshipData.category || 'General',
+            requirements: scholarshipData.requirements || [],
+          }]);
 
-    // Use upsert with the url as the conflict target
-    if (newScholarships.length > 0) {
-      const { error: upsertError } = await supabase
-        .from('scholarships')
-        .upsert(newScholarships, {
-          onConflict: 'url',
-          ignoreDuplicates: true
-        });
+        if (insertError && insertError.code === '23505') { // Unique violation
+          // If insert fails due to duplicate, try update
+          const { error: updateError } = await supabase
+            .from('scholarships')
+            .update({
+              title: scholarshipData.title,
+              amount: scholarshipData.amount,
+              deadline: scholarshipData.deadline,
+              provider: scholarshipData.provider,
+              description: scholarshipData.description,
+              category: scholarshipData.category || 'General',
+              requirements: scholarshipData.requirements || [],
+              updated_at: new Date().toISOString(),
+            })
+            .eq('url', scholarshipData.url);
 
-      if (upsertError) {
-        console.error('Error upserting scholarships:', upsertError);
+          if (updateError) {
+            console.error('Error updating scholarship:', updateError, scholarshipData);
+          }
+        } else if (insertError) {
+          console.error('Error inserting scholarship:', insertError, scholarshipData);
+        }
+      } catch (error) {
+        console.error('Exception processing scholarship:', error, scholarshipData);
       }
     }
 
