@@ -78,21 +78,24 @@ export const fetchScholarships = async (page: number = 1, timestamp: number = Da
 
     // First, insert the scholarships into the scholarships table if they don't exist
     for (const scholarship of data.scholarships) {
+      // Remove any existing id to let Supabase generate a new one
+      const { id, ...scholarshipData } = scholarship;
+      
       const { error: upsertError } = await supabase
         .from('scholarships')
         .upsert(
           {
-            id: scholarship.id,
-            title: scholarship.title,
-            amount: scholarship.amount,
-            deadline: scholarship.deadline,
-            provider: scholarship.provider,
-            url: scholarship.url,
-            description: scholarship.description,
-            category: scholarship.category || 'General',
-            requirements: scholarship.requirements || [],
+            ...scholarshipData,
+            title: scholarshipData.title,
+            amount: scholarshipData.amount,
+            deadline: scholarshipData.deadline,
+            provider: scholarshipData.provider,
+            url: scholarshipData.url,
+            description: scholarshipData.description,
+            category: scholarshipData.category || 'General',
+            requirements: scholarshipData.requirements || [],
           },
-          { onConflict: 'id' }
+          { onConflict: 'url' } // Use URL as the unique identifier instead of ID
         );
 
       if (upsertError) {
@@ -119,8 +122,20 @@ export const fetchScholarships = async (page: number = 1, timestamp: number = Da
       ...(savedScholarships?.map(s => s.scholarship_id) || [])
     ]);
 
+    // Fetch the scholarships from the database using the URLs
+    const scholarshipUrls = data.scholarships.map(s => s.url);
+    const { data: dbScholarships } = await supabase
+      .from('scholarships')
+      .select('*')
+      .in('url', scholarshipUrls);
+
+    if (!dbScholarships) {
+      console.log('No scholarships found in database');
+      return [];
+    }
+
     // Filter out swiped/saved scholarships and calculate match scores
-    const scholarships = data.scholarships
+    const scholarships = dbScholarships
       .filter((s: Scholarship) => !excludeIds.has(s.id))
       .map((s: Scholarship) => ({
         ...s,
