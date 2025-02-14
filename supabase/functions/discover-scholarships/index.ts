@@ -5,11 +5,13 @@ import { UserProfile } from './types.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Max-Age': '86400',
 };
 
 serve(async (req: Request) => {
-  // Handle CORS preflight requests
+  // Always handle CORS preflight requests first
   if (req.method === 'OPTIONS') {
     return new Response(null, { 
       headers: corsHeaders,
@@ -18,11 +20,22 @@ serve(async (req: Request) => {
   }
 
   try {
+    if (req.method !== 'POST') {
+      throw new Error('Method not allowed');
+    }
+
+    const contentType = req.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      throw new Error('Content-Type must be application/json');
+    }
+
     const { userProfile } = await req.json();
 
     if (!userProfile) {
       throw new Error('User profile is required');
     }
+
+    console.log('Received request with userProfile:', JSON.stringify(userProfile, null, 2));
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -32,6 +45,8 @@ serve(async (req: Request) => {
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    console.log('Calling openai-scholarship-search function...');
 
     // Call openai-scholarship-search function
     const { data: aiResponse, error: aiError } = await supabase.functions.invoke(
@@ -47,6 +62,7 @@ serve(async (req: Request) => {
     }
 
     if (!aiResponse?.scholarships) {
+      console.log('No scholarships returned from AI search');
       return new Response(
         JSON.stringify({ 
           success: true,
@@ -71,7 +87,7 @@ serve(async (req: Request) => {
       };
     });
 
-    console.log('Processed scholarships:', scholarships);
+    console.log('Processed scholarships:', JSON.stringify(scholarships, null, 2));
 
     return new Response(
       JSON.stringify({ 
@@ -93,7 +109,7 @@ serve(async (req: Request) => {
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500 
+        status: error.status || 500 
       }
     );
   }
