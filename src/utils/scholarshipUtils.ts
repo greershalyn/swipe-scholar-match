@@ -78,13 +78,20 @@ export const fetchScholarships = async (page: number = 1, timestamp: number = Da
 
     // First, insert the scholarships into the scholarships table if they don't exist
     for (const scholarship of data.scholarships) {
-      // Remove any existing id to let Supabase generate a new one
-      const { id, ...scholarshipData } = scholarship;
+      const { id: _, ...scholarshipData } = scholarship;
       
-      const { error: upsertError } = await supabase
+      // First try to find existing scholarship by URL
+      const { data: existingScholarship } = await supabase
         .from('scholarships')
-        .upsert(
-          {
+        .select('id')
+        .eq('url', scholarshipData.url)
+        .single();
+
+      if (!existingScholarship) {
+        // If it doesn't exist, insert new scholarship
+        const { error: insertError } = await supabase
+          .from('scholarships')
+          .insert([{
             ...scholarshipData,
             title: scholarshipData.title,
             amount: scholarshipData.amount,
@@ -94,13 +101,12 @@ export const fetchScholarships = async (page: number = 1, timestamp: number = Da
             description: scholarshipData.description,
             category: scholarshipData.category || 'General',
             requirements: scholarshipData.requirements || [],
-          },
-          { onConflict: 'url' } // Use URL as the unique identifier instead of ID
-        );
+          }]);
 
-      if (upsertError) {
-        console.error('Error upserting scholarship:', upsertError);
-        throw upsertError;
+        if (insertError) {
+          console.error('Error inserting scholarship:', insertError);
+          throw insertError;
+        }
       }
     }
 
