@@ -2,6 +2,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0';
 import { UserProfile } from './types.ts';
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,7 +12,6 @@ const corsHeaders = {
 };
 
 serve(async (req: Request) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { 
       headers: corsHeaders,
@@ -36,31 +36,104 @@ serve(async (req: Request) => {
       throw new Error('User profile is required');
     }
 
-    // Generate sample scholarship data for testing
-    const sampleScholarships = [
-      {
-        title: "Sample Scholarship 1",
-        amount: 5000,
-        deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
-        requirements: ["Sample requirement 1", "Sample requirement 2"],
-        provider: "Sample Provider",
-        url: "https://example.com/scholarship1",
-        description: "This is a sample scholarship for testing",
-        category: "General"
-      },
-      {
-        title: "Sample Scholarship 2",
-        amount: 2500,
-        deadline: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(), // 60 days from now
-        requirements: ["Sample requirement 3", "Sample requirement 4"],
-        provider: "Another Provider",
-        url: "https://example.com/scholarship2",
-        description: "Another sample scholarship for testing",
-        category: "Merit-based"
-      }
-    ];
+    const userProfile = requestData.userProfile;
+    const page = requestData.page || 1;
+    
+    const openAiApiKey = Deno.env.get('OPENAI_API_KEY');
+    if (!openAiApiKey) {
+      throw new Error('OpenAI API key not configured');
+    }
 
-    // Insert sample scholarships into the database
+    const currentDate = new Date();
+    const sixMonthsFromNow = new Date();
+    sixMonthsFromNow.setMonth(currentDate.getMonth() + 6);
+
+    const searchPrompt = `
+      As a scholarship search assistant, find 5 currently available scholarships for a student with the following profile:
+      - Major: ${userProfile.intended_major || 'Any'}
+      - Education Level: ${userProfile.current_education_level || 'Any'}
+      - Location: ${userProfile.state ? `${userProfile.state}, USA` : 'Any'}
+      - GPA: ${userProfile.gpa || 'Not specified'}
+      - SAT Score: ${userProfile.sat_score || 'Not specified'}
+      - ACT Score: ${userProfile.act_score || 'Not specified'}
+      
+      Please provide recommendations that meet these requirements:
+      1. Each scholarship must be unique
+      2. Include scholarships with varying award amounts
+      3. Deadlines should be between ${currentDate.toISOString().split('T')[0]} and ${sixMonthsFromNow.toISOString().split('T')[0]}
+      4. Include specific eligibility criteria
+      5. Focus on local scholarships if location is provided
+      
+      Format the response as a JSON object with a "scholarships" array. Each scholarship should include:
+      - title (string)
+      - amount (number, just the number without $ or commas)
+      - deadline (ISO date string)
+      - requirements (array of strings)
+      - provider (string)
+      - url (string)
+      - description (string)
+      - category (string: e.g., "Academic", "Athletic", "Merit-based", "Need-based", "Field-specific")`;
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAiApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a scholarship search assistant that provides detailed, accurate scholarship information in JSON format.'
+          },
+          {
+            role: 'user',
+            content: searchPrompt
+          }
+        ],
+        temperature: 0.7,
+        response_format: { type: "json_object" }
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('OpenAI API error response:', errorText);
+      throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
+    }
+
+    const openAIData = await response.json();
+    console.log('OpenAI raw response:', openAIData);
+    
+    if (!openAIData.choices?.[0]?.message?.content) {
+      throw new Error('No content in OpenAI response');
+    }
+
+    const scholarshipsData = JSON.parse(openAIData.choices[0].message.content);
+    console.log('Parsed scholarships:', scholarshipsData);
+
+    if (!scholarshipsData.scholarships || !Array.isArray(scholarshipsData.scholarships)) {
+      throw new Error('Invalid scholarship data format from OpenAI');
+    }
+
+    // Validate and clean each scholarship
+    const validatedScholarships = scholarshipsData.scholarships.map(s => ({
+      title: String(s.title || 'Untitled Scholarship'),
+      amount: Number(s.amount) || 0,
+      deadline: new Date(s.deadline).toISOString(),
+      requirements: Array.isArray(s.requirements) ? s.requirements.map(String) : [],
+      provider: String(s.provider || 'Unknown Provider'),
+      url: String(s.url || `https://example.com/scholarship/${crypto.randomUUID()}`),
+      description: String(s.description || ''),
+      category: String(s.category || 'General'),
+      id: crypto.randomUUID(),
+      is_active: true,
+      verified: false,
+      last_verified_at: new Date().toISOString()
+    }));
+
+    // Insert scholarships into the database
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
@@ -70,15 +143,7 @@ serve(async (req: Request) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Process scholarships and insert them
-    const processedScholarships = sampleScholarships.map(scholarship => ({
-      ...scholarship,
-      id: crypto.randomUUID(),
-      requirements: Array.isArray(scholarship.requirements) ? scholarship.requirements : [],
-      amount: typeof scholarship.amount === 'number' ? scholarship.amount : 0,
-    }));
-
-    for (const scholarship of processedScholarships) {
+    for (const scholarship of validatedScholarships) {
       try {
         const { error: insertError } = await supabase
           .from('scholarships')
@@ -99,7 +164,7 @@ serve(async (req: Request) => {
     return new Response(
       JSON.stringify({
         success: true,
-        scholarships: processedScholarships
+        scholarships: validatedScholarships
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
