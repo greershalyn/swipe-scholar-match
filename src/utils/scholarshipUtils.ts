@@ -34,55 +34,33 @@ export const fetchScholarships = async (page: number = 1, timestamp: number = Da
         throw new Error('User profile not found');
       }
 
-      // Ensure all required fields are present with default values if needed
-      const normalizedUserProfile = {
-        id: userProfile.id,
-        full_name: userProfile.full_name || '',
-        birth_date: userProfile.birth_date || null,
-        gender: userProfile.gender || '',
-        ethnicity: userProfile.ethnicity || '',
-        address: userProfile.address || '',
-        city: userProfile.city || '',
-        state: userProfile.state || '',
-        zip_code: userProfile.zip_code || '',
-        gpa: userProfile.gpa ? parseFloat(userProfile.gpa.toString()) : null,
-        sat_score: userProfile.sat_score ? parseInt(userProfile.sat_score.toString()) : null,
-        act_score: userProfile.act_score ? parseInt(userProfile.act_score.toString()) : null,
-        current_education_level: userProfile.current_education_level || '',
-        intended_major: userProfile.intended_major || '',
-        first_generation_student: Boolean(userProfile.first_generation_student),
-        essay_personal_statement: userProfile.essay_personal_statement || '',
-        rewards_achievements: Array.isArray(userProfile.rewards_achievements) ? userProfile.rewards_achievements : [],
-        volunteering_experience: Array.isArray(userProfile.volunteering_experience) ? userProfile.volunteering_experience : [],
-        organizations: Array.isArray(userProfile.organizations) ? userProfile.organizations : [],
-        keywords: Array.isArray(userProfile.keywords) ? userProfile.keywords : [],
-        high_school_graduated: Boolean(userProfile.high_school_graduated)
-      };
+      console.log('Calling discover-scholarships with normalized user profile:', userProfile);
 
-      console.log('Calling discover-scholarships with normalized user profile:', normalizedUserProfile, 'page:', page, 'timestamp:', timestamp);
-
-      const { data: discoveredData, error: discoveryError } = await supabase.functions.invoke(
+      const { data: discoveredData, error } = await supabase.functions.invoke(
         'discover-scholarships',
         {
           body: {
-            userProfile: normalizedUserProfile,
+            userProfile,
             page,
             timestamp
+          },
+          headers: {
+            'Content-Type': 'application/json'
           }
         }
       );
 
-      if (discoveryError) {
-        console.error('Error calling discover-scholarships:', discoveryError);
-        throw discoveryError;
+      if (error) {
+        console.error('Error from discover-scholarships:', error);
+        throw error;
       }
+
+      console.log('Received data from discover-scholarships:', discoveredData);
 
       if (!discoveredData?.scholarships || !Array.isArray(discoveredData.scholarships)) {
-        console.log('No scholarships returned from discover-scholarships');
-        return [];
+        console.error('Invalid response format from discover-scholarships');
+        throw new Error('Invalid response format from discover-scholarships');
       }
-
-      console.log('Discovered scholarships:', discoveredData.scholarships);
 
       // Get all swiped scholarship IDs for the current user
       const { data: swipedScholarships } = await supabase
@@ -107,7 +85,6 @@ export const fetchScholarships = async (page: number = 1, timestamp: number = Da
         .filter((s: Scholarship) => !excludeIds.has(s.id))
         .map((scholarship: Scholarship) => ({
           ...scholarship,
-          id: scholarship.id || crypto.randomUUID(), // Ensure each scholarship has an ID
           match_score: calculateMatchScore(scholarship, userProfile)
         }))
         .sort((a: Scholarship, b: Scholarship) => (b.match_score || 0) - (a.match_score || 0));
