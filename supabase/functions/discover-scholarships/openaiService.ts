@@ -11,7 +11,7 @@ export async function generateScholarships(openAiApiKey: string, userProfile: Us
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'gpt-4',  // Fixed the model name from 'gpt-4o-mini' to 'gpt-4'
+      model: 'gpt-4o-mini',  // Changed back to the correct model name
       messages: [
         {
           role: 'system',
