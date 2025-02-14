@@ -5,8 +5,9 @@ import { UserProfile } from './types.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': '*',
   'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+  'Access-Control-Request-Headers': '*',
   'Content-Type': 'application/json'
 };
 
@@ -40,55 +41,44 @@ function validateUserProfile(profile: any): profile is UserProfile {
 }
 
 serve(async (req: Request) => {
-  // Handle CORS preflight requests first
+  console.log('Received request:', req.method);
+  
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { 
-      headers: corsHeaders,
-      status: 204
+    return new Response(null, {
+      status: 204,
+      headers: corsHeaders
     });
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    console.log('Processing request body...');
+    const body = await req.json().catch(err => {
+      console.error('Error parsing request body:', err);
+      throw new Error('Invalid request body');
+    });
 
-    if (!supabaseUrl || !supabaseKey) {
-      console.error('Missing environment variables');
+    console.log('Received body:', body);
+
+    const { userProfile } = body;
+    
+    if (!userProfile) {
+      console.error('No user profile provided');
       return new Response(
         JSON.stringify({
-          error: 'Server configuration error',
+          error: 'No user profile provided',
           success: false,
           scholarships: []
         }),
         {
-          headers: { ...corsHeaders },
-          status: 500
-        }
-      );
-    }
-
-    let body;
-    try {
-      body = await req.json();
-    } catch (error) {
-      console.error('Error parsing request body:', error);
-      return new Response(
-        JSON.stringify({
-          error: 'Invalid JSON format',
-          success: false,
-          scholarships: []
-        }),
-        {
-          headers: { ...corsHeaders },
+          headers: corsHeaders,
           status: 400
         }
       );
     }
 
-    const { userProfile } = body;
-    
-    if (!userProfile || !validateUserProfile(userProfile)) {
-      console.error('Invalid user profile format');
+    if (!validateUserProfile(userProfile)) {
+      console.error('Invalid user profile format:', userProfile);
       return new Response(
         JSON.stringify({
           error: 'Invalid user profile format',
@@ -96,48 +86,54 @@ serve(async (req: Request) => {
           scholarships: []
         }),
         {
-          headers: { ...corsHeaders },
+          headers: corsHeaders,
           status: 400
         }
       );
     }
 
-    // Create Supabase client
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-    try {
-      const response = await supabase.functions.invoke('openai-scholarship-search', {
-        body: { userProfile }
-      });
-
-      if (response.error) {
-        throw response.error;
-      }
-
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('Missing Supabase configuration');
       return new Response(
         JSON.stringify({
-          success: true,
-          scholarships: response.data?.scholarships || []
-        }),
-        {
-          headers: { ...corsHeaders },
-          status: 200
-        }
-      );
-    } catch (error) {
-      console.error('Error in OpenAI search:', error);
-      return new Response(
-        JSON.stringify({
-          error: error.message || 'Failed to fetch scholarships',
+          error: 'Server configuration error',
           success: false,
           scholarships: []
         }),
         {
-          headers: { ...corsHeaders },
+          headers: corsHeaders,
           status: 500
         }
       );
     }
+
+    console.log('Creating Supabase client...');
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    console.log('Calling openai-scholarship-search function...');
+    const response = await supabase.functions.invoke('openai-scholarship-search', {
+      body: { userProfile }
+    });
+
+    if (response.error) {
+      console.error('Error from openai-scholarship-search:', response.error);
+      throw response.error;
+    }
+
+    console.log('Successfully received scholarships:', response.data);
+    return new Response(
+      JSON.stringify({
+        success: true,
+        scholarships: response.data?.scholarships || []
+      }),
+      {
+        headers: corsHeaders,
+        status: 200
+      }
+    );
   } catch (error) {
     console.error('Error in discover-scholarships function:', error);
     return new Response(
@@ -147,7 +143,7 @@ serve(async (req: Request) => {
         scholarships: []
       }),
       {
-        headers: { ...corsHeaders },
+        headers: corsHeaders,
         status: 500
       }
     );

@@ -2,4 +2,3 @@
 project_id = "cewxnkpihtujqbwbzjcv"
 [openai-scholarship-search]
 verify_jwt = false
-
