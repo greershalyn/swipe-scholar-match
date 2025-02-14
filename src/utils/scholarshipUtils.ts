@@ -61,7 +61,7 @@ export const fetchScholarships = async (page: number = 1, timestamp: number = Da
 
       console.log('Calling discover-scholarships with normalized user profile:', normalizedUserProfile, 'page:', page, 'timestamp:', timestamp);
 
-      const { data, error } = await supabase.functions.invoke(
+      const { data: discoveredData, error: discoveryError } = await supabase.functions.invoke(
         'discover-scholarships',
         {
           body: {
@@ -72,63 +72,17 @@ export const fetchScholarships = async (page: number = 1, timestamp: number = Da
         }
       );
 
-      if (error) {
-        console.error('Error calling discover-scholarships:', error);
-        throw error;
+      if (discoveryError) {
+        console.error('Error calling discover-scholarships:', discoveryError);
+        throw discoveryError;
       }
 
-      // If no data or scholarships returned, return empty array
-      if (!data?.scholarships) {
+      if (!discoveredData?.scholarships || !Array.isArray(discoveredData.scholarships)) {
         console.log('No scholarships returned from discover-scholarships');
         return [];
       }
 
-      // Process scholarships one by one to ensure proper handling
-      for (const scholarship of data.scholarships) {
-        const { id: _, ...scholarshipData } = scholarship;
-        
-        try {
-          // Try to insert first
-          const { error: insertError } = await supabase
-            .from('scholarships')
-            .insert([{
-              ...scholarshipData,
-              title: scholarshipData.title,
-              amount: scholarshipData.amount,
-              deadline: scholarshipData.deadline,
-              provider: scholarshipData.provider,
-              url: scholarshipData.url,
-              description: scholarshipData.description,
-              category: scholarshipData.category || 'General',
-              requirements: scholarshipData.requirements || [],
-            }]);
-
-          if (insertError && insertError.code === '23505') { // Unique violation
-            // If insert fails due to duplicate, try update
-            const { error: updateError } = await supabase
-              .from('scholarships')
-              .update({
-                title: scholarshipData.title,
-                amount: scholarshipData.amount,
-                deadline: scholarshipData.deadline,
-                provider: scholarshipData.provider,
-                description: scholarshipData.description,
-                category: scholarshipData.category || 'General',
-                requirements: scholarshipData.requirements || [],
-                updated_at: new Date().toISOString(),
-              })
-              .eq('url', scholarshipData.url);
-
-            if (updateError) {
-              console.error('Error updating scholarship:', updateError, scholarshipData);
-            }
-          } else if (insertError) {
-            console.error('Error inserting scholarship:', insertError, scholarshipData);
-          }
-        } catch (error) {
-          console.error('Exception processing scholarship:', error, scholarshipData);
-        }
-      }
+      console.log('Discovered scholarships:', discoveredData.scholarships);
 
       // Get all swiped scholarship IDs for the current user
       const { data: swipedScholarships } = await supabase
@@ -148,25 +102,8 @@ export const fetchScholarships = async (page: number = 1, timestamp: number = Da
         ...(savedScholarships?.map(s => s.scholarship_id) || [])
       ]);
 
-      // Fetch the scholarships from the database using the URLs
-      const scholarshipUrls = data.scholarships.map(s => s.url);
-      const { data: dbScholarships, error: fetchError } = await supabase
-        .from('scholarships')
-        .select('*')
-        .in('url', scholarshipUrls);
-
-      if (fetchError) {
-        console.error('Error fetching scholarships:', fetchError);
-        return [];
-      }
-
-      if (!dbScholarships || dbScholarships.length === 0) {
-        console.log('No scholarships found in database');
-        return [];
-      }
-
       // Filter out swiped/saved scholarships and calculate match scores
-      const scholarships = dbScholarships
+      const scholarships = discoveredData.scholarships
         .filter((s: Scholarship) => !excludeIds.has(s.id))
         .map((s: Scholarship) => ({
           ...s,
