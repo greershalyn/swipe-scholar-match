@@ -23,7 +23,6 @@ export function useScholarships(timestamp: number = Date.now()) {
     retry: 1,
     staleTime: 0, // Always fetch fresh data
     gcTime: 0, // Clear cache immediately
-    refetchOnMount: true, // Refetch when component mounts
-    cacheTime: 0 // Disable caching completely
+    refetchOnMount: true // Refetch when component mounts
   });
 }

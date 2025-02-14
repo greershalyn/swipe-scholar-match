@@ -26,8 +26,8 @@ const ScholarshipSwiper = () => {
     refetch 
   } = useScholarships(refreshTimestamp);
 
-  // Flatten all pages of scholarships into a single array
-  const allScholarships = data?.pages.flatMap(page => page.scholarships) || [];
+  // Type-safe way to flatten all pages of scholarships into a single array
+  const allScholarships = data?.pages.flatMap(page => page.scholarships) ?? [];
 
   useEffect(() => {
     // Pre-fetch next page when user is 4 cards away from the end
