@@ -44,16 +44,26 @@ export async function generateScholarships(openAiApiKey: string, userProfile: Us
   });
 
   if (!response.ok) {
-    throw new Error(`OpenAI API error: ${response.status}`);
+    const errorText = await response.text();
+    console.error('OpenAI API error response:', errorText);
+    throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
   }
 
   const openAIData = await response.json();
+  console.log('OpenAI raw response:', openAIData);
   
   if (!openAIData.choices?.[0]?.message?.content) {
-    throw new Error('Invalid response format from OpenAI');
+    throw new Error('No content in OpenAI response');
   }
 
-  return JSON.parse(openAIData.choices[0].message.content);
+  try {
+    const scholarships = JSON.parse(openAIData.choices[0].message.content);
+    console.log('Parsed scholarships:', scholarships);
+    return scholarships;
+  } catch (error) {
+    console.error('Error parsing OpenAI response:', error);
+    throw new Error('Failed to parse OpenAI response');
+  }
 }
 
 function buildUserProfilePrompt(userProfile: UserProfile): string {
