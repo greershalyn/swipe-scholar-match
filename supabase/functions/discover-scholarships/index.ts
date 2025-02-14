@@ -42,60 +42,55 @@ serve(async (req: Request) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // First, try to find local scholarships
-    const localScholarships = await fetchLocalScholarships(supabase, userProfile, timestamp);
+    // Always try to generate new scholarships first when forced
+    let generatedScholarships = [];
+    if (forceRefresh) {
+      console.log('Force refresh requested, generating new scholarships...');
+      const openAiApiKey = Deno.env.get('OPENAI_API_KEY');
+      if (!openAiApiKey) {
+        throw new Error('OpenAI API key not configured');
+      }
 
-    // If we have enough local scholarships and not forcing refresh, return them
-    if (localScholarships && localScholarships.length >= 5 && !forceRefresh) {
-      console.log('Found sufficient local scholarships:', localScholarships.length);
-      return new Response(
-        JSON.stringify({
-          success: true,
-          scholarships: localScholarships
-        }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200
-        }
-      );
-    }
-
-    // Generate new scholarships
-    const openAiApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openAiApiKey) {
-      throw new Error('OpenAI API key not configured');
-    }
-
-    try {
-      console.log('Generating new scholarships with OpenAI...');
       const scholarshipsData = await generateScholarships(openAiApiKey, userProfile);
       const validatedScholarships = transformScholarships(scholarshipsData);
-      
-      // Combine with any local scholarships we found
-      const allScholarships = [
-        ...validatedScholarships,
-        ...(localScholarships || [])
-      ];
-
-      // Insert new scholarships
-      await insertScholarships(supabase, validatedScholarships);
-
-      console.log(`Returning ${allScholarships.length} scholarships`);
-      return new Response(
-        JSON.stringify({
-          success: true,
-          scholarships: allScholarships
-        }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200
-        }
-      );
-
-    } catch (error) {
-      console.error('Error generating scholarships:', error);
-      throw error;
+      generatedScholarships = await insertScholarships(supabase, validatedScholarships);
+      console.log(`Generated and inserted ${generatedScholarships.length} new scholarships`);
     }
+
+    // Then fetch local scholarships (including any we just generated)
+    const localScholarships = await fetchLocalScholarships(supabase, userProfile, timestamp);
+    
+    // Combine both sources, prioritizing new scholarships
+    const allScholarships = [
+      ...generatedScholarships,
+      ...(localScholarships || [])
+    ].slice(0, 10); // Limit to 10 scholarships
+
+    if (!allScholarships.length) {
+      console.log('No scholarships found, generating new ones...');
+      const openAiApiKey = Deno.env.get('OPENAI_API_KEY');
+      if (!openAiApiKey) {
+        throw new Error('OpenAI API key not configured');
+      }
+
+      const scholarshipsData = await generateScholarships(openAiApiKey, userProfile);
+      const validatedScholarships = transformScholarships(scholarshipsData);
+      const newScholarships = await insertScholarships(supabase, validatedScholarships);
+      allScholarships.push(...newScholarships);
+    }
+
+    console.log(`Returning ${allScholarships.length} total scholarships`);
+    return new Response(
+      JSON.stringify({
+        success: true,
+        scholarships: allScholarships
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200
+      }
+    );
+
   } catch (error) {
     console.error('Error in discover-scholarships function:', error);
     return new Response(
