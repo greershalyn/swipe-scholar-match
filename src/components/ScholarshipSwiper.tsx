@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import ScholarshipCard from './ScholarshipCard';
 import EmptyState from './scholarship/EmptyState';
@@ -17,7 +16,15 @@ const ScholarshipSwiper = () => {
   const [refreshTimestamp, setRefreshTimestamp] = useState(Date.now());
   const queryClient = useQueryClient();
 
-  const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage, refetch } = useScholarships(refreshTimestamp);
+  const { 
+    data, 
+    isLoading, 
+    error, 
+    fetchNextPage, 
+    hasNextPage, 
+    isFetchingNextPage, 
+    refetch 
+  } = useScholarships(refreshTimestamp);
 
   // Flatten all pages of scholarships into a single array
   const allScholarships = data?.pages.flatMap(page => page.scholarships) || [];
@@ -30,15 +37,19 @@ const ScholarshipSwiper = () => {
     }
   }, [currentIndex, allScholarships.length, fetchNextPage, hasNextPage, isFetchingNextPage]);
 
-  console.log('ScholarshipSwiper state:', {
-    scholarshipsLength: allScholarships.length,
-    currentIndex,
-    isLoading,
-    error,
-    hasNextPage,
-    isFetchingNextPage,
-    refreshTimestamp
-  });
+  // Log state changes for debugging
+  useEffect(() => {
+    console.log('ScholarshipSwiper state:', {
+      scholarshipsLength: allScholarships.length,
+      currentIndex,
+      isLoading,
+      error,
+      hasNextPage,
+      isFetchingNextPage,
+      refreshTimestamp,
+      scholarshipIds: allScholarships.map(s => s.id)
+    });
+  }, [allScholarships, currentIndex, isLoading, error, hasNextPage, isFetchingNextPage, refreshTimestamp]);
 
   const saveMutation = useMutation({
     mutationFn: saveScholarship,
@@ -106,11 +117,16 @@ const ScholarshipSwiper = () => {
     setCurrentIndex(0);
     const newTimestamp = Date.now();
     setRefreshTimestamp(newTimestamp);
-    queryClient.removeQueries({ queryKey: ['scholarships'] });
+    
+    // Clear all scholarship-related queries
+    await queryClient.resetQueries({ queryKey: ['scholarships'] });
+    
+    // Force a fresh fetch
     await refetch();
+    
     toast({
-      title: "Refreshing Scholarships",
-      description: "Looking for new scholarship opportunities...",
+      title: "Finding New Scholarships",
+      description: "Searching for scholarship opportunities...",
     });
   };
 

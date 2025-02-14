@@ -39,6 +39,7 @@ export const fetchScholarships = async (page: number = 1, timestamp: number = Da
       console.log('User profile:', userProfile);
       console.log('Calling discover-scholarships with params:', { page, timestamp });
 
+      // Call the edge function with forceRefresh on first page
       const { data: discoveredData, error } = await supabase.functions.invoke(
         'discover-scholarships',
         {
@@ -46,7 +47,7 @@ export const fetchScholarships = async (page: number = 1, timestamp: number = Da
             userProfile,
             page,
             timestamp,
-            forceRefresh: page === 1 // Force refresh on first page load
+            forceRefresh: true // Always force refresh to get new scholarships
           }
         }
       );
@@ -56,29 +57,6 @@ export const fetchScholarships = async (page: number = 1, timestamp: number = Da
       if (error) {
         console.error('Error from discover-scholarships:', error);
         throw error;
-      }
-
-      // Direct database query as backup
-      if (!discoveredData?.scholarships || !Array.isArray(discoveredData.scholarships) || discoveredData.scholarships.length === 0) {
-        console.log('No scholarships from edge function, trying direct database query...');
-        const { data: directScholarships, error: directError } = await supabase
-          .from('scholarships')
-          .select('*')
-          .eq('is_active', true)
-          .gt('deadline', new Date().toISOString())
-          .order('created_at', { ascending: false })
-          .limit(10)
-          .range((page - 1) * 10, page * 10 - 1);
-
-        if (directError) {
-          console.error('Error in direct database query:', directError);
-          throw directError;
-        }
-
-        if (directScholarships && directScholarships.length > 0) {
-          console.log('Found scholarships via direct query:', directScholarships.length);
-          discoveredData.scholarships = directScholarships;
-        }
       }
 
       if (!discoveredData?.scholarships || !Array.isArray(discoveredData.scholarships)) {
