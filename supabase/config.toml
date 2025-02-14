@@ -4,4 +4,4 @@ project_id = "cewxnkpihtujqbwbzjcv"
 [functions]
 [functions.discover-scholarships]
 verify_jwt = false
-import_map = "functions/.modules/xhr.json"
+import_map = ".modules/xhr.json"
