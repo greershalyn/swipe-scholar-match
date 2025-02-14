@@ -107,7 +107,9 @@ serve(async (req: Request) => {
         try {
           const { error: insertError } = await supabase
             .from('scholarships')
-            .insert([scholarship]);
+            .insert([scholarship])
+            .select()
+            .single();
 
           if (insertError) {
             console.error('Error inserting scholarship:', insertError, scholarship);
