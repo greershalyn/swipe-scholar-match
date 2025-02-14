@@ -80,32 +80,42 @@ export const fetchScholarships = async (page: number = 1, timestamp: number = Da
     for (const scholarship of data.scholarships) {
       const { id: _, ...scholarshipData } = scholarship;
       
-      // First try to find existing scholarship by URL
-      const { data: existingScholarship } = await supabase
+      // First try to find existing scholarship by URL using maybeSingle()
+      const { data: existingScholarship, error: queryError } = await supabase
         .from('scholarships')
         .select('id')
         .eq('url', scholarshipData.url)
-        .single();
+        .maybeSingle();
+
+      if (queryError) {
+        console.error('Error checking existing scholarship:', queryError);
+        continue; // Skip this scholarship if there's an error checking it
+      }
 
       if (!existingScholarship) {
-        // If it doesn't exist, insert new scholarship
-        const { error: insertError } = await supabase
-          .from('scholarships')
-          .insert([{
-            ...scholarshipData,
-            title: scholarshipData.title,
-            amount: scholarshipData.amount,
-            deadline: scholarshipData.deadline,
-            provider: scholarshipData.provider,
-            url: scholarshipData.url,
-            description: scholarshipData.description,
-            category: scholarshipData.category || 'General',
-            requirements: scholarshipData.requirements || [],
-          }]);
+        try {
+          // If it doesn't exist, insert new scholarship
+          const { error: insertError } = await supabase
+            .from('scholarships')
+            .insert([{
+              ...scholarshipData,
+              title: scholarshipData.title,
+              amount: scholarshipData.amount,
+              deadline: scholarshipData.deadline,
+              provider: scholarshipData.provider,
+              url: scholarshipData.url,
+              description: scholarshipData.description,
+              category: scholarshipData.category || 'General',
+              requirements: scholarshipData.requirements || [],
+            }]);
 
-        if (insertError) {
-          console.error('Error inserting scholarship:', insertError);
-          throw insertError;
+          if (insertError) {
+            console.error('Error inserting scholarship:', insertError, scholarshipData);
+            continue; // Skip this scholarship if insertion fails
+          }
+        } catch (insertError) {
+          console.error('Exception inserting scholarship:', insertError);
+          continue; // Skip this scholarship if insertion throws
         }
       }
     }
@@ -130,12 +140,17 @@ export const fetchScholarships = async (page: number = 1, timestamp: number = Da
 
     // Fetch the scholarships from the database using the URLs
     const scholarshipUrls = data.scholarships.map(s => s.url);
-    const { data: dbScholarships } = await supabase
+    const { data: dbScholarships, error: fetchError } = await supabase
       .from('scholarships')
       .select('*')
       .in('url', scholarshipUrls);
 
-    if (!dbScholarships) {
+    if (fetchError) {
+      console.error('Error fetching scholarships:', fetchError);
+      return [];
+    }
+
+    if (!dbScholarships || dbScholarships.length === 0) {
       console.log('No scholarships found in database');
       return [];
     }
