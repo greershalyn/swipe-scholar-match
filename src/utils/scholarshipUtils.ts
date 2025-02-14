@@ -105,9 +105,10 @@ export const fetchScholarships = async (page: number = 1, timestamp: number = Da
       // Filter out swiped/saved scholarships and calculate match scores
       const scholarships = discoveredData.scholarships
         .filter((s: Scholarship) => !excludeIds.has(s.id))
-        .map((s: Scholarship) => ({
-          ...s,
-          match_score: calculateMatchScore(s, userProfile)
+        .map((scholarship: Scholarship) => ({
+          ...scholarship,
+          id: scholarship.id || crypto.randomUUID(), // Ensure each scholarship has an ID
+          match_score: calculateMatchScore(scholarship, userProfile)
         }))
         .sort((a: Scholarship, b: Scholarship) => (b.match_score || 0) - (a.match_score || 0));
 
