@@ -78,20 +78,16 @@ serve(async (req: Request) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    const currentDate = new Date();
-    const sixMonthsFromNow = new Date();
-    sixMonthsFromNow.setMonth(currentDate.getMonth() + 6);
+    console.log('Making OpenAI API request for new scholarships...');
 
     const searchPrompt = `
-      As a scholarship search assistant, find 5 currently available scholarships for a student with the following profile:
+      Generate 5 realistic scholarship opportunities for this student profile:
       - Major: ${userProfile.intended_major || 'Any'}
       - Education Level: ${userProfile.current_education_level || 'Any'}
       - Location: ${userProfile.state ? `${userProfile.state}, USA` : 'Any'}
       - GPA: ${userProfile.gpa || 'Not specified'}
-      - SAT Score: ${userProfile.sat_score || 'Not specified'}
-      - ACT Score: ${userProfile.act_score || 'Not specified'}
       
-      Return ONLY a valid JSON object with this exact structure:
+      Return ONLY a valid JSON array of scholarships with this structure:
       {
         "scholarships": [
           {
@@ -107,8 +103,6 @@ serve(async (req: Request) => {
         ]
       }`;
 
-    console.log('Making OpenAI API request with prompt:', searchPrompt);
-
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -116,7 +110,7 @@ serve(async (req: Request) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
@@ -127,36 +121,29 @@ serve(async (req: Request) => {
             content: searchPrompt
           }
         ],
-        temperature: 0.7
+        temperature: 0.7,
+        response_format: { type: "json_object" }
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenAI API error:', errorText);
+      console.error('OpenAI API error response:', errorText);
       throw new Error(`OpenAI API error: ${response.status}`);
     }
 
     const openAIData = await response.json();
-    console.log('OpenAI response:', JSON.stringify(openAIData, null, 2));
-
-    const content = openAIData.choices[0]?.message?.content;
-    if (!content) {
+    console.log('OpenAI raw response:', openAIData);
+    
+    if (!openAIData.choices?.[0]?.message?.content) {
       throw new Error('No content in OpenAI response');
     }
 
-    console.log('Raw content from OpenAI:', content);
-
-    let scholarshipsData;
-    try {
-      scholarshipsData = JSON.parse(content);
-    } catch (parseError) {
-      console.error('Error parsing OpenAI response:', parseError);
-      throw new Error('Invalid JSON from OpenAI');
-    }
+    const scholarshipsData = JSON.parse(openAIData.choices[0].message.content);
+    console.log('Parsed scholarships data:', scholarshipsData);
 
     if (!scholarshipsData.scholarships || !Array.isArray(scholarshipsData.scholarships)) {
-      throw new Error('Invalid scholarship data format');
+      throw new Error('Invalid scholarship data format from OpenAI');
     }
 
     // Transform and validate scholarships
@@ -176,6 +163,7 @@ serve(async (req: Request) => {
     }));
 
     // Insert new scholarships
+    console.log('Inserting validated scholarships:', validatedScholarships);
     for (const scholarship of validatedScholarships) {
       const { error: insertError } = await supabase
         .from('scholarships')
@@ -186,7 +174,6 @@ serve(async (req: Request) => {
       }
     }
 
-    console.log('Returning validated scholarships:', validatedScholarships);
     return new Response(
       JSON.stringify({
         success: true,
