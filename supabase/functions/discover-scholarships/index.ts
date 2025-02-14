@@ -22,15 +22,6 @@ serve(async (req: Request) => {
   }
 
   try {
-    if (req.method !== 'POST') {
-      throw new Error('Method not allowed');
-    }
-
-    const contentType = req.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      throw new Error('Content-Type must be application/json');
-    }
-
     const requestData = await req.json();
     console.log('Received request data:', JSON.stringify(requestData, null, 2));
 
@@ -41,6 +32,47 @@ serve(async (req: Request) => {
     const userProfile = requestData.userProfile;
     const page = requestData.page || 1;
     
+    // Get scholarships directly from the database first
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Missing Supabase configuration');
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    // Fetch scholarships from the database
+    const { data: existingScholarships, error: fetchError } = await supabase
+      .from('scholarships')
+      .select('*')
+      .eq('is_active', true)
+      .gt('deadline', new Date().toISOString())
+      .order('created_at', { ascending: false })
+      .limit(10)
+      .range((page - 1) * 10, page * 10 - 1);
+
+    if (fetchError) {
+      console.error('Error fetching scholarships:', fetchError);
+      throw fetchError;
+    }
+
+    // If we have enough scholarships, return them
+    if (existingScholarships && existingScholarships.length > 0) {
+      console.log('Returning existing scholarships:', existingScholarships);
+      return new Response(
+        JSON.stringify({
+          success: true,
+          scholarships: existingScholarships
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200
+        }
+      );
+    }
+
+    // If we don't have enough scholarships, generate new ones using OpenAI
     const openAiApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAiApiKey) {
       throw new Error('OpenAI API key not configured');
@@ -59,155 +91,112 @@ serve(async (req: Request) => {
       - SAT Score: ${userProfile.sat_score || 'Not specified'}
       - ACT Score: ${userProfile.act_score || 'Not specified'}
       
-      Please provide recommendations that meet these requirements:
-      1. Each scholarship must be unique
-      2. Include scholarships with varying award amounts
-      3. Deadlines should be between ${currentDate.toISOString().split('T')[0]} and ${sixMonthsFromNow.toISOString().split('T')[0]}
-      4. Include specific eligibility criteria
-      5. Focus on local scholarships if location is provided
-      
-      Format the response as a JSON object with a "scholarships" array. Each scholarship should include:
-      - title (string)
-      - amount (number, just the number without $ or commas)
-      - deadline (ISO date string)
-      - requirements (array of strings)
-      - provider (string)
-      - url (string)
-      - description (string)
-      - category (string: e.g., "Academic", "Athletic", "Merit-based", "Need-based", "Field-specific")`;
-
-    console.log('Making OpenAI API request...');
-    
-    try {
-      console.log('OpenAI Request Configuration:', {
-        model: 'gpt-3.5-turbo',
-        temperature: 0.7,
-        prompt_length: searchPrompt.length
-      });
-
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openAiApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a scholarship search assistant that provides detailed, accurate scholarship information in JSON format.'
-            },
-            {
-              role: 'user',
-              content: searchPrompt
-            }
-          ],
-          temperature: 0.7
-        }),
-      });
-
-      console.log('OpenAI Response Status:', response.status);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('OpenAI API error response:', errorText);
-        throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
-      }
-
-      const openAIData = await response.json();
-      console.log('OpenAI Response Headers:', Object.fromEntries(response.headers.entries()));
-      console.log('OpenAI raw response:', JSON.stringify(openAIData, null, 2));
-      
-      if (!openAIData.choices?.[0]?.message?.content) {
-        throw new Error('No content in OpenAI response');
-      }
-
-      let scholarshipsData;
-      try {
-        const content = openAIData.choices[0].message.content;
-        console.log('Raw OpenAI content:', content);
-        scholarshipsData = JSON.parse(content);
-        console.log('Parsed scholarships data:', JSON.stringify(scholarshipsData, null, 2));
-      } catch (parseError) {
-        console.error('Error parsing OpenAI response:', parseError);
-        console.log('Failed content:', openAIData.choices[0].message.content);
-        throw new Error('Failed to parse OpenAI response as JSON');
-      }
-
-      if (!scholarshipsData.scholarships || !Array.isArray(scholarshipsData.scholarships)) {
-        console.error('Invalid data structure:', scholarshipsData);
-        throw new Error('Invalid scholarship data format from OpenAI');
-      }
-
-      // Validate and clean each scholarship
-      const validatedScholarships = scholarshipsData.scholarships.map(s => {
-        const scholarship = {
-          title: String(s.title || 'Untitled Scholarship'),
-          amount: Number(s.amount) || 0,
-          deadline: new Date(s.deadline).toISOString(),
-          requirements: Array.isArray(s.requirements) ? s.requirements.map(String) : [],
-          provider: String(s.provider || 'Unknown Provider'),
-          url: String(s.url || `https://example.com/scholarship/${crypto.randomUUID()}`),
-          description: String(s.description || ''),
-          category: String(s.category || 'General'),
-          id: crypto.randomUUID(),
-          is_active: true,
-          verified: false,
-          last_verified_at: new Date().toISOString()
-        };
-        console.log('Validated scholarship:', scholarship);
-        return scholarship;
-      });
-
-      // Insert scholarships into the database
-      const supabaseUrl = Deno.env.get('SUPABASE_URL');
-      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-
-      if (!supabaseUrl || !supabaseKey) {
-        throw new Error('Missing Supabase configuration');
-      }
-
-      const supabase = createClient(supabaseUrl, supabaseKey);
-      console.log('Inserting scholarships into database...');
-
-      for (const scholarship of validatedScholarships) {
-        try {
-          const { data, error: insertError } = await supabase
-            .from('scholarships')
-            .upsert([scholarship], { 
-              onConflict: 'id',
-              ignoreDuplicates: false 
-            })
-            .select();
-
-          if (insertError) {
-            console.error('Error inserting scholarship:', insertError);
-            throw insertError;
-          } else {
-            console.log('Successfully inserted scholarship:', scholarship.title);
+      Return ONLY a valid JSON object with this exact structure:
+      {
+        "scholarships": [
+          {
+            "title": "string",
+            "amount": number,
+            "deadline": "YYYY-MM-DD",
+            "requirements": ["string"],
+            "provider": "string",
+            "url": "string",
+            "description": "string",
+            "category": "string"
           }
-        } catch (error) {
-          console.error('Exception inserting scholarship:', error);
-          throw error;
-        }
-      }
+        ]
+      }`;
 
-      console.log('Successfully processed all scholarships');
-      return new Response(
-        JSON.stringify({
-          success: true,
-          scholarships: validatedScholarships
-        }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200
-        }
-      );
-    } catch (openaiError) {
-      console.error('OpenAI API error:', openaiError);
-      throw openaiError;
+    console.log('Making OpenAI API request with prompt:', searchPrompt);
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAiApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a JSON-only response API. Only return valid JSON objects with scholarships data.'
+          },
+          {
+            role: 'user',
+            content: searchPrompt
+          }
+        ],
+        temperature: 0.7
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('OpenAI API error:', errorText);
+      throw new Error(`OpenAI API error: ${response.status}`);
     }
+
+    const openAIData = await response.json();
+    console.log('OpenAI response:', JSON.stringify(openAIData, null, 2));
+
+    const content = openAIData.choices[0]?.message?.content;
+    if (!content) {
+      throw new Error('No content in OpenAI response');
+    }
+
+    console.log('Raw content from OpenAI:', content);
+
+    let scholarshipsData;
+    try {
+      scholarshipsData = JSON.parse(content);
+    } catch (parseError) {
+      console.error('Error parsing OpenAI response:', parseError);
+      throw new Error('Invalid JSON from OpenAI');
+    }
+
+    if (!scholarshipsData.scholarships || !Array.isArray(scholarshipsData.scholarships)) {
+      throw new Error('Invalid scholarship data format');
+    }
+
+    // Transform and validate scholarships
+    const validatedScholarships = scholarshipsData.scholarships.map(s => ({
+      id: crypto.randomUUID(),
+      title: s.title,
+      amount: Number(s.amount),
+      deadline: new Date(s.deadline).toISOString(),
+      requirements: s.requirements || [],
+      provider: s.provider || 'Unknown Provider',
+      url: s.url || `https://example.com/scholarship/${crypto.randomUUID()}`,
+      description: s.description || '',
+      category: s.category || 'General',
+      is_active: true,
+      verified: false,
+      last_verified_at: new Date().toISOString()
+    }));
+
+    // Insert new scholarships
+    for (const scholarship of validatedScholarships) {
+      const { error: insertError } = await supabase
+        .from('scholarships')
+        .upsert([scholarship]);
+
+      if (insertError) {
+        console.error('Error inserting scholarship:', insertError);
+      }
+    }
+
+    console.log('Returning validated scholarships:', validatedScholarships);
+    return new Response(
+      JSON.stringify({
+        success: true,
+        scholarships: validatedScholarships
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200
+      }
+    );
 
   } catch (error) {
     console.error('Error in discover-scholarships function:', error);
@@ -219,7 +208,7 @@ serve(async (req: Request) => {
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 // Return 200 even for errors to ensure the error message gets through
+        status: 200
       }
     );
   }
