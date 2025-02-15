@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -70,7 +71,7 @@ const Index = () => {
             SwipeScholar
           </h1>
           <p className="text-lg md:text-2xl text-white mb-8 max-w-2xl mx-auto leading-relaxed">
-            Find Your Perfect Scholarship Match with a Simple Swipe! Join thousands of successful students who found their funding through SwipeScholar.
+            Find Your Perfect Scholarship Match with a Simple Swipe! Join students across the country who are securing their funding through SwipeScholar.
           </p>
           {!user && (
             <Button 
