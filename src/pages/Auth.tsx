@@ -28,7 +28,6 @@ const Auth = () => {
       return false;
     }
 
-    // If they have a full_name set, we consider their profile complete
     return !!data?.full_name;
   };
 
@@ -41,12 +40,24 @@ const Auth = () => {
           email,
           password,
         });
-        if (error) throw error;
-        toast({
-          title: "Success!",
-          description: "Please check your email to verify your account.",
-        });
-        navigate("/questionnaire");
+        
+        // Check specifically for user_already_exists error
+        if (error?.message.includes("User already registered")) {
+          toast({
+            title: "Account Exists",
+            description: "An account with this email already exists. Please sign in instead.",
+            variant: "destructive",
+          });
+          setIsSignUp(false); // Switch to sign in mode
+        } else if (error) {
+          throw error;
+        } else {
+          toast({
+            title: "Success!",
+            description: "Please check your email to verify your account.",
+          });
+          navigate("/questionnaire");
+        }
       } else {
         const { data: { user }, error } = await supabase.auth.signInWithPassword({
           email,
