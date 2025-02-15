@@ -9,11 +9,13 @@ import { saveScholarship, recordLeftSwipe } from '@/utils/scholarshipUtils';
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from 'lucide-react';
 import { Scholarship } from '@/types/scholarship';
+import { Progress } from "@/components/ui/progress"
 
 const ScholarshipSwiper = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState<'left' | 'right' | null>(null);
   const [refreshTimestamp, setRefreshTimestamp] = useState(Date.now());
+  const [progress, setProgress] = useState(0);
   const queryClient = useQueryClient();
 
   const { 
@@ -25,6 +27,23 @@ const ScholarshipSwiper = () => {
     isFetchingNextPage, 
     refetch 
   } = useScholarships(refreshTimestamp);
+
+  // Simulate loading progress
+  useEffect(() => {
+    if (isLoading) {
+      const timer = setInterval(() => {
+        setProgress((oldProgress) => {
+          const newProgress = Math.min(oldProgress + 2, 90);
+          return newProgress;
+        });
+      }, 100);
+
+      return () => {
+        clearInterval(timer);
+        setProgress(0);
+      };
+    }
+  }, [isLoading]);
 
   // Type-safe way to flatten all pages of scholarships into a single array
   const allScholarships = data?.pages.flatMap(page => page.scholarships) ?? [];
@@ -132,8 +151,11 @@ const ScholarshipSwiper = () => {
 
   if (isLoading && !allScholarships.length) {
     return (
-      <div className="flex items-center justify-center h-[600px]">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      <div className="flex flex-col items-center justify-center h-[600px] space-y-4">
+        <div className="w-full max-w-xs space-y-4">
+          <Progress value={progress} className="h-2" />
+          <p className="text-center text-muted-foreground">Finding scholarships...</p>
+        </div>
       </div>
     );
   }
