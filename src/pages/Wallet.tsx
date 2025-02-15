@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { ExternalLink, X, ArrowLeft } from 'lucide-react';
@@ -24,6 +24,7 @@ interface SavedScholarship {
 const WalletPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { data: savedScholarships, isLoading } = useQuery({
     queryKey: ['saved-scholarships'],
@@ -72,6 +73,12 @@ const WalletPage = () => {
         .eq('profile_id', user.id);
 
       if (error) throw error;
+
+      // Immediately update the cache by removing the deleted scholarship
+      queryClient.setQueryData(['saved-scholarships'], (oldData: SavedScholarship[] | undefined) => {
+        if (!oldData) return oldData;
+        return oldData.filter(saved => saved.scholarship.id !== scholarshipId);
+      });
 
       toast({
         title: "Scholarship removed",
