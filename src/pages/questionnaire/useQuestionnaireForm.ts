@@ -65,10 +65,12 @@ export const useQuestionnaireForm = () => {
         setFormData({
           ...formData,
           ...data,
-          gpa: data.gpa?.toString() ?? "",
-          sat_score: data.sat_score?.toString() ?? "",
-          act_score: data.act_score?.toString() ?? "",
-          household_income: data.household_income?.toString() ?? "",
+          // Safely convert numeric values to strings, handling null/undefined cases
+          gpa: data.gpa != null ? data.gpa.toString() : "",
+          sat_score: data.sat_score != null ? data.sat_score.toString() : "",
+          act_score: data.act_score != null ? data.act_score.toString() : "",
+          household_income: data.household_income != null ? data.household_income.toString() : "",
+          // Ensure arrays are initialized even if null/undefined
           rewards_achievements: data.rewards_achievements || [],
           volunteering_experience: data.volunteering_experience || [],
           organizations: data.organizations || [],
