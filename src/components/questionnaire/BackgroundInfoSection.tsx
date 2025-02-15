@@ -16,7 +16,7 @@ export const BackgroundInfoSection = ({ formData, setFormData }: BackgroundInfoP
         <Label>First Generation Student</Label>
         <RadioGroup
           name="first_generation_student"
-          value={formData.first_generation_student.toString()}
+          value={(formData.first_generation_student ?? false).toString()}
           onValueChange={(value) =>
             setFormData((prev: any) => ({
               ...prev,
