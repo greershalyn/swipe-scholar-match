@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,16 +18,28 @@ const Index = () => {
   const isMobile = useIsMobile();
 
   useEffect(() => {
+    // Initialize auth state
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setIsAdmin(session?.user?.email === 'admin@example.com');
+      if (session) {
+        setUser(session.user);
+        setIsAdmin(session.user.email === 'admin@example.com');
+      } else {
+        setUser(null);
+        setIsAdmin(false);
+      }
     });
 
+    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setIsAdmin(session?.user?.email === 'admin@example.com');
+      if (session) {
+        setUser(session.user);
+        setIsAdmin(session.user.email === 'admin@example.com');
+      } else {
+        setUser(null);
+        setIsAdmin(false);
+      }
     });
 
     return () => subscription.unsubscribe();
