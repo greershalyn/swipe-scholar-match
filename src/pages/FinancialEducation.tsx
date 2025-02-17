@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { ExternalLink, Book, DollarSign, GraduationCap, ShieldCheck, PiggyBank } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,8 +10,17 @@ const FinancialEducation = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#9b87f5] via-[#D946EF] to-[#FDE1D3]">
       <div className="container px-4 py-8">
-        <div className="flex justify-end mb-6">
-          <AccountDropdown />
+        <div className="flex flex-col items-center">
+          <div className="w-full flex justify-end mb-4">
+            <AccountDropdown />
+          </div>
+          <Link to="/" className="mb-8">
+            <img 
+              src="/lovable-uploads/24f07198-1e4c-4eea-8e07-259aa77d1711.png"
+              alt="SwipeScholar Logo"
+              className="h-20 w-auto"
+            />
+          </Link>
         </div>
 
         <div className="max-w-4xl mx-auto">
