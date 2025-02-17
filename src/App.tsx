@@ -11,6 +11,7 @@ import NotFound from "./pages/NotFound";
 import WalletPage from "./pages/Wallet";
 import FinancialEducation from "./pages/FinancialEducation";
 import Footer from "./components/Footer";
+import Header from "./components/Header";
 
 const queryClient = new QueryClient();
 
@@ -19,6 +20,7 @@ const App = () => (
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
         <div className="min-h-screen flex flex-col">
+          <Header />
           <div className="flex-grow">
             <Routes>
               <Route path="/" element={<Index />} />
