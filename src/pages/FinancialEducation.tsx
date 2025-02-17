@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ExternalLink, Book, DollarSign, GraduationCap, ShieldCheck, PiggyBank } from 'lucide-react';
@@ -9,7 +10,7 @@ const FinancialEducation = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#9b87f5] via-[#D946EF] to-[#FDE1D3]">
       <div className="container px-4 py-8">
-        <div className="flex justify-end items-center mb-8 gap-8">
+        <div className="flex justify-between items-center mb-8">
           <Link to="/">
             <img 
               src="/lovable-uploads/24f07198-1e4c-4eea-8e07-259aa77d1711.png"
