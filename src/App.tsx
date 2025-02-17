@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Questionnaire from "./pages/Questionnaire";
 import NotFound from "./pages/NotFound";
 import WalletPage from "./pages/Wallet";
+import FinancialEducation from "./pages/FinancialEducation";
 import Footer from "./components/Footer";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/questionnaire" element={<Questionnaire />} />
               <Route path="/wallet" element={<WalletPage />} />
+              <Route path="/financial-education" element={<FinancialEducation />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
