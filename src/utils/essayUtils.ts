@@ -1,3 +1,4 @@
+
 import { PromptCategories, EssaySuggestion, ExpandedFramework } from "@/types/essay";
 
 export const promptCategories: PromptCategories = {
@@ -134,133 +135,233 @@ export const generateExpandedFramework = (
   const isAdversityPrompt = topicLower.includes('challenge') || topicLower.includes('obstacle');
   const isPassionPrompt = topicLower.includes('passion') || topicLower.includes('interest');
 
+  // Extract key themes from user's response
+  const userThemes = extractThemes(response);
+  const personalizedHook = generatePersonalizedHook(response, suggestion.hook);
+
   if (isLeadershipPrompt) {
     return {
       title: suggestion.title,
-      hook: suggestion.hook,
+      hook: personalizedHook,
       talkingPoints: [
         {
-          title: "Vision and Initiative",
+          title: "Vision Through Personal Experience",
           points: [
-            "Describe how you identified the need for leadership in this situation",
-            "Explain your approach to inspiring and motivating others",
-            "Share specific examples of how you turned your vision into reality"
+            `Describe how ${userThemes.context} led you to identify the need for leadership`,
+            `Share specific moments where you had to step up, like when ${userThemes.keyMoment}`,
+            "Connect your unique perspective to how you approached leadership differently"
           ]
         },
         {
-          title: "Building and Supporting Your Team",
+          title: "Transforming Challenges into Opportunities",
           points: [
-            "Discuss how you brought people together and fostered collaboration",
-            "Share challenges in team management and how you overcame them",
-            "Highlight specific strategies that proved successful"
+            `Detail how you overcame specific obstacles, such as ${userThemes.challenge}`,
+            "Explain the strategies you developed to inspire and unite others",
+            `Show how your experience with ${userThemes.skill} helped you succeed`
           ]
         },
         {
-          title: "Impact and Growth",
+          title: "Creating Lasting Impact",
           points: [
-            "Detail the measurable outcomes of your leadership",
-            "Explain how this experience changed your leadership style",
-            "Describe lessons learned that will shape your future approach"
+            `Highlight the tangible results of your leadership, particularly ${userThemes.achievement}`,
+            "Share specific feedback or changes you observed in your community",
+            "Describe how this experience shaped your leadership philosophy"
           ]
         }
       ],
-      conclusion: "Connect these leadership experiences to your academic goals and future career aspirations, showing how they've prepared you for greater challenges ahead."
+      conclusion: `Your journey of ${userThemes.growth} has equipped you with unique insights that will enrich your college experience and future career in ${userThemes.aspiration}. Your leadership style, developed through real-world challenges, will continue to create positive change in your academic and professional communities.`
     };
   } else if (isAdversityPrompt) {
     return {
       title: suggestion.title,
-      hook: suggestion.hook,
+      hook: personalizedHook,
       talkingPoints: [
         {
-          title: "Understanding the Challenge",
+          title: "Facing the Unexpected",
           points: [
-            "Describe the specific obstacles you faced and their impact",
-            "Explain the broader context and why this challenge was significant",
-            "Share your initial reactions and emotions"
+            `Describe the specific moment when ${userThemes.challenge} became your reality`,
+            `Share the emotional impact of ${userThemes.context} on your perspective`,
+            "Detail your initial response and the support systems you discovered"
           ]
         },
         {
-          title: "Taking Action",
+          title: "Finding Inner Strength",
           points: [
-            "Detail the specific steps you took to address the challenge",
-            "Highlight the resources and support systems you utilized",
-            "Explain your problem-solving process and decision-making"
+            `Explain how you developed ${userThemes.skill} to overcome this challenge`,
+            `Share a specific example of when you had to ${userThemes.action}`,
+            "Describe the moment you realized you were growing stronger"
           ]
         },
         {
-          title: "Growth and Transformation",
+          title: "Transformation Through Adversity",
           points: [
-            "Share how this experience changed your perspective",
-            "Describe the skills and strengths you developed",
-            "Explain how these lessons apply to other areas of your life"
+            `Detail how this experience changed your approach to ${userThemes.growth}`,
+            `Explain how overcoming ${userThemes.challenge} prepared you for future challenges`,
+            "Share the lessons that will guide your college journey"
           ]
         }
       ],
-      conclusion: "Demonstrate how overcoming this challenge has equipped you with valuable skills and perspectives that will contribute to your success in college and beyond."
+      conclusion: `The adversity you faced with ${userThemes.context} has shaped you into someone who not only perseveres but thrives in challenging situations. These experiences will be invaluable as you pursue your goals in ${userThemes.aspiration} and contribute to your college community.`
     };
   } else if (isPassionPrompt) {
     return {
       title: suggestion.title,
-      hook: suggestion.hook,
+      hook: personalizedHook,
       talkingPoints: [
         {
-          title: "Discovery and Development",
+          title: "The Spark of Discovery",
           points: [
-            "Share the origin story of your passion",
-            "Describe key moments that deepened your interest",
-            "Explain how you've developed your expertise"
+            `Share the moment when ${userThemes.keyMoment} ignited your passion`,
+            `Describe how ${userThemes.context} shaped your initial interest`,
+            "Detail the early steps you took to explore this passion"
           ]
         },
         {
-          title: "Impact and Innovation",
+          title: "Growing Through Experience",
           points: [
-            "Highlight specific projects or initiatives you've undertaken",
-            "Describe how your passion benefits others",
-            "Share unique perspectives you've gained"
+            `Explain how you developed ${userThemes.skill} through your dedication`,
+            `Share specific projects or initiatives, like ${userThemes.achievement}`,
+            "Describe how your passion has evolved and deepened over time"
           ]
         },
         {
-          title: "Future Vision",
+          title: "Creating Impact Through Passion",
           points: [
-            "Connect your passion to your chosen field of study",
-            "Describe how you plan to expand your impact",
-            "Share your long-term goals and aspirations"
+            `Detail how your work in ${userThemes.context} benefits others`,
+            "Share specific examples of positive change you've created",
+            `Explain how this passion connects to ${userThemes.aspiration}`
           ]
         }
       ],
-      conclusion: "Show how your passion has shaped your academic choices and career goals, demonstrating your commitment to continued growth and impact in your field."
+      conclusion: `Your passion for ${userThemes.context} has not only shaped your personal growth but has prepared you to make meaningful contributions in ${userThemes.aspiration}. This dedication will continue to drive your success in college and beyond.`
     };
   } else {
     return {
       title: suggestion.title,
-      hook: suggestion.hook,
+      hook: personalizedHook,
       talkingPoints: [
         {
-          title: "Personal Journey",
+          title: "A Journey of Personal Growth",
           points: [
-            "Share the context and significance of your experience",
-            "Describe key moments of learning or realization",
-            "Explain how this experience shaped your values"
+            `Share how ${userThemes.context} became a defining part of your story`,
+            `Describe the significance of ${userThemes.keyMoment}`,
+            "Detail how this experience shaped your values and perspective"
           ]
         },
         {
-          title: "Skills and Growth",
+          title: "Lessons Through Experience",
           points: [
-            "Detail specific abilities you've developed",
-            "Highlight how you've applied these skills",
-            "Share examples of personal growth"
+            `Explain how you developed ${userThemes.skill} through this journey`,
+            `Share specific examples of growth, like ${userThemes.achievement}`,
+            "Describe how these experiences changed your approach to challenges"
           ]
         },
         {
-          title: "Future Impact",
+          title: "Looking Forward",
           points: [
-            "Connect your experience to your academic interests",
-            "Describe how you'll apply these lessons in college",
-            "Share your vision for future contributions"
+            `Connect your experience with ${userThemes.context} to your college goals`,
+            `Detail how ${userThemes.growth} will help you succeed academically`,
+            `Share your vision for impacting ${userThemes.aspiration}`
           ]
         }
       ],
-      conclusion: "Demonstrate how this experience has prepared you for success in college and beyond, showing your readiness to make meaningful contributions to your chosen field."
+      conclusion: `Your experiences with ${userThemes.context} have equipped you with unique perspectives and skills that will enrich your college journey and future career in ${userThemes.aspiration}. Your story demonstrates the kind of student who will make meaningful contributions to campus life and beyond.`
     };
   }
 };
+
+interface ExtractedThemes {
+  context: string;
+  keyMoment: string;
+  challenge: string;
+  skill: string;
+  action: string;
+  achievement: string;
+  growth: string;
+  aspiration: string;
+}
+
+function extractThemes(response: string): ExtractedThemes {
+  // Extract key phrases and themes from the user's response
+  const words = response.toLowerCase().split(' ');
+  const context = extractMeaningfulPhrase(response, 0);
+  const keyMoment = extractMeaningfulPhrase(response, 1);
+  const challenge = findChallengePhrase(response);
+  const skill = findSkillPhrase(response);
+  const action = findActionPhrase(response);
+  const achievement = findAchievementPhrase(response);
+  const growth = findGrowthPhrase(response);
+  const aspiration = findAspirationPhrase(response);
+
+  return {
+    context,
+    keyMoment,
+    challenge,
+    skill,
+    action,
+    achievement,
+    growth,
+    aspiration
+  };
+}
+
+function extractMeaningfulPhrase(text: string, startIndex: number): string {
+  const sentences = text.split('.');
+  return sentences[startIndex] ? sentences[startIndex].trim() : text.slice(0, 30).trim();
+}
+
+function findChallengePhrase(text: string): string {
+  // Extract phrases related to challenges
+  const challengeWords = ['challenge', 'difficult', 'struggle', 'obstacle'];
+  return findPhraseContaining(text, challengeWords) || "this challenge";
+}
+
+function findSkillPhrase(text: string): string {
+  // Extract phrases related to skills
+  const skillWords = ['learned', 'developed', 'mastered', 'improved'];
+  return findPhraseContaining(text, skillWords) || "these skills";
+}
+
+function findActionPhrase(text: string): string {
+  // Extract phrases related to actions taken
+  const actionWords = ['took', 'created', 'organized', 'started'];
+  return findPhraseContaining(text, actionWords) || "take action";
+}
+
+function findAchievementPhrase(text: string): string {
+  // Extract phrases related to achievements
+  const achievementWords = ['accomplished', 'achieved', 'succeeded', 'completed'];
+  return findPhraseContaining(text, achievementWords) || "your achievement";
+}
+
+function findGrowthPhrase(text: string): string {
+  // Extract phrases related to personal growth
+  const growthWords = ['grew', 'changed', 'evolved', 'developed'];
+  return findPhraseContaining(text, growthWords) || "personal growth";
+}
+
+function findAspirationPhrase(text: string): string {
+  // Extract phrases related to future aspirations
+  const aspirationWords = ['hope', 'dream', 'goal', 'future'];
+  return findPhraseContaining(text, aspirationWords) || "your chosen field";
+}
+
+function findPhraseContaining(text: string, keywords: string[]): string {
+  const sentences = text.split('.');
+  for (const sentence of sentences) {
+    for (const keyword of keywords) {
+      if (sentence.toLowerCase().includes(keyword)) {
+        return sentence.trim();
+      }
+    }
+  }
+  return '';
+}
+
+function generatePersonalizedHook(response: string, defaultHook: string): string {
+  const firstSentence = response.split('.')[0];
+  if (firstSentence && firstSentence.length > 20) {
+    return `"${firstSentence.trim()}." This moment marked the beginning of a journey that would shape my future.`;
+  }
+  return defaultHook;
+}
