@@ -8,6 +8,12 @@ export async function generateExpandedFramework(
   personalResponse: string
 ): Promise<ExpandedFramework> {
   try {
+    console.log('Generating framework with:', {
+      suggestion,
+      essayTopic,
+      personalResponse
+    });
+
     const { data, error } = await supabase.functions.invoke('generate-expanded-framework', {
       body: {
         essayTopic,
@@ -16,19 +22,30 @@ export async function generateExpandedFramework(
       }
     });
 
+    console.log('Function response:', { data, error });
+
     if (error) {
-      console.error('Error generating expanded framework:', error);
+      console.error('Supabase function error:', error);
       throw error;
     }
 
     if (!data?.framework) {
+      console.error('No framework data in response:', data);
       throw new Error('No framework data received');
     }
 
-    // Parse the framework string if it's returned as a string
+    // Parse the framework if it's a string
     const frameworkData = typeof data.framework === 'string' 
       ? JSON.parse(data.framework) 
       : data.framework;
+
+    console.log('Parsed framework data:', frameworkData);
+
+    // Validate framework structure
+    if (!frameworkData.title || !frameworkData.hook || 
+        !Array.isArray(frameworkData.talkingPoints) || !frameworkData.conclusion) {
+      throw new Error('Invalid framework structure received');
+    }
 
     return frameworkData;
   } catch (error) {
