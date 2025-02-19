@@ -4,8 +4,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Add CSP meta tag to allow Google AdSense -->
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests; default-src 'self' https: 'unsafe-inline' 'unsafe-eval' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com https://partner.googleadservices.com https://tpc.googlesyndication.com https://www.google-analytics.com https://www.googletagservices.com https://cdn.gpteng.co; frame-src 'self' https: data:; img-src 'self' https: data:;" />
+    <!-- Updated CSP meta tag to properly allow Google AdSense -->
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests; default-src 'self' https: 'unsafe-inline' 'unsafe-eval' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com https://partner.googleadservices.com https://tpc.googlesyndication.com https://www.google-analytics.com https://www.googletagservices.com https://cdn.gpteng.co; connect-src 'self' https: ws: wss:; frame-src 'self' https: data:; img-src 'self' https: data:; style-src 'self' 'unsafe-inline' https:;" />
     <title>SwipeScholar</title>
     <meta name="description" content="Scholarships, Simplified." />
     <meta name="author" content="SwipeScholar" />
@@ -13,10 +13,6 @@
     
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6363997079491401" crossorigin="anonymous"></script>
-    <!-- Google AdSense Verification Code -->
-    <!--
-    google.com, pub-6363997079491401, DIRECT, f08c47fec0942fa0
-    -->
     
     <!-- Primary Meta Tags -->
     <meta name="title" content="SwipeScholar - Scholarships, Simplified" />
