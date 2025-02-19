@@ -6,3 +6,5 @@ verify_jwt = false
 verify_jwt = false
 [store-scholarships]
 verify_jwt = false
+[generate-expanded-framework]
+verify_jwt = false
