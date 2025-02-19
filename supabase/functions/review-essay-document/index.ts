@@ -1,41 +1,13 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-const supabaseUrl = Deno.env.get('SUPABASE_URL');
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-async function extractTextFromFile(fileData: ArrayBuffer, mimeType: string): Promise<string> {
-  try {
-    console.log('Starting text extraction for mime type:', mimeType);
-    
-    if (mimeType.includes('pdf')) {
-      console.log('Processing PDF document...');
-      const { default: pdfParse } = await import('pdf-parse');
-      const dataArray = new Uint8Array(fileData);
-      const pdfData = await pdfParse(dataArray);
-      console.log('PDF text extracted successfully');
-      return pdfData.text;
-    } else if (mimeType.includes('word') || mimeType.includes('document')) {
-      console.log('Processing Word document...');
-      const { extractRawText } = await import('mammoth');
-      const result = await extractRawText({ arrayBuffer: fileData });
-      console.log('Word document text extracted successfully');
-      return result.value;
-    }
-    throw new Error(`Unsupported file type: ${mimeType}`);
-  } catch (error) {
-    console.error('Text extraction error details:', error);
-    throw new Error(`Text extraction failed: ${error.message}`);
-  }
-}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -43,47 +15,16 @@ serve(async (req) => {
   }
 
   try {
-    const { filePath, mimeType } = await req.json();
-    console.log('Starting document review process for:', filePath, 'mime type:', mimeType);
+    const { text } = await req.json();
+    console.log('Starting essay review process');
 
-    if (!filePath || !mimeType) {
-      throw new Error('Missing required parameters: filePath or mimeType');
+    if (!text || typeof text !== 'string') {
+      throw new Error('Missing or invalid essay text');
     }
 
     if (!openAIApiKey) {
       throw new Error('OpenAI API key is not configured');
     }
-
-    console.log('Initializing Supabase client...');
-    const supabase = createClient(supabaseUrl ?? '', supabaseServiceKey ?? '');
-
-    console.log('Downloading file from storage...');
-    const { data: fileData, error: downloadError } = await supabase.storage
-      .from('essay-documents')
-      .download(filePath);
-
-    if (downloadError) {
-      console.error('File download error:', downloadError);
-      throw new Error(`Failed to download file: ${downloadError.message}`);
-    }
-
-    if (!fileData) {
-      throw new Error('No file data received from storage');
-    }
-
-    console.log('Converting file to ArrayBuffer...');
-    const arrayBuffer = await fileData.arrayBuffer();
-    console.log('File converted to ArrayBuffer successfully');
-    
-    console.log('Extracting text from document...');
-    const text = await extractTextFromFile(arrayBuffer, mimeType);
-
-    if (!text || text.length < 10) {
-      throw new Error('Extracted text is too short or empty');
-    }
-
-    console.log('Text extracted successfully, length:', text.length);
-    console.log('Sample of extracted text:', text.substring(0, 100));
 
     console.log('Sending text to OpenAI for analysis...');
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -93,7 +34,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4',  // Changed from invalid model name 'gpt-4o-mini'
+        model: 'gpt-4',
         messages: [
           {
             role: 'system',
@@ -153,20 +94,14 @@ serve(async (req) => {
 
     console.log('Successfully generated review results:', results.length, 'issues found');
 
-    // Clean up: Delete the uploaded file
-    console.log('Cleaning up: removing uploaded file...');
-    await supabase.storage
-      .from('essay-documents')
-      .remove([filePath]);
-
     return new Response(JSON.stringify({ results }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Document review error:', error);
+    console.error('Essay review error:', error);
     return new Response(
       JSON.stringify({ 
-        error: 'Document review failed', 
+        error: 'Essay review failed', 
         details: error.message,
       }), 
       {

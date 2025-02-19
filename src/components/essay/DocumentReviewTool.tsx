@@ -1,9 +1,11 @@
 
 import React, { useState } from 'react';
-import { Upload, FileType, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 
 interface DocumentReviewError {
@@ -16,70 +18,28 @@ interface DocumentReviewError {
 
 export const DocumentReviewTool = () => {
   const { toast } = useToast();
-  const [isUploading, setIsUploading] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [essayText, setEssayText] = useState('');
   const [reviewResults, setReviewResults] = useState<DocumentReviewError[]>([]);
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const handleAnalyzeEssay = async () => {
+    if (!essayText.trim()) {
+      toast({
+        title: "Essay Required",
+        description: "Please enter your essay text before analyzing.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    // Reset states
+    setIsAnalyzing(true);
     setReviewResults([]);
-    setIsUploading(false);
-    setIsAnalyzing(false);
-
-    // Validate file type and size
-    const mimeType = file.type;
-    console.log('File type:', mimeType);
-    
-    if (!mimeType.includes('pdf') && !mimeType.includes('word') && !mimeType.includes('document')) {
-      toast({
-        title: "Invalid File Type",
-        description: "Please upload a PDF or Word document (doc, docx).",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (file.size > 10 * 1024 * 1024) { // 10MB limit
-      toast({
-        title: "File Too Large",
-        description: "Please upload a file smaller than 10MB.",
-        variant: "destructive",
-      });
-      return;
-    }
 
     try {
-      setIsUploading(true);
-
-      // Upload file to Supabase storage
-      console.log('Uploading file to storage...');
-      const fileName = `${crypto.randomUUID()}-${file.name}`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('essay-documents')
-        .upload(fileName, file);
-
-      if (uploadError) {
-        console.error('Upload error:', uploadError);
-        throw new Error(`Upload failed: ${uploadError.message}`);
-      }
-
-      if (!uploadData?.path) {
-        throw new Error('No upload path received');
-      }
-
-      setIsAnalyzing(true);
-      console.log('File uploaded, starting analysis...');
-
-      // Call the review function
+      console.log('Starting essay analysis...');
       const { data: reviewData, error: reviewError } = await supabase.functions
         .invoke('review-essay-document', {
-          body: { 
-            filePath: uploadData.path,
-            mimeType: mimeType
-          }
+          body: { text: essayText }
         });
 
       if (reviewError) {
@@ -94,47 +54,39 @@ export const DocumentReviewTool = () => {
       console.log('Analysis complete:', reviewData.results.length, 'issues found');
       setReviewResults(reviewData.results);
       toast({
-        title: "Document Analyzed",
+        title: "Essay Analyzed",
         description: `Found ${reviewData.results.length} suggestions for improvement.`,
       });
     } catch (error) {
-      console.error('Document processing error:', error);
+      console.error('Essay analysis error:', error);
       toast({
-        title: "Error Processing Document",
-        description: error.message || "There was an error analyzing your document. Please try again.",
+        title: "Error Analyzing Essay",
+        description: error.message || "There was an error analyzing your essay. Please try again.",
         variant: "destructive",
       });
     } finally {
-      setIsUploading(false);
       setIsAnalyzing(false);
     }
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg border-gray-300 bg-gray-50">
-        <input
-          type="file"
-          accept=".pdf,.doc,.docx"
-          onChange={handleFileUpload}
-          className="hidden"
-          id="file-upload"
-          disabled={isUploading || isAnalyzing}
+      <div className="space-y-4">
+        <Label htmlFor="essay-text">Paste your essay here</Label>
+        <Textarea
+          id="essay-text"
+          value={essayText}
+          onChange={(e) => setEssayText(e.target.value)}
+          placeholder="Enter your essay text for review..."
+          className="min-h-[200px] w-full p-4"
         />
-        <label
-          htmlFor="file-upload"
-          className="cursor-pointer flex flex-col items-center"
+        <Button 
+          onClick={handleAnalyzeEssay}
+          disabled={isAnalyzing || !essayText.trim()}
+          className="w-full"
         >
-          <Upload className="h-12 w-12 text-gray-400 mb-4" />
-          <span className="text-sm font-medium text-gray-600">
-            {isUploading ? "Uploading..." : 
-             isAnalyzing ? "Analyzing..." :
-             "Upload your essay (PDF or Word)"}
-          </span>
-          <span className="text-xs text-gray-500 mt-1">
-            Click or drag and drop
-          </span>
-        </label>
+          {isAnalyzing ? "Analyzing..." : "Analyze Essay"}
+        </Button>
       </div>
 
       {reviewResults.length > 0 && (
