@@ -5,6 +5,16 @@ export interface EssaySuggestion {
   framework: string;
 }
 
+export interface ExpandedFramework {
+  title: string;
+  hook: string;
+  talkingPoints: {
+    title: string;
+    points: string[];
+  }[];
+  conclusion: string;
+}
+
 export interface PromptCategories {
   [key: string]: string[];
 }

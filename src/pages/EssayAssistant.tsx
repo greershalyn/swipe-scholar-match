@@ -122,7 +122,11 @@ const EssayAssistant = () => {
 
               {step === 3 && (
                 <div className="space-y-6">
-                  <EssaySuggestions suggestions={suggestions} />
+                  <EssaySuggestions 
+                    suggestions={suggestions} 
+                    essayTopic={essayTopic}
+                    personalResponse={response}
+                  />
                 </div>
               )}
 
