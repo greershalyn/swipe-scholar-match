@@ -22,6 +22,10 @@ serve(async (req) => {
       throw new Error('Missing or invalid essay text');
     }
 
+    if (text.trim().length < 50) {
+      throw new Error('Essay text is too short for meaningful analysis');
+    }
+
     if (!openAIApiKey) {
       throw new Error('OpenAI API key is not configured');
     }
@@ -38,61 +42,79 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a professional essay reviewer. Analyze the essay for grammar, punctuation, 
-            sentence structure, and clarity issues. DO NOT rewrite any content. Instead:
-            1. Identify specific issues
-            2. Explain why each issue needs attention
-            3. Format your response as a JSON array of objects with these properties:
-               - sentence: the problematic sentence
-               - error: brief description of the issue
-               - explanation: detailed explanation of why it's an issue
-               - startIndex: where the issue begins in the sentence
-               - endIndex: where the issue ends in the sentence`
+            content: `You are a professional essay reviewer with expertise in academic writing. 
+            Your task is to thoroughly analyze the essay for the following aspects:
+            
+            1. Grammar and punctuation errors
+            2. Sentence structure and clarity
+            3. Word choice and vocabulary
+            4. Paragraph organization
+            5. Academic tone and style
+            
+            For each issue found, provide:
+            - The exact problematic sentence or phrase
+            - A clear description of the error
+            - A detailed explanation of why it's an issue and how to improve it
+            
+            Format your response as a JSON array of objects with these properties:
+            - sentence: the problematic sentence or phrase (exact quote)
+            - error: concise description of the issue
+            - explanation: detailed explanation with improvement suggestions
+            - startIndex: start position of the issue in the sentence
+            - endIndex: end position of the issue in the sentence
+            
+            Be thorough and identify ALL issues, no matter how minor. If the text is well-written, 
+            still try to find at least 2-3 areas for potential improvement in style or clarity.
+            Never return an empty array - there's always room for improvement.`
           },
           {
             role: 'user',
             content: text
           }
         ],
-        temperature: 0.3,
-        max_tokens: 2000
+        temperature: 0.7,
+        max_tokens: 3000
       }),
     });
 
-    const responseText = await response.text();
-    console.log('OpenAI raw response:', responseText);
-
     if (!response.ok) {
-      console.error('OpenAI API error:', responseText);
-      throw new Error(`Failed to process essay with AI: ${responseText}`);
+      const errorText = await response.text();
+      console.error('OpenAI API error:', errorText);
+      throw new Error(`Failed to process essay with AI: ${errorText}`);
     }
 
-    const data = JSON.parse(responseText);
+    const data = await response.json();
+    console.log('Raw OpenAI response:', JSON.stringify(data, null, 2));
+
+    if (!data.choices?.[0]?.message?.content) {
+      throw new Error('Invalid response format from OpenAI');
+    }
+
     let results;
     try {
-      results = data.choices[0].message.content;
-      // Try to parse if it's a string, otherwise use as-is if it's already an array
-      if (typeof results === 'string') {
-        results = JSON.parse(results);
-      }
+      const content = data.choices[0].message.content;
+      results = typeof content === 'string' ? JSON.parse(content) : content;
       
       if (!Array.isArray(results)) {
         throw new Error('Results are not in array format');
       }
 
-      console.log('Successfully parsed OpenAI response into array format');
+      if (results.length === 0) {
+        // Ensure we always provide at least some feedback
+        results = [{
+          sentence: text.substring(0, 100) + "...",
+          error: "General Writing Style",
+          explanation: "While the essay is generally well-written, consider making it more engaging by varying sentence structure and using more dynamic vocabulary. Even good writing can be improved.",
+          startIndex: 0,
+          endIndex: 100
+        }];
+      }
+
+      console.log('Successfully parsed review results:', results.length, 'issues found');
     } catch (error) {
       console.error('Error parsing OpenAI response:', error);
-      results = [{
-        sentence: "Unable to parse AI response",
-        error: "AI Response Format Error",
-        explanation: "The AI provided feedback but not in the expected format. Please try again.",
-        startIndex: 0,
-        endIndex: 0
-      }];
+      throw new Error('Failed to parse AI review results');
     }
-
-    console.log('Successfully generated review results:', results.length, 'issues found');
 
     return new Response(JSON.stringify({ results }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
