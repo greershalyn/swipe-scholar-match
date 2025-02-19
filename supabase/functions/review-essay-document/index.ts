@@ -2,8 +2,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
-import * as pdfParse from 'npm:pdf-parse';
-import * as mammoth from 'npm:mammoth';
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -20,12 +18,16 @@ async function extractTextFromFile(fileData: ArrayBuffer, mimeType: string): Pro
     
     if (mimeType.includes('pdf')) {
       console.log('Processing PDF document...');
+      // Import pdf-parse dynamically
+      const pdfParse = await import('pdf-parse');
       const dataArray = new Uint8Array(fileData);
-      const pdfData = await pdfParse(dataArray);
+      const pdfData = await pdfParse.default(dataArray);
       console.log('PDF text extracted, length:', pdfData.text.length);
       return pdfData.text;
     } else if (mimeType.includes('word') || mimeType.includes('document')) {
       console.log('Processing Word document...');
+      // Import mammoth dynamically
+      const mammoth = await import('mammoth');
       const result = await mammoth.extractRawText({ arrayBuffer: fileData });
       console.log('Word document text extracted, length:', result.value.length);
       return result.value;
