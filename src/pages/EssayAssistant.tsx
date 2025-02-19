@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { PencilIcon, BookOpen, Lightbulb, Star } from 'lucide-react';
@@ -12,9 +11,11 @@ import { EssaySuggestions } from '@/components/essay/EssaySuggestions';
 import { analyzeEssayTopic, generateEssaySuggestions } from '@/utils/essayUtils';
 import { EssaySuggestion } from '@/types/essay';
 
+type StepType = 1 | 2 | 3;
+
 const EssayAssistant = () => {
   const { toast } = useToast();
-  const [step, setStep] = useState<number>(1);
+  const [step, setStep] = useState<StepType>(1);
   const [essayTopic, setEssayTopic] = useState('');
   const [selectedPrompt, setSelectedPrompt] = useState('');
   const [response, setResponse] = useState('');
@@ -46,11 +47,11 @@ const EssayAssistant = () => {
       });
       return;
     }
-    if (step < 3) setStep(step + 1);
+    if (step < 3) setStep((step + 1) as StepType);
   };
 
   const handlePreviousStep = () => {
-    if (step > 1) setStep(step - 1);
+    if (step > 1) setStep((step - 1) as StepType);
   };
 
   return (
