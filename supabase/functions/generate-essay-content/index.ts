@@ -16,48 +16,55 @@ serve(async (req) => {
 
   try {
     const { essayTopic, personalResponse } = await req.json();
+    console.log('Generating essay suggestions for:', { essayTopic, personalResponse });
 
-    const prompt = `As an expert writing consultant, analyze this scholarship essay topic and personal response to generate three distinct, compelling essay approaches. Each approach should offer unique insights while fulfilling the scholarship's requirements.
+    if (!openAIApiKey) {
+      throw new Error('OpenAI API key not configured');
+    }
+
+    const systemPrompt = `You are an expert writing consultant specializing in scholarship essays. 
+Your role is to analyze essay topics and personal responses to suggest three distinct writing approaches.
+Each approach should guide the student to think critically about how to present their story effectively.
+
+Guidelines:
+- Focus on guiding thought processes, not pre-writing content
+- Ensure each approach offers a unique perspective
+- Help students understand why each approach would be effective
+- Encourage deeper reflection about their experiences
+- Consider both emotional depth and analytical clarity`;
+
+    const userPrompt = `Please analyze this scholarship essay topic and personal response to generate three distinct writing approaches.
 
 Essay Topic: "${essayTopic}"
 Personal Response: "${personalResponse}"
 
-First, analyze the scholarship prompt to identify:
-1. Core values and qualities being sought
-2. Type of experience or growth being evaluated
-3. Specific requirements or criteria
-
-Then, deeply analyze the personal response to find:
-1. Key emotional moments and conflicts
-2. Evidence of personal growth and learning
-3. Unique perspectives or approaches
-4. Connection to future goals and aspirations
-
-Generate three distinct essay frameworks that:
-1. Each offer a unique angle on the story
-2. Use different storytelling techniques
-3. Connect directly to scholarship values
-4. Show clear progression and growth
-
-For each framework, provide:
-1. A compelling title that captures the essence
-2. An engaging hook that draws readers in
-3. A clear outline of the main points
-4. Connection to college/career goals
-
-Format the response as a JSON object with three frameworks (framework1, framework2, framework3), each containing:
-- title: engaging title for the approach
-- hook: powerful opening paragraph
-- talkingPoints: array of main themes to explore
+Provide the response in this exact JSON format:
 {
-  framework1: {
-    title: string,
-    hook: string,
-    talkingPoints: [{ theme: string }]
+  "framework1": {
+    "title": "string (engaging approach title)",
+    "hook": "string (thought-provoking opening question or statement)",
+    "talkingPoints": [
+      {
+        "theme": "string (key idea to explore)",
+        "rationale": "string (why this angle is effective)",
+        "reflectionPrompt": "string (question to deepen thinking)"
+      }
+    ]
   },
-  framework2: {...},
-  framework3: {...}
-}`;
+  "framework2": {
+    // same structure as framework1
+  },
+  "framework3": {
+    // same structure as framework1
+  }
+}
+
+For each framework:
+1. Focus on a distinct writing angle (narrative, analytical, innovative)
+2. Explain why this approach would be effective
+3. Include reflection prompts that encourage critical thinking
+4. Avoid writing actual essay content
+5. Help students discover their own unique perspective`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -68,25 +75,37 @@ Format the response as a JSON object with three frameworks (framework1, framewor
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [
-          { 
-            role: 'system', 
-            content: 'You are an expert writing consultant specializing in scholarship essays. You excel at finding unique angles and compelling narratives in personal stories.'
-          },
-          { role: 'user', content: prompt }
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
         ],
-        temperature: 0.7,
+        temperature: 0.8,
       }),
     });
 
     const data = await response.json();
-    const suggestion = data.choices[0].message.content;
+    console.log('OpenAI response received');
 
-    return new Response(JSON.stringify({ suggestion }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    if (!data.choices?.[0]?.message?.content) {
+      throw new Error('Invalid response from OpenAI');
+    }
+
+    try {
+      const parsedContent = JSON.parse(data.choices[0].message.content);
+      console.log('Successfully parsed suggestions');
+      
+      return new Response(JSON.stringify({ suggestion: JSON.stringify(parsedContent) }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    } catch (error) {
+      console.error('Error parsing OpenAI response:', error);
+      throw new Error('Invalid JSON format in response');
+    }
   } catch (error) {
     console.error('Error in generate-essay-content function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ 
+      error: error.message,
+      details: 'Check function logs for more information'
+    }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

@@ -1,0 +1,3 @@
+
+# Make sure dependency downloads are cached between runs
+cache_tags = ["xhr-0.1.0", "std-0.168.0"]
