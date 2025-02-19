@@ -73,11 +73,17 @@ const EssayAssistant = () => {
       });
       return;
     }
-    if (step < 4) setStep((prevStep => prevStep + 1) as StepType);
+    setStep((prevStep: StepType) => {
+      const nextStep = prevStep + 1;
+      return nextStep as StepType;
+    });
   };
 
   const handlePreviousStep = () => {
-    if (step > 1) setStep((prevStep => prevStep - 1) as StepType);
+    setStep((prevStep: StepType) => {
+      const nextStep = prevStep - 1;
+      return nextStep as StepType;
+    });
   };
 
   const handleFrameworkGenerated = (framework: ExpandedFramework) => {
