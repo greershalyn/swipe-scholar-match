@@ -21,18 +21,18 @@ async function extractTextFromFile(fileData: ArrayBuffer, mimeType: string): Pro
       const { default: pdfParse } = await import('pdf-parse');
       const dataArray = new Uint8Array(fileData);
       const pdfData = await pdfParse(dataArray);
-      console.log('PDF text extracted, length:', pdfData.text.length);
+      console.log('PDF text extracted successfully');
       return pdfData.text;
     } else if (mimeType.includes('word') || mimeType.includes('document')) {
       console.log('Processing Word document...');
       const { extractRawText } = await import('mammoth');
       const result = await extractRawText({ arrayBuffer: fileData });
-      console.log('Word document text extracted, length:', result.value.length);
+      console.log('Word document text extracted successfully');
       return result.value;
     }
     throw new Error(`Unsupported file type: ${mimeType}`);
   } catch (error) {
-    console.error('Text extraction error:', error);
+    console.error('Text extraction error details:', error);
     throw new Error(`Text extraction failed: ${error.message}`);
   }
 }
@@ -44,7 +44,7 @@ serve(async (req) => {
 
   try {
     const { filePath, mimeType } = await req.json();
-    console.log('Starting document review process for:', filePath);
+    console.log('Starting document review process for:', filePath, 'mime type:', mimeType);
 
     if (!filePath || !mimeType) {
       throw new Error('Missing required parameters: filePath or mimeType');
@@ -73,6 +73,7 @@ serve(async (req) => {
 
     console.log('Converting file to ArrayBuffer...');
     const arrayBuffer = await fileData.arrayBuffer();
+    console.log('File converted to ArrayBuffer successfully');
     
     console.log('Extracting text from document...');
     const text = await extractTextFromFile(arrayBuffer, mimeType);
@@ -80,6 +81,9 @@ serve(async (req) => {
     if (!text || text.length < 10) {
       throw new Error('Extracted text is too short or empty');
     }
+
+    console.log('Text extracted successfully, length:', text.length);
+    console.log('Sample of extracted text:', text.substring(0, 100));
 
     console.log('Sending text to OpenAI for analysis...');
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -114,13 +118,15 @@ serve(async (req) => {
       }),
     });
 
+    const responseText = await response.text();
+    console.log('OpenAI raw response:', responseText);
+
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('OpenAI API error:', errorText);
-      throw new Error(`Failed to process essay with AI: ${errorText}`);
+      console.error('OpenAI API error:', responseText);
+      throw new Error(`Failed to process essay with AI: ${responseText}`);
     }
 
-    const data = await response.json();
+    const data = JSON.parse(responseText);
     let results;
     try {
       results = data.choices[0].message.content;
@@ -132,6 +138,8 @@ serve(async (req) => {
       if (!Array.isArray(results)) {
         throw new Error('Results are not in array format');
       }
+
+      console.log('Successfully parsed OpenAI response into array format');
     } catch (error) {
       console.error('Error parsing OpenAI response:', error);
       results = [{
@@ -159,7 +167,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: 'Document review failed', 
-        details: error.message 
+        details: error.message,
       }), 
       {
         status: 500,
