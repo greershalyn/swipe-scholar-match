@@ -6,3 +6,4 @@ project_id = "cewxnkpihtujqbwbzjcv"
 verify_jwt = false
 [functions.generate-expanded-framework]
 verify_jwt = false
+
