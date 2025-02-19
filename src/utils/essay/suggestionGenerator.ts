@@ -1,10 +1,6 @@
-import { createClient } from '@supabase/supabase-js';
-import { EssaySuggestion } from "@/types/essay";
 
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL || '',
-  import.meta.env.VITE_SUPABASE_ANON_KEY || ''
-);
+import { supabase } from "@/integrations/supabase/client";
+import { EssaySuggestion } from "@/types/essay";
 
 export async function generateEssaySuggestions(essayTopic: string, response: string): Promise<EssaySuggestion[]> {
   try {
