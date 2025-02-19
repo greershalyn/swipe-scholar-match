@@ -96,6 +96,10 @@ export const AccountDropdown = () => {
             <BookOpen className="mr-2 h-4 w-4" />
             <span>Financial Education</span>
           </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate("/essay-assistant")} className="flex items-center">
+            <PencilIcon className="mr-2 h-4 w-4" />
+            <span>Essay Assistant</span>
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleLogout}>
             Log Out
