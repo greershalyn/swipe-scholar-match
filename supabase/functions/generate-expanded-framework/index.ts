@@ -17,44 +17,59 @@ serve(async (req) => {
   try {
     const { essayTopic, personalResponse, selectedApproach } = await req.json();
 
-    const prompt = `As an expert writing consultant, analyze this scholarship essay topic and personal response to generate a detailed, specific essay framework. Focus on extracting meaningful insights and creating actionable guidance.
+    const prompt = `As an expert writing consultant, create a detailed, personalized essay framework based on this scholarship topic and personal story. Focus on crafting a compelling narrative that showcases personal growth and aligns with scholarship values.
 
 Essay Topic: "${essayTopic}"
 Personal Response: "${personalResponse}"
 Selected Approach: "${selectedApproach}"
 
-First, deeply analyze:
-1. Specific events, conflicts, and emotions in the user's story
-2. Skills developed and lessons learned
-3. Impact on personal growth and future aspirations
-4. Connections to the scholarship's values
+Analyze and incorporate:
+1. Emotional depth and authenticity
+2. Clear progression and character development
+3. Specific examples and vivid details
+4. Connection to scholarship values
+5. Future impact and aspirations
 
-Then create a comprehensive essay framework with:
+Create a comprehensive framework with:
 
-1. An emotionally engaging hook that:
-   - Uses vivid imagery or dialogue from a key moment
+1. Title: A creative, engaging title that captures the essence of their story.
+
+2. Hook: A powerful opening that:
+   - Uses vivid imagery or dialogue
    - Creates immediate emotional connection
    - Sets up the essay's central theme
+   - Draws from a specific moment in their story
 
-2. Three detailed talking points that each:
-   - Start with a specific example or moment
-   - Explore emotional depth and personal growth
-   - Connect to broader themes and future goals
+3. Three detailed talking points that each:
+   - Begin with a specific example or moment
+   - Show emotional depth and reflection
+   - Demonstrate personal growth
+   - Connect to broader themes
    - Provide clear transition guidance
 
-3. A powerful conclusion that:
+4. Conclusion that:
    - Brings the journey full circle
    - Shows personal transformation
    - Links to college/future impact
+   - Reinforces scholarship values
 
-REQUIREMENTS:
-- Every section must include specific details from the user's story
-- Each talking point must explore a different aspect (e.g., challenge, growth, impact)
-- Include clear guidance on emotional storytelling elements
-- Connect each point to college readiness/future success
-- Avoid generic advice - everything must tie to the user's unique experience
+Requirements:
+- Use specific details and quotes from their story
+- Each talking point must explore a different aspect
+- Include emotional storytelling elements
+- Connect each point to future success
+- Maintain focus on scholarship criteria
 
-Format the response as a JSON object with title, hook, talking points (each with title and specific points), and conclusion.`;
+Format the response as a JSON object with:
+{
+  title: string,
+  hook: string,
+  talkingPoints: [{
+    title: string,
+    points: string[]
+  }],
+  conclusion: string
+}`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
