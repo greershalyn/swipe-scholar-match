@@ -1,7 +1,48 @@
-
+import { createClient } from '@supabase/supabase-js';
 import { EssaySuggestion } from "@/types/essay";
 
-export function generateEssaySuggestions(essayTopic: string, response: string): EssaySuggestion[] {
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL || '',
+  import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+);
+
+export async function generateEssaySuggestions(essayTopic: string, response: string): Promise<EssaySuggestion[]> {
+  try {
+    const { data, error } = await supabase.functions.invoke('generate-essay-content', {
+      body: { essayTopic, personalResponse: response },
+    });
+
+    if (error) throw error;
+
+    const aiSuggestion = JSON.parse(data.suggestion);
+    
+    // Create three variations of the AI-generated framework
+    return [
+      {
+        title: aiSuggestion.title,
+        hook: aiSuggestion.hook,
+        framework: "Primary approach: " + aiSuggestion.talkingPoints[0].theme
+      },
+      {
+        title: aiSuggestion.title + ": An Alternative Perspective",
+        hook: aiSuggestion.talkingPoints[1].content,
+        framework: "Alternative approach: " + aiSuggestion.talkingPoints[1].theme
+      },
+      {
+        title: "Beyond " + aiSuggestion.title,
+        hook: aiSuggestion.talkingPoints[2].content,
+        framework: "Innovative approach: " + aiSuggestion.talkingPoints[2].theme
+      }
+    ];
+  } catch (error) {
+    console.error('Error generating AI suggestions:', error);
+    // Fallback to static suggestions if AI fails
+    return generateStaticSuggestions(essayTopic, response);
+  }
+}
+
+// Fallback function with the original static suggestions
+function generateStaticSuggestions(essayTopic: string, response: string): EssaySuggestion[] {
   const topicLower = essayTopic.toLowerCase();
   
   if (topicLower.includes('challenge') || topicLower.includes('obstacle') || topicLower.includes('difficult')) {

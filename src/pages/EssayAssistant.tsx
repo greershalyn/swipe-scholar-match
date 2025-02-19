@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { PencilIcon, BookOpen, Lightbulb, Star } from 'lucide-react';
@@ -21,13 +20,28 @@ const EssayAssistant = () => {
   const [selectedPrompt, setSelectedPrompt] = useState('');
   const [response, setResponse] = useState('');
   const [suggestions, setSuggestions] = useState<EssaySuggestion[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (step === 2 && essayTopic) {
       const relevantPrompt = analyzeEssayTopic(essayTopic);
       setSelectedPrompt(relevantPrompt);
     } else if (step === 3 && response) {
-      setSuggestions(generateEssaySuggestions(essayTopic, response));
+      setIsLoading(true);
+      generateEssaySuggestions(essayTopic, response)
+        .then(aiSuggestions => {
+          setSuggestions(aiSuggestions);
+        })
+        .catch(error => {
+          toast({
+            title: "Error Generating Suggestions",
+            description: "We'll provide some general suggestions instead.",
+            variant: "destructive",
+          });
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
     }
   }, [step, essayTopic, response]);
 
@@ -122,11 +136,17 @@ const EssayAssistant = () => {
 
               {step === 3 && (
                 <div className="space-y-6">
-                  <EssaySuggestions 
-                    suggestions={suggestions} 
-                    essayTopic={essayTopic}
-                    personalResponse={response}
-                  />
+                  {isLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500" />
+                    </div>
+                  ) : (
+                    <EssaySuggestions 
+                      suggestions={suggestions} 
+                      essayTopic={essayTopic}
+                      personalResponse={response}
+                    />
+                  )}
                 </div>
               )}
 
