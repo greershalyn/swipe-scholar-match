@@ -19,6 +19,7 @@ serve(async (req) => {
 
   try {
     const { filePath } = await req.json();
+    console.log('Processing file:', filePath);
 
     // Initialize Supabase client
     const supabase = createClient(supabaseUrl ?? '', supabaseServiceKey ?? '');
@@ -28,10 +29,14 @@ serve(async (req) => {
       .from('essay-documents')
       .download(filePath);
 
-    if (downloadError) throw downloadError;
+    if (downloadError) {
+      console.error('Error downloading file:', downloadError);
+      throw downloadError;
+    }
 
     // Convert file to text
     const text = await fileData.text();
+    console.log('Extracted text from document, length:', text.length);
 
     // Process with OpenAI
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -41,7 +46,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o',
         messages: [
           {
             role: 'system',
@@ -65,8 +70,15 @@ serve(async (req) => {
       }),
     });
 
+    if (!response.ok) {
+      const error = await response.text();
+      console.error('OpenAI API error:', error);
+      throw new Error('Failed to process essay with AI');
+    }
+
     const data = await response.json();
     const results = JSON.parse(data.choices[0].message.content);
+    console.log('Generated review results:', results.length, 'issues found');
 
     // Delete the uploaded file after processing
     await supabase.storage
@@ -78,9 +90,12 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error('Error in review-essay-document function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({ error: 'Failed to process document', details: error.message }), 
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
   }
 });
