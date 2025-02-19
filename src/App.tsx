@@ -10,6 +10,7 @@ import Questionnaire from "./pages/Questionnaire";
 import NotFound from "./pages/NotFound";
 import WalletPage from "./pages/Wallet";
 import FinancialEducation from "./pages/FinancialEducation";
+import EssayAssistant from "./pages/EssayAssistant";
 import Footer from "./components/Footer";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
               <Route path="/questionnaire" element={<Questionnaire />} />
               <Route path="/wallet" element={<WalletPage />} />
               <Route path="/financial-education" element={<FinancialEducation />} />
+              <Route path="/essay-assistant" element={<EssayAssistant />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
