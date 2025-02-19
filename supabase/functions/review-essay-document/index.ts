@@ -18,17 +18,15 @@ async function extractTextFromFile(fileData: ArrayBuffer, mimeType: string): Pro
     
     if (mimeType.includes('pdf')) {
       console.log('Processing PDF document...');
-      // Import pdf-parse dynamically
-      const pdfParse = await import('pdf-parse');
+      const { default: pdfParse } = await import('pdf-parse');
       const dataArray = new Uint8Array(fileData);
-      const pdfData = await pdfParse.default(dataArray);
+      const pdfData = await pdfParse(dataArray);
       console.log('PDF text extracted, length:', pdfData.text.length);
       return pdfData.text;
     } else if (mimeType.includes('word') || mimeType.includes('document')) {
       console.log('Processing Word document...');
-      // Import mammoth dynamically
-      const mammoth = await import('mammoth');
-      const result = await mammoth.extractRawText({ arrayBuffer: fileData });
+      const { extractRawText } = await import('mammoth');
+      const result = await extractRawText({ arrayBuffer: fileData });
       console.log('Word document text extracted, length:', result.value.length);
       return result.value;
     }
@@ -119,25 +117,30 @@ serve(async (req) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('OpenAI API error:', errorText);
-      throw new Error('Failed to process essay with AI');
+      throw new Error(`Failed to process essay with AI: ${errorText}`);
     }
 
     const data = await response.json();
     let results;
     try {
-      results = JSON.parse(data.choices[0].message.content);
+      results = data.choices[0].message.content;
+      // Try to parse if it's a string, otherwise use as-is if it's already an array
+      if (typeof results === 'string') {
+        results = JSON.parse(results);
+      }
+      
+      if (!Array.isArray(results)) {
+        throw new Error('Results are not in array format');
+      }
     } catch (error) {
       console.error('Error parsing OpenAI response:', error);
-      results = data.choices[0].message.content;
-      if (typeof results !== 'object' || !Array.isArray(results)) {
-        results = [{
-          sentence: "Unable to parse AI response",
-          error: "AI Response Format Error",
-          explanation: "The AI provided feedback but not in the expected format. Please try again.",
-          startIndex: 0,
-          endIndex: 0
-        }];
-      }
+      results = [{
+        sentence: "Unable to parse AI response",
+        error: "AI Response Format Error",
+        explanation: "The AI provided feedback but not in the expected format. Please try again.",
+        startIndex: 0,
+        endIndex: 0
+      }];
     }
 
     console.log('Successfully generated review results:', results.length, 'issues found');
