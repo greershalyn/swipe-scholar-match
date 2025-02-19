@@ -37,6 +37,7 @@ export const DocumentReviewTool = () => {
 
     try {
       setIsUploading(true);
+      setReviewResults([]);
 
       // Upload file to Supabase storage
       const fileName = `${crypto.randomUUID()}-${file.name}`;
@@ -57,14 +58,24 @@ export const DocumentReviewTool = () => {
           }
         });
 
-      if (reviewError) throw reviewError;
+      if (reviewError) {
+        throw new Error(reviewError.message);
+      }
+
+      if (!reviewData?.results) {
+        throw new Error('No review results received');
+      }
 
       setReviewResults(reviewData.results);
+      toast({
+        title: "Document Analyzed",
+        description: `Found ${reviewData.results.length} suggestions for improvement.`,
+      });
     } catch (error) {
       console.error('Error processing document:', error);
       toast({
         title: "Error Processing Document",
-        description: "There was an error analyzing your document. Please try again.",
+        description: error.message || "There was an error analyzing your document. Please try again.",
         variant: "destructive",
       });
     } finally {

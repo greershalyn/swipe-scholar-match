@@ -16,17 +16,19 @@ const corsHeaders = {
 
 async function extractTextFromFile(fileData: ArrayBuffer, mimeType: string): Promise<string> {
   try {
+    console.log('Extracting text from file with mime type:', mimeType);
+    
     if (mimeType.includes('pdf')) {
-      const pdfData = await pdfParse(fileData);
+      const pdfData = await pdfParse(new Uint8Array(fileData));
       return pdfData.text;
-    } else if (mimeType.includes('word') || mimeType.includes('document')) {
+    } else if (mimeType.includes('word') || mimeType.includes('document') || mimeType.includes('docx')) {
       const result = await mammoth.extractRawText({ arrayBuffer: fileData });
       return result.value;
     }
-    throw new Error('Unsupported file type');
+    throw new Error(`Unsupported file type: ${mimeType}`);
   } catch (error) {
     console.error('Error extracting text:', error);
-    throw new Error('Failed to extract text from document');
+    throw new Error(`Failed to extract text from document: ${error.message}`);
   }
 }
 
@@ -39,6 +41,10 @@ serve(async (req) => {
     const { filePath, mimeType } = await req.json();
     console.log('Processing file:', filePath, 'type:', mimeType);
 
+    if (!filePath || !mimeType) {
+      throw new Error('Missing required parameters: filePath or mimeType');
+    }
+
     // Initialize Supabase client
     const supabase = createClient(supabaseUrl ?? '', supabaseServiceKey ?? '');
 
@@ -50,6 +56,10 @@ serve(async (req) => {
     if (downloadError) {
       console.error('Error downloading file:', downloadError);
       throw downloadError;
+    }
+
+    if (!fileData) {
+      throw new Error('No file data received');
     }
 
     // Convert file to ArrayBuffer
