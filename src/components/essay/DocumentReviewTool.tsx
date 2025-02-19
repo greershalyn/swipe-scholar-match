@@ -25,8 +25,8 @@ export const DocumentReviewTool = () => {
     if (!file) return;
 
     // Validate file type
-    const fileType = file.type;
-    if (!fileType.includes('pdf') && !fileType.includes('word') && !fileType.includes('document')) {
+    const mimeType = file.type;
+    if (!mimeType.includes('pdf') && !mimeType.includes('word') && !mimeType.includes('document')) {
       toast({
         title: "Invalid File Type",
         description: "Please upload a PDF or Word document.",
@@ -51,7 +51,10 @@ export const DocumentReviewTool = () => {
       // Call the review function
       const { data: reviewData, error: reviewError } = await supabase.functions
         .invoke('review-essay-document', {
-          body: { filePath: uploadData.path }
+          body: { 
+            filePath: uploadData.path,
+            mimeType: mimeType
+          }
         });
 
       if (reviewError) throw reviewError;

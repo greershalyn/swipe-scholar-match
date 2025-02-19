@@ -2,6 +2,8 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import * as pdfParse from 'npm:pdf-parse';
+import * as mammoth from 'npm:mammoth';
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -12,19 +14,35 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+async function extractTextFromFile(fileData: ArrayBuffer, mimeType: string): Promise<string> {
+  try {
+    if (mimeType.includes('pdf')) {
+      const pdfData = await pdfParse(fileData);
+      return pdfData.text;
+    } else if (mimeType.includes('word') || mimeType.includes('document')) {
+      const result = await mammoth.extractRawText({ arrayBuffer: fileData });
+      return result.value;
+    }
+    throw new Error('Unsupported file type');
+  } catch (error) {
+    console.error('Error extracting text:', error);
+    throw new Error('Failed to extract text from document');
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { filePath } = await req.json();
-    console.log('Processing file:', filePath);
+    const { filePath, mimeType } = await req.json();
+    console.log('Processing file:', filePath, 'type:', mimeType);
 
     // Initialize Supabase client
     const supabase = createClient(supabaseUrl ?? '', supabaseServiceKey ?? '');
 
-    // Download the file from storage
+    // Download the file
     const { data: fileData, error: downloadError } = await supabase.storage
       .from('essay-documents')
       .download(filePath);
@@ -34,9 +52,16 @@ serve(async (req) => {
       throw downloadError;
     }
 
-    // Convert file to text
-    const text = await fileData.text();
+    // Convert file to ArrayBuffer
+    const arrayBuffer = await fileData.arrayBuffer();
+    
+    // Extract text from the document
+    const text = await extractTextFromFile(arrayBuffer, mimeType);
     console.log('Extracted text from document, length:', text.length);
+
+    if (!text || text.length < 10) {
+      throw new Error('Could not extract meaningful text from document');
+    }
 
     // Process with OpenAI
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -91,7 +116,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in review-essay-document function:', error);
     return new Response(
-      JSON.stringify({ error: 'Failed to process document', details: error.message }), 
+      JSON.stringify({ 
+        error: 'Failed to process document', 
+        details: error.message 
+      }), 
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
