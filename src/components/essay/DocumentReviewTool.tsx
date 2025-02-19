@@ -24,12 +24,28 @@ export const DocumentReviewTool = () => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
+    // Reset states
+    setReviewResults([]);
+    setIsUploading(false);
+    setIsAnalyzing(false);
+
+    // Validate file type and size
     const mimeType = file.type;
+    console.log('File type:', mimeType);
+    
     if (!mimeType.includes('pdf') && !mimeType.includes('word') && !mimeType.includes('document')) {
       toast({
         title: "Invalid File Type",
-        description: "Please upload a PDF or Word document.",
+        description: "Please upload a PDF or Word document (doc, docx).",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) { // 10MB limit
+      toast({
+        title: "File Too Large",
+        description: "Please upload a file smaller than 10MB.",
         variant: "destructive",
       });
       return;
@@ -37,17 +53,25 @@ export const DocumentReviewTool = () => {
 
     try {
       setIsUploading(true);
-      setReviewResults([]);
 
       // Upload file to Supabase storage
+      console.log('Uploading file to storage...');
       const fileName = `${crypto.randomUUID()}-${file.name}`;
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('essay-documents')
         .upload(fileName, file);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw new Error(`Upload failed: ${uploadError.message}`);
+      }
+
+      if (!uploadData?.path) {
+        throw new Error('No upload path received');
+      }
 
       setIsAnalyzing(true);
+      console.log('File uploaded, starting analysis...');
 
       // Call the review function
       const { data: reviewData, error: reviewError } = await supabase.functions
@@ -59,6 +83,7 @@ export const DocumentReviewTool = () => {
         });
 
       if (reviewError) {
+        console.error('Review error:', reviewError);
         throw new Error(reviewError.message);
       }
 
@@ -66,13 +91,14 @@ export const DocumentReviewTool = () => {
         throw new Error('No review results received');
       }
 
+      console.log('Analysis complete:', reviewData.results.length, 'issues found');
       setReviewResults(reviewData.results);
       toast({
         title: "Document Analyzed",
         description: `Found ${reviewData.results.length} suggestions for improvement.`,
       });
     } catch (error) {
-      console.error('Error processing document:', error);
+      console.error('Document processing error:', error);
       toast({
         title: "Error Processing Document",
         description: error.message || "There was an error analyzing your document. Please try again.",

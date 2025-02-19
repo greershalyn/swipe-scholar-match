@@ -16,19 +16,24 @@ const corsHeaders = {
 
 async function extractTextFromFile(fileData: ArrayBuffer, mimeType: string): Promise<string> {
   try {
-    console.log('Extracting text from file with mime type:', mimeType);
+    console.log('Starting text extraction for mime type:', mimeType);
     
     if (mimeType.includes('pdf')) {
-      const pdfData = await pdfParse(new Uint8Array(fileData));
+      console.log('Processing PDF document...');
+      const dataArray = new Uint8Array(fileData);
+      const pdfData = await pdfParse(dataArray);
+      console.log('PDF text extracted, length:', pdfData.text.length);
       return pdfData.text;
     } else if (mimeType.includes('word') || mimeType.includes('document') || mimeType.includes('docx')) {
+      console.log('Processing Word document...');
       const result = await mammoth.extractRawText({ arrayBuffer: fileData });
+      console.log('Word document text extracted, length:', result.value.length);
       return result.value;
     }
     throw new Error(`Unsupported file type: ${mimeType}`);
   } catch (error) {
-    console.error('Error extracting text:', error);
-    throw new Error(`Failed to extract text from document: ${error.message}`);
+    console.error('Text extraction error:', error);
+    throw new Error(`Text extraction failed: ${error.message}`);
   }
 }
 
@@ -39,41 +44,44 @@ serve(async (req) => {
 
   try {
     const { filePath, mimeType } = await req.json();
-    console.log('Processing file:', filePath, 'type:', mimeType);
+    console.log('Starting document review process for:', filePath);
 
     if (!filePath || !mimeType) {
       throw new Error('Missing required parameters: filePath or mimeType');
     }
 
-    // Initialize Supabase client
+    if (!openAIApiKey) {
+      throw new Error('OpenAI API key is not configured');
+    }
+
+    console.log('Initializing Supabase client...');
     const supabase = createClient(supabaseUrl ?? '', supabaseServiceKey ?? '');
 
-    // Download the file
+    console.log('Downloading file from storage...');
     const { data: fileData, error: downloadError } = await supabase.storage
       .from('essay-documents')
       .download(filePath);
 
     if (downloadError) {
-      console.error('Error downloading file:', downloadError);
-      throw downloadError;
+      console.error('File download error:', downloadError);
+      throw new Error(`Failed to download file: ${downloadError.message}`);
     }
 
     if (!fileData) {
-      throw new Error('No file data received');
+      throw new Error('No file data received from storage');
     }
 
-    // Convert file to ArrayBuffer
+    console.log('Converting file to ArrayBuffer...');
     const arrayBuffer = await fileData.arrayBuffer();
     
-    // Extract text from the document
+    console.log('Extracting text from document...');
     const text = await extractTextFromFile(arrayBuffer, mimeType);
-    console.log('Extracted text from document, length:', text.length);
 
     if (!text || text.length < 10) {
-      throw new Error('Could not extract meaningful text from document');
+      throw new Error('Extracted text is too short or empty');
     }
 
-    // Process with OpenAI
+    console.log('Sending text to OpenAI for analysis...');
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -106,16 +114,24 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      console.error('OpenAI API error:', error);
+      const errorText = await response.text();
+      console.error('OpenAI API error:', errorText);
       throw new Error('Failed to process essay with AI');
     }
 
     const data = await response.json();
-    const results = JSON.parse(data.choices[0].message.content);
-    console.log('Generated review results:', results.length, 'issues found');
+    let results;
+    try {
+      results = JSON.parse(data.choices[0].message.content);
+    } catch (error) {
+      console.error('Error parsing OpenAI response:', error);
+      throw new Error('Invalid response format from AI');
+    }
 
-    // Delete the uploaded file after processing
+    console.log('Successfully generated review results:', results.length, 'issues found');
+
+    // Clean up: Delete the uploaded file
+    console.log('Cleaning up: removing uploaded file...');
     await supabase.storage
       .from('essay-documents')
       .remove([filePath]);
@@ -124,10 +140,10 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error in review-essay-document function:', error);
+    console.error('Document review error:', error);
     return new Response(
       JSON.stringify({ 
-        error: 'Failed to process document', 
+        error: 'Document review failed', 
         details: error.message 
       }), 
       {
