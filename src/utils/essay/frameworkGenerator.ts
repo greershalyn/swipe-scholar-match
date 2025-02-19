@@ -1,4 +1,4 @@
-importtypescript
+
 import { EssaySuggestion, ExpandedFramework } from "@/types/essay";
 import { extractThemes } from "./themeExtractor";
 import { supabase } from "@/integrations/supabase/client";

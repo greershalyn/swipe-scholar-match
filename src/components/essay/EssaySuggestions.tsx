@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EssaySuggestion, ExpandedFramework } from "@/types/essay";
-import { generateExpandedFramework } from "@/utils/essayUtils";
+import { generateExpandedFramework } from "@/utils/essay/frameworkGenerator";
 import { useState } from "react";
 
 interface EssaySuggestionsProps {
@@ -16,10 +16,15 @@ export const EssaySuggestions = ({ suggestions, essayTopic, personalResponse }: 
   const [selectedSuggestion, setSelectedSuggestion] = useState<number | null>(null);
   const [expandedFramework, setExpandedFramework] = useState<ExpandedFramework | null>(null);
 
-  const handleSuggestionSelect = (index: number) => {
+  const handleSuggestionSelect = async (index: number) => {
     setSelectedSuggestion(index);
-    const framework = generateExpandedFramework(suggestions[index], essayTopic, personalResponse);
-    setExpandedFramework(framework);
+    try {
+      const framework = await generateExpandedFramework(suggestions[index], essayTopic, personalResponse);
+      setExpandedFramework(framework);
+    } catch (error) {
+      console.error('Error generating framework:', error);
+      // You might want to show a toast or error message here
+    }
   };
 
   return (
