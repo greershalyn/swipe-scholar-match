@@ -38,41 +38,48 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4',
+        model: 'gpt-4o',  // Using the more powerful model for better analysis
         messages: [
           {
             role: 'system',
-            content: `You are a professional essay reviewer with expertise in academic writing. 
-            Your task is to thoroughly analyze the essay for the following aspects:
+            content: `You are an expert proofreader and editor specialized in academic writing.
+            You must thoroughly analyze the provided text for ANY and ALL writing issues, no matter how minor.
             
-            1. Grammar and punctuation errors
-            2. Sentence structure and clarity
-            3. Word choice and vocabulary
-            4. Paragraph organization
-            5. Academic tone and style
+            For EVERY sentence, check for:
+            1. Grammar errors (subject-verb agreement, tense consistency, etc.)
+            2. Punctuation mistakes (commas, periods, semicolons, etc.)
+            3. Spelling errors
+            4. Word choice and vocabulary appropriateness
+            5. Run-on sentences or sentence fragments
+            6. Clarity and conciseness issues
+            7. Academic tone and formality
             
-            For each issue found, provide:
-            - The exact problematic sentence or phrase
-            - A clear description of the error
-            - A detailed explanation of why it's an issue and how to improve it
+            You MUST provide specific feedback for EACH issue found by:
+            1. Quoting the exact problematic text
+            2. Identifying the specific type of error
+            3. Explaining why it's incorrect
+            4. Suggesting how to fix it
             
-            Format your response as a JSON array of objects with these properties:
-            - sentence: the problematic sentence or phrase (exact quote)
-            - error: concise description of the issue
-            - explanation: detailed explanation with improvement suggestions
-            - startIndex: start position of the issue in the sentence
-            - endIndex: end position of the issue in the sentence
+            Format each issue as a JSON object with:
+            {
+              "sentence": "exact problematic text",
+              "error": "specific error type (e.g., 'Subject-Verb Agreement Error', 'Missing Comma', etc.)",
+              "explanation": "detailed explanation of why it's wrong and how to fix it",
+              "startIndex": number where issue begins in the sentence,
+              "endIndex": number where issue ends in the sentence
+            }
+
+            Return ALL findings in a JSON array. You MUST find at least one issue to improve - 
+            even well-written text can be enhanced for clarity or style.
             
-            Be thorough and identify ALL issues, no matter how minor. If the text is well-written, 
-            still try to find at least 2-3 areas for potential improvement in style or clarity.
-            Never return an empty array - there's always room for improvement.`
+            Never return an empty array or skip analysis of any sentence.`
           },
           {
             role: 'user',
             content: text
           }
         ],
-        temperature: 0.7,
+        temperature: 0.3,  // Lower temperature for more consistent analysis
         max_tokens: 3000
       }),
     });
@@ -100,17 +107,17 @@ serve(async (req) => {
       }
 
       if (results.length === 0) {
-        // Ensure we always provide at least some feedback
+        console.error('AI returned no results, which should not happen given the prompt');
         results = [{
-          sentence: text.substring(0, 100) + "...",
-          error: "General Writing Style",
-          explanation: "While the essay is generally well-written, consider making it more engaging by varying sentence structure and using more dynamic vocabulary. Even good writing can be improved.",
+          sentence: text.substring(0, 100),
+          error: "Style Improvement Needed",
+          explanation: "While no major grammatical errors were found, consider enhancing clarity and impact by varying sentence structure and using more precise vocabulary.",
           startIndex: 0,
           endIndex: 100
         }];
       }
 
-      console.log('Successfully parsed review results:', results.length, 'issues found');
+      console.log('Analysis complete:', results.length, 'issues found');
     } catch (error) {
       console.error('Error parsing OpenAI response:', error);
       throw new Error('Failed to parse AI review results');
