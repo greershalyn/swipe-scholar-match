@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { PencilIcon, BookOpen, Lightbulb, Star } from 'lucide-react';
@@ -8,10 +9,11 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { AccountDropdown } from '@/components/AccountDropdown';
 import { useToast } from '@/components/ui/use-toast';
 import { EssaySuggestions } from '@/components/essay/EssaySuggestions';
+import { ExpandedFrameworkView } from '@/components/essay/ExpandedFrameworkView';
 import { analyzeEssayTopic, generateEssaySuggestions } from '@/utils/essayUtils';
-import { EssaySuggestion } from '@/types/essay';
+import { EssaySuggestion, ExpandedFramework } from '@/types/essay';
 
-type StepType = 1 | 2 | 3;
+type StepType = 1 | 2 | 3 | 4;
 
 const EssayAssistant = () => {
   const { toast } = useToast();
@@ -20,6 +22,7 @@ const EssayAssistant = () => {
   const [selectedPrompt, setSelectedPrompt] = useState('');
   const [response, setResponse] = useState('');
   const [suggestions, setSuggestions] = useState<EssaySuggestion[]>([]);
+  const [expandedFramework, setExpandedFramework] = useState<ExpandedFramework | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -62,15 +65,27 @@ const EssayAssistant = () => {
       });
       return;
     }
-    if (step < 3) setStep((step + 1) as StepType);
+    if (step === 3 && !expandedFramework) {
+      toast({
+        title: "Selection Required",
+        description: "Please select an essay approach before continuing.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (step < 4) setStep((prevStep => prevStep + 1) as StepType);
   };
 
   const handlePreviousStep = () => {
-    if (step > 1) setStep((step - 1) as StepType);
+    if (step > 1) setStep((prevStep => prevStep - 1) as StepType);
+  };
+
+  const handleFrameworkGenerated = (framework: ExpandedFramework) => {
+    setExpandedFramework(framework);
   };
 
   const isFirstStep = step === 1;
-  const isLastStep = step === 3;
+  const isLastStep = step === 4;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#9b87f5] via-[#D946EF] to-[#FDE1D3]">
@@ -98,14 +113,17 @@ const EssayAssistant = () => {
                 {step === 1 && <BookOpen className="h-5 w-5" />}
                 {step === 2 && <Lightbulb className="h-5 w-5" />}
                 {step === 3 && <Star className="h-5 w-5" />}
+                {step === 4 && <PencilIcon className="h-5 w-5" />}
                 {step === 1 && "Essay Topic"}
                 {step === 2 && "Personal Insight"}
                 {step === 3 && "Essay Suggestions"}
+                {step === 4 && "Your Framework"}
               </CardTitle>
               <CardDescription>
                 {step === 1 && "Start by sharing your scholarship essay topic or prompt"}
                 {step === 2 && "Let's explore your unique perspective"}
                 {step === 3 && "Choose from these personalized essay approaches"}
+                {step === 4 && "Here's your detailed essay framework"}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -145,9 +163,14 @@ const EssayAssistant = () => {
                       suggestions={suggestions} 
                       essayTopic={essayTopic}
                       personalResponse={response}
+                      onFrameworkGenerated={handleFrameworkGenerated}
                     />
                   )}
                 </div>
+              )}
+
+              {step === 4 && expandedFramework && (
+                <ExpandedFrameworkView framework={expandedFramework} />
               )}
 
               <div className="flex justify-between mt-6">
@@ -160,9 +183,9 @@ const EssayAssistant = () => {
                 </Button>
                 <Button
                   onClick={handleNextStep}
-                  disabled={isLastStep}
+                  disabled={isLastStep || (step === 3 && !expandedFramework)}
                 >
-                  Next Step
+                  {isLastStep ? 'Done' : 'Next Step'}
                 </Button>
               </div>
             </CardContent>
