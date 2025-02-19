@@ -1,3 +1,5 @@
 
-# Make sure dependency downloads are cached between runs
-cache_tags = ["xhr-0.1.0", "std-0.168.0"]
+project_id = "cewxnkpihtujqbwbzjcv"
+[functions]
+[functions.review-essay-document]
+verify_jwt = false

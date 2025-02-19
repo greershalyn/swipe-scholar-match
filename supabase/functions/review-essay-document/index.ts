@@ -24,7 +24,7 @@ async function extractTextFromFile(fileData: ArrayBuffer, mimeType: string): Pro
       const pdfData = await pdfParse(dataArray);
       console.log('PDF text extracted, length:', pdfData.text.length);
       return pdfData.text;
-    } else if (mimeType.includes('word') || mimeType.includes('document') || mimeType.includes('docx')) {
+    } else if (mimeType.includes('word') || mimeType.includes('document')) {
       console.log('Processing Word document...');
       const result = await mammoth.extractRawText({ arrayBuffer: fileData });
       console.log('Word document text extracted, length:', result.value.length);
@@ -89,7 +89,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
@@ -110,6 +110,7 @@ serve(async (req) => {
           }
         ],
         temperature: 0.3,
+        max_tokens: 2000
       }),
     });
 
@@ -125,7 +126,16 @@ serve(async (req) => {
       results = JSON.parse(data.choices[0].message.content);
     } catch (error) {
       console.error('Error parsing OpenAI response:', error);
-      throw new Error('Invalid response format from AI');
+      results = data.choices[0].message.content;
+      if (typeof results !== 'object' || !Array.isArray(results)) {
+        results = [{
+          sentence: "Unable to parse AI response",
+          error: "AI Response Format Error",
+          explanation: "The AI provided feedback but not in the expected format. Please try again.",
+          startIndex: 0,
+          endIndex: 0
+        }];
+      }
     }
 
     console.log('Successfully generated review results:', results.length, 'issues found');
