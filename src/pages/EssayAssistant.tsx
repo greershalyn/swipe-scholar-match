@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { PencilIcon, BookOpen, Lightbulb, Star } from 'lucide-react';
@@ -53,6 +54,9 @@ const EssayAssistant = () => {
   const handlePreviousStep = () => {
     if (step > 1) setStep((step - 1) as StepType);
   };
+
+  const isFirstStep = step === 1;
+  const isLastStep = step === 3;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#9b87f5] via-[#D946EF] to-[#FDE1D3]">
@@ -119,41 +123,24 @@ const EssayAssistant = () => {
               {step === 3 && (
                 <div className="space-y-6">
                   <EssaySuggestions suggestions={suggestions} />
-                  <div className="flex justify-between mt-6">
-                    <Button
-                      variant="outline"
-                      onClick={handlePreviousStep}
-                      disabled={step === 1}
-                    >
-                      Previous
-                    </Button>
-                    <Button
-                      onClick={handleNextStep}
-                      disabled={step === 3}
-                    >
-                      Next Step
-                    </Button>
-                  </div>
                 </div>
               )}
 
-              {step !== 3 && (
-                <div className="flex justify-between mt-6">
-                  <Button
-                    variant="outline"
-                    onClick={handlePreviousStep}
-                    disabled={step === 1}
-                  >
-                    Previous
-                  </Button>
-                  <Button
-                    onClick={handleNextStep}
-                    disabled={step === 3}
-                  >
-                    Next Step
-                  </Button>
-                </div>
-              )}
+              <div className="flex justify-between mt-6">
+                <Button
+                  variant="outline"
+                  onClick={handlePreviousStep}
+                  disabled={isFirstStep}
+                >
+                  Previous
+                </Button>
+                <Button
+                  onClick={handleNextStep}
+                  disabled={isLastStep}
+                >
+                  Next Step
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
