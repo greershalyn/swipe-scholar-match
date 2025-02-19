@@ -12,22 +12,22 @@ export async function generateEssaySuggestions(essayTopic: string, response: str
 
     const aiSuggestion = JSON.parse(data.suggestion);
     
-    // Create three variations of the AI-generated framework
+    // Transform AI suggestions into the required format
     return [
       {
-        title: aiSuggestion.title,
-        hook: aiSuggestion.hook,
-        framework: "Primary approach: " + aiSuggestion.talkingPoints[0].theme
+        title: aiSuggestion.framework1.title,
+        hook: aiSuggestion.framework1.hook,
+        framework: "Narrative Approach: " + aiSuggestion.framework1.talkingPoints.map(p => p.theme).join(" → ")
       },
       {
-        title: aiSuggestion.title + ": An Alternative Perspective",
-        hook: aiSuggestion.talkingPoints[1].content,
-        framework: "Alternative approach: " + aiSuggestion.talkingPoints[1].theme
+        title: aiSuggestion.framework2.title,
+        hook: aiSuggestion.framework2.hook,
+        framework: "Analytical Approach: " + aiSuggestion.framework2.talkingPoints.map(p => p.theme).join(" → ")
       },
       {
-        title: "Beyond " + aiSuggestion.title,
-        hook: aiSuggestion.talkingPoints[2].content,
-        framework: "Innovative approach: " + aiSuggestion.talkingPoints[2].theme
+        title: aiSuggestion.framework3.title,
+        hook: aiSuggestion.framework3.hook,
+        framework: "Innovative Approach: " + aiSuggestion.framework3.talkingPoints.map(p => p.theme).join(" → ")
       }
     ];
   } catch (error) {

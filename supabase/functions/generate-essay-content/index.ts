@@ -17,27 +17,39 @@ serve(async (req) => {
   try {
     const { essayTopic, personalResponse } = await req.json();
 
-    const prompt = `As a writing consultant, analyze this scholarship essay prompt and personal response to generate a sophisticated essay framework.
+    const prompt = `As an expert writing consultant, analyze this scholarship essay prompt and personal response to generate three completely unique and compelling essay frameworks. Each framework must be distinct in style, approach, and narrative structure.
 
 Essay Prompt: "${essayTopic}"
 Personal Response: "${personalResponse}"
 
-First, determine the most effective writing style based on the content:
-- Narrative/Storytelling (for personal transformation or emotional experiences)
-- Persuasive/Argumentative (for leadership or advocacy topics)
-- Reflective/Philosophical (for values and lessons learned)
-- Descriptive/Immersive (for creativity and passion topics)
+First, identify:
+1. Core themes in the prompt (e.g., leadership, resilience, innovation)
+2. Key qualities the scholarship committee seeks
+3. Multiple angles in the personal response
+4. Unique or emotionally compelling elements
 
-Then generate a detailed essay framework that includes:
-1. A compelling title that reflects the unique experience
-2. A powerful opening hook in the chosen writing style
+Then, generate three distinct essay frameworks, each using a different writing style:
+Framework 1: Use a narrative/storytelling approach with emotional depth
+Framework 2: Employ an analytical/reflective style with unique insights
+Framework 3: Create an innovative structure (metaphorical, thematic, or unconventional)
+
+For each framework, provide:
+1. A unique title that captures the specific angle
+2. A compelling hook that uses the chosen writing style
 3. Three distinct talking points that:
-   - Have unique themes tied to the personal experience
-   - Include specific details from the response
-   - Connect to college and future aspirations
-4. A forward-looking conclusion
+   - Connect personally to the prompt
+   - Build upon different aspects of the experience
+   - Link to future academic/professional goals
+4. A brief outline of how to conclude powerfully
 
-Format the response as a JSON object with clear sections.`;
+IMPORTANT:
+- Ensure each framework has a completely different perspective
+- Use varied vocabulary and sentence structures
+- Employ different literary techniques
+- Make each suggestion feel fresh and original
+- Avoid repeating themes or approaches
+
+Format the response as a JSON object with three distinct sections, each containing title, hook, and talking points with their themes.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -48,17 +60,20 @@ Format the response as a JSON object with clear sections.`;
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: 'You are an expert writing consultant specializing in scholarship essays.' },
+          { 
+            role: 'system', 
+            content: 'You are an expert writing consultant who specializes in crafting unique, compelling scholarship essays. You excel at finding different angles and approaches for the same story.'
+          },
           { role: 'user', content: prompt }
         ],
-        temperature: 0.7,
+        temperature: 0.8, // Increased for more creative variety
       }),
     });
 
     const data = await response.json();
-    const suggestion = data.choices[0].message.content;
+    console.log('AI Response:', data.choices[0].message.content);
 
-    return new Response(JSON.stringify({ suggestion }), {
+    return new Response(JSON.stringify({ suggestion: data.choices[0].message.content }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
