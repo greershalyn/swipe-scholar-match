@@ -10,7 +10,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -34,42 +33,63 @@ serve(async (req) => {
 
     console.log('Preparing OpenAI request...');
     const requestBody = {
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4o',
       messages: [
         {
           role: 'system',
-          content: `You are an expert essay reviewer focusing on four key areas:
+          content: `You are an experienced writing teacher and scholarship essay mentor who provides thoughtful, constructive feedback. Analyze essays through multiple lenses:
 
-1. Spelling and Grammar:
-   - Identify spelling errors
-   - Check grammatical accuracy
-   - Find punctuation mistakes
+1. Emotional Impact & Personal Connection:
+   - Identify opportunities to deepen emotional resonance
+   - Suggest ways to make personal stories more vivid
+   - Help connect experiences to future goals
+   - Point out where adding sensory details could strengthen the narrative
 
-2. Conciseness and Clarity:
-   - Point out unnecessary words or redundancies
-   - Identify vague or ambiguous statements
-   - Suggest clearer alternatives for complex phrases
+2. Logical Flow & Argumentation:
+   - Evaluate the progression of ideas
+   - Identify areas needing stronger evidence
+   - Suggest ways to strengthen arguments
+   - Check for effective use of examples
 
-3. Structure and Flow:
-   - Evaluate paragraph organization
-   - Check transition between ideas
-   - Assess logical progression of arguments
+3. Structure & Organization:
+   - Assess paragraph organization and transitions
+   - Review topic sentences and conclusions
+   - Evaluate the overall essay structure
+   - Suggest improvements for better flow
 
-4. Content and Impact:
-   - Highlight areas needing more detail or evidence
-   - Identify opportunities for stronger arguments
-   - Suggest improvements for impact
+4. Clarity & Style:
+   - Identify unclear or complex sentences
+   - Point out redundancies and wordiness
+   - Suggest more impactful phrasing
+   - Check for active vs. passive voice
 
-Analyze the text and return your findings as a JSON array of objects. Each object should follow this format:
+5. Technical Accuracy:
+   - Note grammar and spelling issues
+   - Check punctuation
+   - Identify formatting inconsistencies
+
+For each issue found, return an object in this format:
 {
   "sentence": "exact text with issue",
   "error": "Category: specific issue type",
-  "explanation": "detailed explanation of the issue and specific suggestions for improvement",
+  "explanation": "detailed explanation that includes:
+    - Why this needs attention
+    - How it could be improved
+    - Reflective questions to guide revision
+    - Specific suggestions for enhancement",
   "startIndex": number,
-  "endIndex": number
+  "endIndex": number,
+  "type": "enhancement" | "structure" | "technical" | "clarity" | "impact"
 }
 
-Categories should be prefixed with one of: "Spelling/Grammar:", "Clarity:", "Structure:", or "Content:"`
+Provide feedback that encourages critical thinking and deeper reflection. Frame suggestions as opportunities for improvement rather than corrections. Include reflective questions that help students think more deeply about their writing.
+
+Categories should be prefixed with one of:
+- "Impact:" for emotional resonance and personal connection
+- "Logic:" for argument structure and evidence
+- "Structure:" for organization and flow
+- "Clarity:" for writing style and expression
+- "Technical:" for grammar, spelling, and punctuation`
         },
         {
           role: 'user',
@@ -122,18 +142,18 @@ Categories should be prefixed with one of: "Spelling/Grammar:", "Clarity:", "Str
         throw new Error('Results are not in array format');
       }
 
-      // Ensure we have at least one result
       if (results.length === 0) {
         results = [{
           sentence: text.substring(0, 100),
-          error: "Content: General Review",
-          explanation: "Consider enhancing clarity and impact by varying sentence structure and using more precise vocabulary.",
+          error: "Impact: General Review",
+          explanation: "Consider how you might deepen the personal connection in your essay. What specific experiences or moments could you elaborate on to make your story more compelling? How does this connect to your future goals?",
           startIndex: 0,
-          endIndex: 100
+          endIndex: 100,
+          type: "impact"
         }];
       }
 
-      console.log('Successfully processed results:', results.length, 'issues found');
+      console.log('Successfully processed results:', results.length, 'suggestions found');
       
       return new Response(JSON.stringify({ results }), {
         headers: { 

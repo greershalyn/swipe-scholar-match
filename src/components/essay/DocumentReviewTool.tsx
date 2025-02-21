@@ -1,11 +1,12 @@
 
 import React, { useState } from 'react';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, BookOpen, Brain, Lightbulb, Sparkles, GrammarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 
 interface DocumentReviewError {
@@ -14,6 +15,7 @@ interface DocumentReviewError {
   explanation: string;
   startIndex: number;
   endIndex: number;
+  type: 'enhancement' | 'structure' | 'technical' | 'clarity' | 'impact';
 }
 
 export const DocumentReviewTool = () => {
@@ -21,6 +23,7 @@ export const DocumentReviewTool = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [essayText, setEssayText] = useState('');
   const [reviewResults, setReviewResults] = useState<DocumentReviewError[]>([]);
+  const [activeTab, setActiveTab] = useState('all');
 
   const handleAnalyzeEssay = async () => {
     if (!essayText.trim()) {
@@ -69,6 +72,27 @@ export const DocumentReviewTool = () => {
     }
   };
 
+  const filteredResults = activeTab === 'all' 
+    ? reviewResults 
+    : reviewResults.filter(result => result.type === activeTab);
+
+  const getIcon = (type: string) => {
+    switch (type) {
+      case 'impact':
+        return <Sparkles className="h-5 w-5 text-purple-500" />;
+      case 'structure':
+        return <BookOpen className="h-5 w-5 text-blue-500" />;
+      case 'technical':
+        return <GrammarIcon className="h-5 w-5 text-red-500" />;
+      case 'clarity':
+        return <Brain className="h-5 w-5 text-green-500" />;
+      case 'enhancement':
+        return <Lightbulb className="h-5 w-5 text-yellow-500" />;
+      default:
+        return <AlertCircle className="h-5 w-5 text-gray-500" />;
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="space-y-4">
@@ -91,23 +115,43 @@ export const DocumentReviewTool = () => {
 
       {reviewResults.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Review Results</h3>
-          {reviewResults.map((result, index) => (
-            <Card key={index} className="border-l-4 border-l-yellow-400">
-              <CardContent className="pt-6">
-                <div className="flex gap-3">
-                  <AlertCircle className="h-5 w-5 text-yellow-500 flex-shrink-0 mt-1" />
-                  <div className="space-y-2">
-                    <p className="font-medium">{result.error}</p>
-                    <p className="text-sm text-gray-600">{result.sentence}</p>
-                    <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded">
-                      {result.explanation}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          <h3 className="text-lg font-semibold">Teacher's Feedback</h3>
+          
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid grid-cols-6 w-full">
+              <TabsTrigger value="all">All</TabsTrigger>
+              <TabsTrigger value="impact">Impact</TabsTrigger>
+              <TabsTrigger value="structure">Structure</TabsTrigger>
+              <TabsTrigger value="technical">Technical</TabsTrigger>
+              <TabsTrigger value="clarity">Clarity</TabsTrigger>
+              <TabsTrigger value="enhancement">Enhancement</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value={activeTab} className="mt-4">
+              <div className="space-y-4">
+                {filteredResults.map((result, index) => (
+                  <Card key={index} className="border-l-4 border-l-purple-400">
+                    <CardContent className="pt-6">
+                      <div className="flex gap-3">
+                        {getIcon(result.type)}
+                        <div className="space-y-2">
+                          <p className="font-medium">{result.error}</p>
+                          <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
+                            "{result.sentence}"
+                          </p>
+                          <div className="text-sm text-gray-700 space-y-2">
+                            {result.explanation.split('\n').map((line, i) => (
+                              <p key={i} className="leading-relaxed">{line}</p>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       )}
     </div>
