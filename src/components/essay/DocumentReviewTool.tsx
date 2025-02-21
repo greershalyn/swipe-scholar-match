@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { AlertCircle, BookOpen, Brain, Lightbulb, Sparkles, GrammarIcon } from 'lucide-react';
+import { AlertCircle, BookOpen, Brain, Lightbulb, Sparkles, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
@@ -83,7 +83,7 @@ export const DocumentReviewTool = () => {
       case 'structure':
         return <BookOpen className="h-5 w-5 text-blue-500" />;
       case 'technical':
-        return <GrammarIcon className="h-5 w-5 text-red-500" />;
+        return <Check className="h-5 w-5 text-red-500" />; // Changed from GrammarIcon to Check
       case 'clarity':
         return <Brain className="h-5 w-5 text-green-500" />;
       case 'enhancement':
