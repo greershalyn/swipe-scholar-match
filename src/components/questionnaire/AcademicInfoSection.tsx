@@ -19,6 +19,7 @@ interface AcademicInfoProps {
     intended_major: string;
     high_school_graduated: boolean;
     college_university: string;
+    dual_enrollment: boolean;
   };
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   setFormData: React.Dispatch<React.SetStateAction<any>>;
@@ -48,10 +49,17 @@ export const AcademicInfoSection = ({
     }));
   };
 
-  const handleGraduationStatusChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDualEnrollmentChange = (checked: boolean) => {
     setFormData((prev: any) => ({
       ...prev,
-      high_school_graduated: e.target.checked,
+      dual_enrollment: checked,
+    }));
+  };
+
+  const handleGraduationStatusChange = (checked: boolean) => {
+    setFormData((prev: any) => ({
+      ...prev,
+      high_school_graduated: checked,
     }));
   };
 
@@ -135,18 +143,34 @@ export const AcademicInfoSection = ({
         />
       </div>
 
-      <div className="space-y-2 flex items-center">
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="high_school_graduated"
-            checked={formData.high_school_graduated}
-            onChange={handleGraduationStatusChange}
-            className="h-4 w-4 rounded border-gray-300"
-          />
-          <Label htmlFor="high_school_graduated">
+      <div className="space-y-2 col-span-2">
+        <div className="flex items-center justify-between">
+          <Label htmlFor="high_school_graduated" className="cursor-pointer">
             I have graduated high school
           </Label>
+          <Switch
+            id="high_school_graduated"
+            checked={formData.high_school_graduated}
+            onCheckedChange={handleGraduationStatusChange}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2 col-span-2">
+        <div className="flex items-center justify-between">
+          <div>
+            <Label htmlFor="dual_enrollment" className="cursor-pointer">
+              Dual Enrollment Student
+            </Label>
+            <p className="text-sm text-muted-foreground">
+              I am taking or plan to take college classes while in high school
+            </p>
+          </div>
+          <Switch
+            id="dual_enrollment"
+            checked={formData.dual_enrollment}
+            onCheckedChange={handleDualEnrollmentChange}
+          />
         </div>
       </div>
     </div>

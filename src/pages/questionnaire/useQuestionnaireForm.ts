@@ -34,6 +34,7 @@ export const useQuestionnaireForm = () => {
     high_school_graduated: false,
     keywords: [] as string[],
     college_university: "",
+    dual_enrollment: false,
   });
 
   useEffect(() => {
