@@ -21,6 +21,7 @@ export type Database = {
           created_at: string
           current_education_level: string | null
           disability_status: boolean | null
+          dual_enrollment: boolean | null
           essay_personal_statement: string | null
           ethnicity: string | null
           extracurricular_activities: string[] | null
@@ -54,6 +55,7 @@ export type Database = {
           created_at?: string
           current_education_level?: string | null
           disability_status?: boolean | null
+          dual_enrollment?: boolean | null
           essay_personal_statement?: string | null
           ethnicity?: string | null
           extracurricular_activities?: string[] | null
@@ -87,6 +89,7 @@ export type Database = {
           created_at?: string
           current_education_level?: string | null
           disability_status?: boolean | null
+          dual_enrollment?: boolean | null
           essay_personal_statement?: string | null
           ethnicity?: string | null
           extracurricular_activities?: string[] | null
