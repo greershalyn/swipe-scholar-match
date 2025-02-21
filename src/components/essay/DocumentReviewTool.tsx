@@ -72,9 +72,13 @@ export const DocumentReviewTool = () => {
     }
   };
 
+  // Updated filtering logic to correctly match suggestion types with tabs
   const filteredResults = activeTab === 'all' 
     ? reviewResults 
-    : reviewResults.filter(result => result.type === activeTab);
+    : reviewResults.filter(result => {
+        // Convert both strings to lowercase for case-insensitive comparison
+        return result.type.toLowerCase() === activeTab.toLowerCase();
+      });
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -83,7 +87,7 @@ export const DocumentReviewTool = () => {
       case 'structure':
         return <BookOpen className="h-5 w-5 text-blue-500" />;
       case 'technical':
-        return <Check className="h-5 w-5 text-red-500" />; // Changed from GrammarIcon to Check
+        return <Check className="h-5 w-5 text-red-500" />;
       case 'clarity':
         return <Brain className="h-5 w-5 text-green-500" />;
       case 'enhancement':
