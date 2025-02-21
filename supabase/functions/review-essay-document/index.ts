@@ -26,199 +26,150 @@ serve(async (req) => {
       throw new Error('Essay text is too short for meaningful analysis');
     }
 
-    if (!openAIApiKey) {
-      console.error('OpenAI API key not found');
-      throw new Error('OpenAI API key is not configured');
-    }
-
-    console.log('Preparing OpenAI request...');
-    const requestBody = {
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'system',
-          content: `You are an experienced writing teacher and scholarship essay mentor who provides thoughtful, constructive feedback. Analyze essays through multiple lenses:
-
-1. Emotional Impact & Personal Connection:
-   - Identify opportunities to deepen emotional resonance
-   - Suggest ways to make personal stories more vivid
-   - Help connect experiences to future goals
-   - Point out where adding sensory details could strengthen the narrative
-
-2. Logical Flow & Argumentation:
-   - Evaluate the progression of ideas
-   - Identify areas needing stronger evidence
-   - Suggest ways to strengthen arguments
-   - Check for effective use of examples
-
-3. Structure & Organization:
-   - Assess paragraph organization and transitions
-   - Review topic sentences and conclusions
-   - Evaluate the overall essay structure
-   - Suggest improvements for better flow
-
-4. Clarity & Style:
-   - Identify unclear or complex sentences
-   - Point out redundancies and wordiness
-   - Suggest more impactful phrasing
-   - Check for active vs. passive voice
-
-5. Technical Accuracy:
-   - Note grammar and spelling issues
-   - Check punctuation
-   - Identify formatting inconsistencies
-
-For each issue found, return an object in this format:
-{
-  "sentence": "exact text with issue",
-  "error": "Category: specific issue type",
-  "explanation": "detailed explanation that includes:
-    - Why this needs attention
-    - How it could be improved
-    - Reflective questions to guide revision
-    - Specific suggestions for enhancement",
-  "startIndex": number,
-  "endIndex": number,
-  "type": "enhancement" | "structure" | "technical" | "clarity" | "impact"
-}
-
-Provide feedback that encourages critical thinking and deeper reflection. Frame suggestions as opportunities for improvement rather than corrections. Include reflective questions that help students think more deeply about their writing.
-
-Categories should be prefixed with one of:
-- "Impact:" for emotional resonance and personal connection
-- "Logic:" for argument structure and evidence
-- "Structure:" for organization and flow
-- "Clarity:" for writing style and expression
-- "Technical:" for grammar, spelling, and punctuation
-
-Remember to:
-1. Always format your response as a JSON array of feedback objects
-2. Include specific text excerpts in the "sentence" field
-3. Provide constructive, actionable feedback in the "explanation" field
-4. Categorize each issue accurately with the correct prefix and type
-5. Include reflective questions to promote deeper thinking`
-        },
-        {
-          role: 'user',
-          content: text
-        }
-      ],
-      temperature: 0.3,
-      max_tokens: 2000
-    };
-
-    console.log('Sending request to OpenAI...');
+    console.log('Sending text to OpenAI for analysis...');
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${openAIApiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(requestBody),
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: `You are an experienced writing teacher analyzing scholarship essays. You must ONLY respond with a JSON array containing feedback objects. Each object must strictly follow this format:
+
+[{
+  "sentence": "(exact problematic text)",
+  "error": "(category prefix): (specific issue)",
+  "explanation": "(constructive feedback with bullet points explaining why and how to improve)",
+  "startIndex": 0,
+  "endIndex": 100,
+  "type": "enhancement" | "structure" | "technical" | "clarity" | "impact"
+}]
+
+Category prefixes must be one of:
+- "Impact:" for emotional resonance
+- "Logic:" for argument flow
+- "Structure:" for organization
+- "Clarity:" for writing style
+- "Technical:" for grammar/spelling
+
+Analyze for:
+1. Emotional Impact (personal stories, vivid details)
+2. Structure (organization, transitions)
+3. Technical accuracy (grammar, punctuation)
+4. Clarity (complex sentences, wordiness)
+5. Logic (argument flow, evidence)
+
+Important:
+- Response MUST be a valid JSON array
+- Each feedback object MUST include all fields
+- Keep explanations clear and actionable
+- Include 3-5 key issues to focus on
+- Use the exact prefixes specified above`
+          },
+          {
+            role: 'user',
+            content: text
+          }
+        ],
+        temperature: 0.1, // Reduced for more consistent output
+        max_tokens: 1500, // Adjusted for reasonable response length
+        top_p: 0.9,
+        frequency_penalty: 0.0,
+        presence_penalty: 0.0
+      })
     });
 
     if (!response.ok) {
-      const errorData = await response.text();
-      console.error('OpenAI API Error:', {
-        status: response.status,
-        statusText: response.statusText,
-        error: errorData
-      });
-      throw new Error(`OpenAI API error: ${response.status} - ${errorData}`);
+      console.error('OpenAI API Error:', response.status, response.statusText);
+      throw new Error(`OpenAI API error: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log('OpenAI response received');
+    console.log('Received response from OpenAI');
 
     if (!data.choices?.[0]?.message?.content) {
-      console.error('Invalid OpenAI response format:', data);
+      console.error('Invalid OpenAI response format');
       throw new Error('Invalid response format from OpenAI');
     }
 
-    let results;
     try {
       const content = data.choices[0].message.content;
-      console.log('Parsing OpenAI response content:', content);
+      console.log('Attempting to parse response content');
       
-      results = typeof content === 'string' ? JSON.parse(content) : content;
+      let results = JSON.parse(content);
       
+      // Ensure results is an array
       if (!Array.isArray(results)) {
-        console.error('Non-array results:', results);
-        // If not an array, try to wrap it in an array
-        results = Array.isArray(results) ? results : [results];
+        console.log('Converting non-array result to array');
+        results = [results];
       }
+
+      // Validate and sanitize each result
+      results = results.map(result => {
+        console.log('Validating result:', result);
+        return {
+          sentence: String(result.sentence || '').slice(0, 500),
+          error: String(result.error || 'Impact: General feedback'),
+          explanation: String(result.explanation || 'Consider revising this section.'),
+          startIndex: Number(result.startIndex) || 0,
+          endIndex: Number(result.endIndex) || 100,
+          type: ['enhancement', 'structure', 'technical', 'clarity', 'impact'].includes(result.type) 
+            ? result.type 
+            : 'impact'
+        };
+      });
 
       // Ensure we have at least one result
       if (results.length === 0) {
+        console.log('No results found, providing default feedback');
         results = [{
-          sentence: text.substring(0, 100),
+          sentence: text.slice(0, 100),
           error: "Impact: General Review",
-          explanation: "Consider how you might deepen the personal connection in your essay. What specific experiences or moments could you elaborate on to make your story more compelling? How does this connect to your future goals?",
+          explanation: "Consider how you might deepen the personal connection in your essay. What specific experiences could you elaborate on?",
           startIndex: 0,
           endIndex: 100,
           type: "impact"
         }];
       }
 
-      // Validate each result has required fields
-      results = results.map(result => ({
-        sentence: result.sentence || text.substring(0, 100),
-        error: result.error || "Impact: General Review",
-        explanation: result.explanation || "Consider how this section could be improved.",
-        startIndex: result.startIndex || 0,
-        endIndex: result.endIndex || 100,
-        type: result.type || "impact"
-      }));
-
-      console.log('Successfully processed results:', results.length, 'issues found');
-      
+      console.log('Successfully processed', results.length, 'feedback items');
       return new Response(JSON.stringify({ results }), {
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
-    } catch (error) {
-      console.error('Error processing results:', error);
-      // Return a fallback response instead of throwing
-      const fallbackResults = [{
-        sentence: text.substring(0, 100),
-        error: "Impact: General Review",
-        explanation: "We encountered an issue processing the detailed feedback. Here's a general suggestion: Consider how you might make your essay more impactful by adding specific details and personal experiences.",
-        startIndex: 0,
-        endIndex: 100,
-        type: "impact"
-      }];
-      
-      return new Response(JSON.stringify({ results: fallbackResults }), {
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        },
+
+    } catch (parseError) {
+      console.error('Error parsing OpenAI response:', parseError);
+      return new Response(JSON.stringify({
+        results: [{
+          sentence: text.slice(0, 100),
+          error: "Technical: Processing Error",
+          explanation: "We encountered an issue analyzing your essay. Consider breaking it into smaller sections if it's very long.",
+          startIndex: 0,
+          endIndex: 100,
+          type: "technical"
+        }]
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
   } catch (error) {
-    console.error('Essay review error:', error);
-    
-    // Return a 200 response with error information instead of a 500
-    return new Response(
-      JSON.stringify({
-        results: [{
-          sentence: "Error analyzing essay",
-          error: "Technical: Analysis Error",
-          explanation: "We encountered an error while analyzing your essay. Please try again with a shorter text or check your connection.",
-          startIndex: 0,
-          endIndex: 0,
-          type: "technical"
-        }]
-      }),
-      {
-        status: 200,
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        },
-      }
-    );
+    console.error('Function error:', error);
+    return new Response(JSON.stringify({
+      results: [{
+        sentence: "Error analyzing essay",
+        error: "Technical: Analysis Error",
+        explanation: "We encountered an error while analyzing your essay. Please try again with a shorter text or check your connection.",
+        startIndex: 0,
+        endIndex: 0,
+        type: "technical"
+      }]
+    }), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
   }
 });
