@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { AlertCircle, BookOpen, Brain, Lightbulb, Sparkles, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -72,16 +71,35 @@ export const DocumentReviewTool = () => {
     }
   };
 
-  // Updated filtering logic to correctly match suggestion types with tabs
+  // Updated filtering logic to check the error field prefix
   const filteredResults = activeTab === 'all' 
     ? reviewResults 
     : reviewResults.filter(result => {
-        // Convert both strings to lowercase for case-insensitive comparison
-        return result.type.toLowerCase() === activeTab.toLowerCase();
+        const errorPrefix = result.error.split(':')[0].toLowerCase();
+        const tabType = activeTab.toLowerCase();
+        
+        // Map error prefixes to tab types
+        switch (errorPrefix) {
+          case 'impact':
+            return tabType === 'impact';
+          case 'structure':
+            return tabType === 'structure';
+          case 'technical':
+            return tabType === 'technical';
+          case 'clarity':
+            return tabType === 'clarity';
+          case 'logic':
+            return tabType === 'enhancement';
+          default:
+            return tabType === 'enhancement';
+        }
       });
 
   const getIcon = (type: string) => {
-    switch (type) {
+    // Extract the category from the error field
+    const category = type.split(':')[0].toLowerCase();
+    
+    switch (category) {
       case 'impact':
         return <Sparkles className="h-5 w-5 text-purple-500" />;
       case 'structure':
@@ -90,7 +108,7 @@ export const DocumentReviewTool = () => {
         return <Check className="h-5 w-5 text-red-500" />;
       case 'clarity':
         return <Brain className="h-5 w-5 text-green-500" />;
-      case 'enhancement':
+      case 'logic':
         return <Lightbulb className="h-5 w-5 text-yellow-500" />;
       default:
         return <AlertCircle className="h-5 w-5 text-gray-500" />;
@@ -128,7 +146,7 @@ export const DocumentReviewTool = () => {
               <TabsTrigger value="structure">Structure</TabsTrigger>
               <TabsTrigger value="technical">Technical</TabsTrigger>
               <TabsTrigger value="clarity">Clarity</TabsTrigger>
-              <TabsTrigger value="enhancement">Enhancement</TabsTrigger>
+              <TabsTrigger value="enhancement">Logic</TabsTrigger>
             </TabsList>
 
             <TabsContent value={activeTab} className="mt-4">
@@ -137,7 +155,7 @@ export const DocumentReviewTool = () => {
                   <Card key={index} className="border-l-4 border-l-purple-400">
                     <CardContent className="pt-6">
                       <div className="flex gap-3">
-                        {getIcon(result.type)}
+                        {getIcon(result.error)}
                         <div className="space-y-2">
                           <p className="font-medium">{result.error}</p>
                           <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
