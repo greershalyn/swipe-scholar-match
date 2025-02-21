@@ -10,4 +10,5 @@ export interface Scholarship {
   url: string;
   provider: string;
   match_score?: number;
+  source_url?: string;  // Added this field as optional
 }
