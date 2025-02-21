@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { motion, PanInfo } from 'framer-motion';
 import { ExternalLink, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { Scholarship } from '@/types/scholarship';
+import { useToast } from '@/components/ui/use-toast';
 
 interface ScholarshipCardProps {
   scholarship: Scholarship;
@@ -12,6 +13,8 @@ interface ScholarshipCardProps {
 }
 
 const ScholarshipCard: React.FC<ScholarshipCardProps> = ({ scholarship, onSwipe }) => {
+  const { toast } = useToast();
+
   const handleDragEnd = (event: any, info: PanInfo) => {
     const threshold = 100;
     if (info.offset.x > threshold) {
@@ -36,6 +39,73 @@ const ScholarshipCard: React.FC<ScholarshipCardProps> = ({ scholarship, onSwipe 
     } catch (error) {
       console.error('Error formatting date:', error);
       return 'Deadline not specified';
+    }
+  };
+
+  const getScholarshipUrl = () => {
+    // Check if we have a valid source_url first
+    if (scholarship.source_url && isValidUrl(scholarship.source_url)) {
+      return scholarship.source_url;
+    }
+    
+    // Then check the main url
+    if (scholarship.url && isValidUrl(scholarship.url)) {
+      return scholarship.url;
+    }
+
+    // Generate a search URL as last resort
+    return generateSearchUrl(scholarship);
+  };
+
+  const isValidUrl = (urlString: string): boolean => {
+    try {
+      const url = new URL(urlString);
+      // List of trusted scholarship domains
+      const trustedDomains = [
+        '.edu',
+        '.gov',
+        'fastweb.com',
+        'scholarships.com',
+        'unigo.com',
+        'cappex.com',
+        'chegg.com',
+        'collegeboard.org',
+        'petersons.com',
+        'niche.com',
+        'salliemae.com',
+        'studentaid.gov',
+        'nsf.gov',
+        'nacme.org'
+      ];
+
+      return (
+        url.protocol === 'https:' &&
+        (trustedDomains.some(domain => url.hostname.includes(domain)) ||
+          !url.hostname.includes('example.com'))
+      );
+    } catch {
+      return false;
+    }
+  };
+
+  const generateSearchUrl = (scholarship: Scholarship): string => {
+    const searchQuery = encodeURIComponent(
+      `${scholarship.title} ${scholarship.provider} scholarship application`
+    );
+    return `https://www.google.com/search?q=${searchQuery}`;
+  };
+
+  const handleUrlClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.stopPropagation();
+    const url = getScholarshipUrl();
+    
+    // If we're using the fallback search URL, show a toast to inform the user
+    if (url.includes('google.com/search')) {
+      toast({
+        title: "Direct link unavailable",
+        description: "Redirecting you to search results for this scholarship",
+        duration: 3000
+      });
     }
   };
 
@@ -95,17 +165,15 @@ const ScholarshipCard: React.FC<ScholarshipCardProps> = ({ scholarship, onSwipe 
             </ul>
           </div>
 
-          {scholarship.url && (
-            <a
-              href={scholarship.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center text-sm text-primary hover:text-primary/80 transition-colors"
-              onClick={(e) => e.stopPropagation()}
-            >
-              View Details <ExternalLink className="ml-1 h-4 w-4" />
-            </a>
-          )}
+          <a
+            href={getScholarshipUrl()}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center text-sm text-primary hover:text-primary/80 transition-colors"
+            onClick={handleUrlClick}
+          >
+            View Details <ExternalLink className="ml-1 h-4 w-4" />
+          </a>
         </div>
 
         <div className="mt-6 flex justify-center gap-8 text-sm text-muted-foreground">
