@@ -33,7 +33,7 @@ serve(async (req) => {
 
     console.log('Preparing OpenAI request...');
     const requestBody = {
-      model: 'gpt-4o-mini',  // Fixed model name
+      model: 'gpt-4o-mini',
       messages: [
         {
           role: 'system',
@@ -80,7 +80,23 @@ For each issue found, return an object in this format:
   "startIndex": number,
   "endIndex": number,
   "type": "enhancement" | "structure" | "technical" | "clarity" | "impact"
-}`
+}
+
+Provide feedback that encourages critical thinking and deeper reflection. Frame suggestions as opportunities for improvement rather than corrections. Include reflective questions that help students think more deeply about their writing.
+
+Categories should be prefixed with one of:
+- "Impact:" for emotional resonance and personal connection
+- "Logic:" for argument structure and evidence
+- "Structure:" for organization and flow
+- "Clarity:" for writing style and expression
+- "Technical:" for grammar, spelling, and punctuation
+
+Remember to:
+1. Always format your response as a JSON array of feedback objects
+2. Include specific text excerpts in the "sentence" field
+3. Provide constructive, actionable feedback in the "explanation" field
+4. Categorize each issue accurately with the correct prefix and type
+5. Include reflective questions to promote deeper thinking`
         },
         {
           role: 'user',
@@ -197,7 +213,7 @@ For each issue found, return an object in this format:
         }]
       }),
       {
-        status: 200,  // Changed from 500 to 200
+        status: 200,
         headers: { 
           ...corsHeaders, 
           'Content-Type': 'application/json' 
