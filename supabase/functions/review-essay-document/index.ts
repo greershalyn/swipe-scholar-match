@@ -9,6 +9,15 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+interface ReviewResult {
+  sentence: string;
+  error: string;
+  explanation: string;
+  startIndex: number;
+  endIndex: number;
+  type: 'enhancement' | 'structure' | 'technical' | 'clarity' | 'impact';
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -22,11 +31,7 @@ serve(async (req) => {
       throw new Error('Missing or invalid essay text');
     }
 
-    if (text.trim().length < 50) {
-      throw new Error('Essay text is too short for meaningful analysis');
-    }
-
-    console.log('Sending text to OpenAI for analysis...');
+    console.log('Preparing OpenAI request...');
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -38,119 +43,108 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are an experienced writing teacher analyzing scholarship essays. You must ONLY respond with a JSON array containing feedback objects. Each object must strictly follow this format:
-
-[{
-  "sentence": "(exact problematic text)",
-  "error": "(category prefix): (specific issue)",
-  "explanation": "(constructive feedback with bullet points explaining why and how to improve)",
+            content: `You are an essay reviewer. Return ONLY a JSON array of review objects. Each object must follow this exact format:
+{
+  "sentence": "exact text to improve",
+  "error": "Category: specific issue",
+  "explanation": "constructive feedback with specific suggestions",
   "startIndex": 0,
   "endIndex": 100,
-  "type": "enhancement" | "structure" | "technical" | "clarity" | "impact"
-}]
+  "type": "enhancement"
+}
 
-Category prefixes must be one of:
+Categories must be prefixed with:
 - "Impact:" for emotional resonance
-- "Logic:" for argument flow
 - "Structure:" for organization
-- "Clarity:" for writing style
 - "Technical:" for grammar/spelling
+- "Clarity:" for writing style
+- "Logic:" for flow
 
-Analyze for:
-1. Emotional Impact (personal stories, vivid details)
-2. Structure (organization, transitions)
-3. Technical accuracy (grammar, punctuation)
-4. Clarity (complex sentences, wordiness)
-5. Logic (argument flow, evidence)
+Types must be one of: "enhancement", "structure", "technical", "clarity", "impact"
 
-Important:
-- Response MUST be a valid JSON array
-- Each feedback object MUST include all fields
-- Keep explanations clear and actionable
-- Include 3-5 key issues to focus on
-- Use the exact prefixes specified above`
+IMPORTANT: 
+- Only output valid JSON array
+- Include 3-5 key issues
+- Keep explanations brief and actionable
+- Use exact category prefixes`
           },
           {
             role: 'user',
             content: text
           }
         ],
-        temperature: 0.1, // Reduced for more consistent output
-        max_tokens: 1500, // Adjusted for reasonable response length
-        top_p: 0.9,
-        frequency_penalty: 0.0,
-        presence_penalty: 0.0
+        temperature: 0.1,
+        max_tokens: 1000,
+        top_p: 0.95
       })
     });
 
     if (!response.ok) {
-      console.error('OpenAI API Error:', response.status, response.statusText);
+      const errorText = await response.text();
+      console.error('OpenAI API Error:', response.status, errorText);
       throw new Error(`OpenAI API error: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log('Received response from OpenAI');
+    console.log('Received OpenAI response');
 
     if (!data.choices?.[0]?.message?.content) {
-      console.error('Invalid OpenAI response format');
-      throw new Error('Invalid response format from OpenAI');
+      console.error('Invalid response structure:', data);
+      throw new Error('Invalid response structure from OpenAI');
     }
 
+    let results: ReviewResult[];
     try {
       const content = data.choices[0].message.content;
-      console.log('Attempting to parse response content');
-      
-      let results = JSON.parse(content);
-      
-      // Ensure results is an array
-      if (!Array.isArray(results)) {
-        console.log('Converting non-array result to array');
-        results = [results];
-      }
+      console.log('Raw OpenAI response:', content);
 
+      // Try to parse the response as JSON
+      const parsed = JSON.parse(content.trim());
+      
+      // Ensure we have an array
+      results = Array.isArray(parsed) ? parsed : [parsed];
+      
       // Validate and sanitize each result
-      results = results.map(result => {
-        console.log('Validating result:', result);
-        return {
-          sentence: String(result.sentence || '').slice(0, 500),
-          error: String(result.error || 'Impact: General feedback'),
-          explanation: String(result.explanation || 'Consider revising this section.'),
-          startIndex: Number(result.startIndex) || 0,
-          endIndex: Number(result.endIndex) || 100,
-          type: ['enhancement', 'structure', 'technical', 'clarity', 'impact'].includes(result.type) 
-            ? result.type 
-            : 'impact'
-        };
-      });
+      results = results.map((result): ReviewResult => ({
+        sentence: String(result.sentence || '').slice(0, 500),
+        error: String(result.error || 'Impact: General feedback'),
+        explanation: String(result.explanation || 'Consider revising this section.'),
+        startIndex: typeof result.startIndex === 'number' ? result.startIndex : 0,
+        endIndex: typeof result.endIndex === 'number' ? result.endIndex : 100,
+        type: ['enhancement', 'structure', 'technical', 'clarity', 'impact'].includes(result.type) 
+          ? result.type as ReviewResult['type']
+          : 'impact'
+      }));
 
-      // Ensure we have at least one result
       if (results.length === 0) {
-        console.log('No results found, providing default feedback');
+        console.log('No valid results, using fallback');
         results = [{
           sentence: text.slice(0, 100),
           error: "Impact: General Review",
-          explanation: "Consider how you might deepen the personal connection in your essay. What specific experiences could you elaborate on?",
+          explanation: "Consider adding more personal details and specific examples to strengthen your essay.",
           startIndex: 0,
           endIndex: 100,
           type: "impact"
         }];
       }
 
-      console.log('Successfully processed', results.length, 'feedback items');
+      console.log('Successfully processed results:', results.length, 'items');
       return new Response(JSON.stringify({ results }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
 
     } catch (parseError) {
-      console.error('Error parsing OpenAI response:', parseError);
+      console.error('Error parsing response:', parseError, '\nRaw content:', data.choices[0].message.content);
+      
+      // Return a valid fallback response
       return new Response(JSON.stringify({
         results: [{
           sentence: text.slice(0, 100),
           error: "Technical: Processing Error",
-          explanation: "We encountered an issue analyzing your essay. Consider breaking it into smaller sections if it's very long.",
+          explanation: "We encountered an issue analyzing your essay. Our team has been notified.",
           startIndex: 0,
           endIndex: 100,
-          type: "technical"
+          type: "technical" as const
         }]
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -158,17 +152,18 @@ Important:
     }
   } catch (error) {
     console.error('Function error:', error);
+    
     return new Response(JSON.stringify({
       results: [{
         sentence: "Error analyzing essay",
         error: "Technical: Analysis Error",
-        explanation: "We encountered an error while analyzing your essay. Please try again with a shorter text or check your connection.",
+        explanation: "We encountered an error while analyzing your essay. Please try again.",
         startIndex: 0,
         endIndex: 0,
-        type: "technical"
+        type: "technical" as const
       }]
     }), {
-      status: 200,
+      status: 200, // Always return 200 to prevent client-side errors
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
