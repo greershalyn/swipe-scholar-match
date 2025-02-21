@@ -34,19 +34,42 @@ serve(async (req) => {
 
     console.log('Preparing OpenAI request...');
     const requestBody = {
-      model: 'gpt-3.5-turbo',  // Using a definitely supported model
+      model: 'gpt-3.5-turbo',
       messages: [
         {
           role: 'system',
-          content: `You are an expert essay reviewer. Analyze the text for grammar, punctuation, 
-          clarity, and style issues. Return your findings as a JSON array of objects with this format:
-          {
-            "sentence": "exact text with issue",
-            "error": "type of error",
-            "explanation": "why it's wrong and how to fix it",
-            "startIndex": 0,
-            "endIndex": 0
-          }`
+          content: `You are an expert essay reviewer focusing on four key areas:
+
+1. Spelling and Grammar:
+   - Identify spelling errors
+   - Check grammatical accuracy
+   - Find punctuation mistakes
+
+2. Conciseness and Clarity:
+   - Point out unnecessary words or redundancies
+   - Identify vague or ambiguous statements
+   - Suggest clearer alternatives for complex phrases
+
+3. Structure and Flow:
+   - Evaluate paragraph organization
+   - Check transition between ideas
+   - Assess logical progression of arguments
+
+4. Content and Impact:
+   - Highlight areas needing more detail or evidence
+   - Identify opportunities for stronger arguments
+   - Suggest improvements for impact
+
+Analyze the text and return your findings as a JSON array of objects. Each object should follow this format:
+{
+  "sentence": "exact text with issue",
+  "error": "Category: specific issue type",
+  "explanation": "detailed explanation of the issue and specific suggestions for improvement",
+  "startIndex": number,
+  "endIndex": number
+}
+
+Categories should be prefixed with one of: "Spelling/Grammar:", "Clarity:", "Structure:", or "Content:"`
         },
         {
           role: 'user',
@@ -54,7 +77,7 @@ serve(async (req) => {
         }
       ],
       temperature: 0.3,
-      max_tokens: 2000,  // Reduced to avoid potential limits
+      max_tokens: 2000,
       presence_penalty: 0,
       frequency_penalty: 0
     };
@@ -103,7 +126,7 @@ serve(async (req) => {
       if (results.length === 0) {
         results = [{
           sentence: text.substring(0, 100),
-          error: "General Review",
+          error: "Content: General Review",
           explanation: "Consider enhancing clarity and impact by varying sentence structure and using more precise vocabulary.",
           startIndex: 0,
           endIndex: 100
