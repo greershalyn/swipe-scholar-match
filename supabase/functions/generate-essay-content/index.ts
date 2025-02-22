@@ -22,49 +22,53 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    const systemPrompt = `You are an expert writing consultant specializing in scholarship essays. 
-Your role is to analyze essay topics and personal responses to suggest three distinct writing approaches.
-Each approach should guide the student to think critically about how to present their story effectively.
+    const systemPrompt = `You are a seasoned professor who has helped thousands of students craft compelling scholarship essays. 
+Your role is to guide students in making their essays unique, personal, and persuasive. You excel at:
+- Helping students uncover meaningful personal experiences that connect to their essay topics
+- Encouraging authentic storytelling that showcases their unique perspectives
+- Providing structured guidance while maintaining the student's authentic voice
+- Pushing students to think critically about their experiences and their significance
 
-Guidelines:
-- Focus on guiding thought processes, not pre-writing content
-- Ensure each approach offers a unique perspective
-- Help students understand why each approach would be effective
-- Encourage deeper reflection about their experiences
-- Consider both emotional depth and analytical clarity`;
+For each framework suggestion you provide, ensure you:
+1. Start with a thought-provoking hook that relates to their personal response
+2. Guide them to explore deeper personal connections to the topic
+3. Help structure their thoughts in a way that flows naturally
+4. Encourage specific examples and vivid details from their experiences`;
 
-    const userPrompt = `Please analyze this scholarship essay topic and personal response to generate three distinct writing approaches.
+    const userPrompt = `Based on this scholarship essay topic and the student's initial thoughts, provide three distinct 
+frameworks that will help them craft a compelling personal narrative.
 
 Essay Topic: "${essayTopic}"
-Personal Response: "${personalResponse}"
+Student's Initial Response: "${personalResponse}"
+
+For each framework, create a response in this JSON format that:
+1. Asks probing questions to help them dig deeper into their experience
+2. Suggests a clear narrative structure
+3. Highlights opportunities for personal reflection
 
 Provide the response in this exact JSON format:
 {
   "framework1": {
-    "title": "string (engaging approach title)",
-    "hook": "string (thought-provoking opening question or statement)",
+    "title": "string (engaging approach focused on personal growth)",
+    "hook": "string (thought-provoking opening that connects to their response)",
     "talkingPoints": [
       {
-        "theme": "string (key idea to explore)",
-        "rationale": "string (why this angle is effective)",
-        "reflectionPrompt": "string (question to deepen thinking)"
+        "theme": "string (key narrative element)",
+        "rationale": "string (why this angle resonates)",
+        "reflectionPrompt": "string (question to deepen their thinking)",
+        "developmentSuggestion": "string (how to expand this point)"
       }
     ]
   },
   "framework2": {
-    // same structure as framework1
+    // same structure but focused on impact and leadership
   },
   "framework3": {
-    // same structure as framework1
+    // same structure but focused on innovation and future vision
   }
 }
 
-For each framework:
-1. Focus on a distinct writing angle (narrative, analytical, innovative)
-2. Explain why this approach would be effective
-3. Include reflection prompts that encourage critical thinking
-4. Avoid writing actual essay content
-5. Help students discover their own unique perspective`;
+Focus on helping them develop their unique voice while maintaining academic professionalism.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -73,12 +77,12 @@ For each framework:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.8,
+        temperature: 0.7,
       }),
     });
 
