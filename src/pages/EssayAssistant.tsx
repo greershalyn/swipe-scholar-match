@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { PencilIcon, BookOpen, Lightbulb, Star, FileCheck, Crown } from 'lucide-react';
@@ -14,6 +15,7 @@ import { DocumentReviewTool } from '@/components/essay/DocumentReviewTool';
 import { SubscriptionDialog } from '@/components/subscription/SubscriptionDialog';
 import { analyzeEssayTopic, generateEssaySuggestions } from '@/utils/essayUtils';
 import { EssaySuggestion, ExpandedFramework } from '@/types/essay';
+import { Profile } from '@/types/profile';
 import { supabase } from '@/integrations/supabase/client';
 
 type StepType = 1 | 2 | 3 | 4;
@@ -51,9 +53,17 @@ const EssayAssistant = () => {
         .eq('id', session.user.id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching profile:', error);
+        toast({
+          title: "Error",
+          description: "Could not verify subscription status",
+          variant: "destructive",
+        });
+        return;
+      }
 
-      setHasPremiumAccess(profile?.subscription_tier === 'premium');
+      setHasPremiumAccess((profile as Profile)?.subscription_tier === 'premium');
     } catch (error) {
       console.error('Error checking premium access:', error);
       toast({

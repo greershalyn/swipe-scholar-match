@@ -40,6 +40,7 @@ export type Database = {
           rewards_achievements: string[] | null
           sat_score: number | null
           state: string | null
+          subscription_tier: string | null
           updated_at: string
           volunteering_experience: string[] | null
           zip_code: string | null
@@ -74,6 +75,7 @@ export type Database = {
           rewards_achievements?: string[] | null
           sat_score?: number | null
           state?: string | null
+          subscription_tier?: string | null
           updated_at?: string
           volunteering_experience?: string[] | null
           zip_code?: string | null
@@ -108,6 +110,7 @@ export type Database = {
           rewards_achievements?: string[] | null
           sat_score?: number | null
           state?: string | null
+          subscription_tier?: string | null
           updated_at?: string
           volunteering_experience?: string[] | null
           zip_code?: string | null
@@ -252,6 +255,50 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          current_period_end: string
+          current_period_start: string
+          id: string
+          profile_id: string
+          status: string
+          subscription_type: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          current_period_end: string
+          current_period_start: string
+          id?: string
+          profile_id: string
+          status: string
+          subscription_type: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          current_period_end?: string
+          current_period_start?: string
+          id?: string
+          profile_id?: string
+          status?: string
+          subscription_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       swiped_scholarships: {
         Row: {
           created_at: string
@@ -281,6 +328,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      has_premium_access: {
+        Args: {
+          user_id: string
+        }
+        Returns: boolean
+      }
       remove_expired_scholarships: {
         Args: Record<PropertyKey, never>
         Returns: undefined
