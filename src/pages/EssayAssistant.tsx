@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { PencilIcon, BookOpen, Lightbulb, Star, FileCheck } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { PencilIcon, BookOpen, Lightbulb, Star, FileCheck, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -11,12 +11,15 @@ import { useToast } from '@/components/ui/use-toast';
 import { EssaySuggestions } from '@/components/essay/EssaySuggestions';
 import { ExpandedFrameworkView } from '@/components/essay/ExpandedFrameworkView';
 import { DocumentReviewTool } from '@/components/essay/DocumentReviewTool';
+import { SubscriptionDialog } from '@/components/subscription/SubscriptionDialog';
 import { analyzeEssayTopic, generateEssaySuggestions } from '@/utils/essayUtils';
 import { EssaySuggestion, ExpandedFramework } from '@/types/essay';
+import { supabase } from '@/integrations/supabase/client';
 
 type StepType = 1 | 2 | 3 | 4;
 
 const EssayAssistant = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [step, setStep] = useState<StepType>(1);
   const [essayTopic, setEssayTopic] = useState('');
@@ -25,29 +28,112 @@ const EssayAssistant = () => {
   const [suggestions, setSuggestions] = useState<EssaySuggestion[]>([]);
   const [expandedFramework, setExpandedFramework] = useState<ExpandedFramework | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [hasPremiumAccess, setHasPremiumAccess] = useState(false);
+  const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
+  const [isCheckingAccess, setIsCheckingAccess] = useState(true);
 
   useEffect(() => {
-    if (step === 2 && essayTopic) {
-      const relevantPrompt = analyzeEssayTopic(essayTopic);
-      setSelectedPrompt(relevantPrompt);
-    } else if (step === 3 && response) {
-      setIsLoading(true);
-      generateEssaySuggestions(essayTopic, response)
-        .then(aiSuggestions => {
-          setSuggestions(aiSuggestions);
-        })
-        .catch(error => {
-          toast({
-            title: "Error Generating Suggestions",
-            description: "We'll provide some general suggestions instead.",
-            variant: "destructive",
-          });
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
+    checkPremiumAccess();
+  }, []);
+
+  const checkPremiumAccess = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        navigate('/auth');
+        return;
+      }
+
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('subscription_tier')
+        .eq('id', session.user.id)
+        .single();
+
+      if (error) throw error;
+
+      setHasPremiumAccess(profile?.subscription_tier === 'premium');
+    } catch (error) {
+      console.error('Error checking premium access:', error);
+      toast({
+        title: "Error",
+        description: "Could not verify subscription status",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCheckingAccess(false);
     }
-  }, [step, essayTopic, response]);
+  };
+
+  if (isCheckingAccess) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#9b87f5] via-[#D946EF] to-[#FDE1D3] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white" />
+      </div>
+    );
+  }
+
+  if (!hasPremiumAccess) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#9b87f5] via-[#D946EF] to-[#FDE1D3]">
+        <div className="container px-4 py-8">
+          <div className="flex justify-between items-center mb-8">
+            <Link to="/">
+              <img 
+                src="/lovable-uploads/24f07198-1e4c-4eea-8e07-259aa77d1711.png"
+                alt="SwipeScholar Logo"
+                className="h-24 w-auto"
+              />
+            </Link>
+            <AccountDropdown />
+          </div>
+
+          <Card className="max-w-2xl mx-auto">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Crown className="h-6 w-6 text-yellow-500" />
+                Premium Feature
+              </CardTitle>
+              <CardDescription>
+                Upgrade to Premium to access our powerful Essay Assistant
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-lg">
+                The Essay Assistant is a premium feature that helps you craft compelling scholarship essays with:
+              </p>
+              <ul className="space-y-2">
+                <li className="flex items-center gap-2">
+                  <Star className="h-4 w-4 text-yellow-500" />
+                  AI-powered writing suggestions
+                </li>
+                <li className="flex items-center gap-2">
+                  <Lightbulb className="h-4 w-4 text-yellow-500" />
+                  Personalized essay frameworks
+                </li>
+                <li className="flex items-center gap-2">
+                  <FileCheck className="h-4 w-4 text-yellow-500" />
+                  Professional writing feedback
+                </li>
+              </ul>
+              <Button 
+                onClick={() => setShowSubscriptionDialog(true)}
+                className="w-full mt-4"
+              >
+                Upgrade to Premium
+              </Button>
+            </CardContent>
+          </Card>
+
+          <SubscriptionDialog 
+            isOpen={showSubscriptionDialog}
+            onClose={() => setShowSubscriptionDialog(false)}
+          />
+        </div>
+      </div>
+    );
+  }
 
   const handleNextStep = () => {
     if (step === 1 && !essayTopic.trim()) {
