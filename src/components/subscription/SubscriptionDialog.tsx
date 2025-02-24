@@ -3,6 +3,8 @@ import React from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Crown, Lock } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/components/ui/use-toast';
 
 interface SubscriptionDialogProps {
   isOpen: boolean;
@@ -10,9 +12,47 @@ interface SubscriptionDialogProps {
 }
 
 export const SubscriptionDialog = ({ isOpen, onClose }: SubscriptionDialogProps) => {
-  const handleUpgradeClick = () => {
-    // TODO: Implement Stripe integration for subscription
-    console.log('Upgrade to premium clicked');
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = React.useState(false);
+
+  const handleUpgradeClick = async () => {
+    try {
+      setIsLoading(true);
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Authentication Required",
+          description: "Please sign in to upgrade your subscription.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const response = await supabase.functions.invoke('create-checkout', {
+        body: {},
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
+
+      const { sessionUrl } = response.data;
+      if (sessionUrl) {
+        window.location.href = sessionUrl;
+      } else {
+        throw new Error('No checkout URL received');
+      }
+    } catch (error) {
+      console.error('Error creating checkout session:', error);
+      toast({
+        title: "Error",
+        description: "Could not initiate checkout. Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -53,8 +93,12 @@ export const SubscriptionDialog = ({ isOpen, onClose }: SubscriptionDialogProps)
           </div>
         </div>
         <div className="flex flex-col gap-3">
-          <Button onClick={handleUpgradeClick} className="w-full">
-            Upgrade to Premium
+          <Button 
+            onClick={handleUpgradeClick} 
+            className="w-full"
+            disabled={isLoading}
+          >
+            {isLoading ? "Processing..." : "Upgrade to Premium"}
           </Button>
           <Button variant="outline" onClick={onClose} className="w-full">
             Maybe Later
