@@ -53,7 +53,12 @@ export const SubscriptionDialog = ({ isOpen, onClose }: SubscriptionDialogProps)
           </div>
         </div>
         <div className="flex flex-col gap-3">
-          <a href="https://buy.stripe.com/28o7sUcWUaeP3xSeUU" className="w-full">
+          <a 
+            href="https://buy.stripe.com/28o7sUcWUaeP3xSeUU" 
+            className="w-full"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <Button className="w-full">
               Upgrade to Premium
             </Button>

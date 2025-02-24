@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Crown, Star, Lightbulb, FileCheck } from 'lucide-react';
@@ -5,15 +6,22 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Button } from '@/components/ui/button';
 import { AccountDropdown } from '@/components/AccountDropdown';
 import { SubscriptionDialog } from '@/components/subscription/SubscriptionDialog';
+
 interface PremiumAccessPromptProps {
   showSubscriptionDialog: boolean;
   setShowSubscriptionDialog: (show: boolean) => void;
 }
+
 export const PremiumAccessPrompt = ({
   showSubscriptionDialog,
   setShowSubscriptionDialog
 }: PremiumAccessPromptProps) => {
-  return <div className="min-h-screen bg-gradient-to-b from-[#9b87f5] via-[#D946EF] to-[#FDE1D3]">
+  const handleOpenSubscription = () => {
+    setShowSubscriptionDialog(true);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-[#9b87f5] via-[#D946EF] to-[#FDE1D3]">
       <div className="container px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <Link to="/">
@@ -50,13 +58,19 @@ export const PremiumAccessPrompt = ({
                 Professional writing feedback
               </li>
             </ul>
-            <Button onClick={() => setShowSubscriptionDialog(true)} className="w-full mt-4">
-              Upgrade to Premium
-            </Button>
+            <a href="https://buy.stripe.com/28o7sUcWUaeP3xSeUU" className="block w-full">
+              <Button className="w-full mt-4">
+                Upgrade to Premium
+              </Button>
+            </a>
           </CardContent>
         </Card>
 
-        <SubscriptionDialog isOpen={showSubscriptionDialog} onClose={() => setShowSubscriptionDialog(false)} />
+        <SubscriptionDialog 
+          isOpen={showSubscriptionDialog} 
+          onClose={() => setShowSubscriptionDialog(false)} 
+        />
       </div>
-    </div>;
+    </div>
+  );
 };
