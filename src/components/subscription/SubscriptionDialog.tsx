@@ -3,7 +3,6 @@ import React from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Crown, Lock, Loader2 } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
 
 interface SubscriptionDialogProps {
   isOpen: boolean;
@@ -14,7 +13,6 @@ export const SubscriptionDialog = ({ isOpen, onClose }: SubscriptionDialogProps)
   const [isLoading, setIsLoading] = React.useState(false);
 
   const handleUpgradeClick = () => {
-    setIsLoading(true);
     window.location.href = 'https://buy.stripe.com/28o7sUcWUaeP3xSeUU';
   };
 
@@ -22,7 +20,7 @@ export const SubscriptionDialog = ({ isOpen, onClose }: SubscriptionDialogProps)
     <Dialog 
       open={isOpen} 
       onOpenChange={(open) => {
-        if (!isLoading && !open) {
+        if (!open) {
           onClose();
         }
       }}
@@ -66,22 +64,13 @@ export const SubscriptionDialog = ({ isOpen, onClose }: SubscriptionDialogProps)
           <Button 
             onClick={handleUpgradeClick} 
             className="w-full"
-            disabled={isLoading}
           >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Processing...
-              </>
-            ) : (
-              "Upgrade to Premium"
-            )}
+            Upgrade to Premium
           </Button>
           <Button 
             variant="outline" 
             onClick={onClose} 
             className="w-full"
-            disabled={isLoading}
           >
             Maybe Later
           </Button>
