@@ -34,44 +34,11 @@ export const SubscriptionDialog = ({ isOpen, onClose }: SubscriptionDialogProps)
         return;
       }
 
-      // Create absolute URLs but don't construct URL objects to avoid encoding issues
-      const returnUrl = `${window.location.origin}/questionnaire`;
-      const cancelUrl = `${window.location.origin}/essay-assistant`;
-
-      console.log('Creating checkout session with URLs:', {
-        returnUrl,
-        cancelUrl
-      });
-
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { returnUrl, cancelUrl },
-      });
-
-      console.log('Checkout session response:', { data, error });
-
-      if (error) {
-        console.error('Checkout error:', error);
-        throw new Error(error.message);
-      }
-
-      if (!data?.sessionUrl) {
-        throw new Error('No checkout URL received');
-      }
-
-      // Store session ID if provided
-      if (data.sessionId) {
-        console.log('Storing session ID:', data.sessionId);
-        localStorage.setItem('stripe_checkout_session', data.sessionId);
-      }
-
-      // Create a temporary form to handle the redirect
-      const form = document.createElement('form');
-      form.method = 'GET';
-      form.action = data.sessionUrl;
-      document.body.appendChild(form);
+      // Use a direct payment link
+      const paymentLink = 'https://buy.stripe.com/your_payment_link_here'; // Replace with your actual Stripe payment link
       
-      console.log('Submitting form to redirect to:', data.sessionUrl);
-      form.submit();
+      console.log('Redirecting to payment link:', paymentLink);
+      window.location.href = paymentLink;
       
     } catch (error: any) {
       console.error('Error in checkout process:', error);
