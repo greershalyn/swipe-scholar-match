@@ -70,7 +70,7 @@ serve(async (req) => {
       payment_method_types: ['card'],
       line_items: [
         {
-          price: 'price_YOUR_PRICE_ID', // Replace this with your actual price ID from Stripe
+          price: 'price_1QuJK02KAO6RCCuYyOpQQOjh',
           quantity: 1,
         },
       ],
