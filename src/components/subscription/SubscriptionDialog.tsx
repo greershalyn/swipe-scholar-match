@@ -18,7 +18,7 @@ export const SubscriptionDialog = ({ isOpen, onClose }: SubscriptionDialogProps)
   const handleUpgradeClick = async () => {
     try {
       setIsLoading(true);
-      console.log('Checking authentication...');
+      console.log('Starting checkout process...');
 
       const { data: { session }, error: authError } = await supabase.auth.getSession();
       if (authError) {
@@ -34,10 +34,11 @@ export const SubscriptionDialog = ({ isOpen, onClose }: SubscriptionDialogProps)
         return;
       }
 
-      const returnUrl = `${window.location.origin}/questionnaire`;
-      const cancelUrl = `${window.location.origin}/essay-assistant`;
+      // Ensure we're using absolute URLs
+      const returnUrl = new URL('/questionnaire', window.location.origin).toString();
+      const cancelUrl = new URL('/essay-assistant', window.location.origin).toString();
 
-      console.log('Creating checkout session...', {
+      console.log('Creating checkout session with URLs:', {
         returnUrl,
         cancelUrl
       });
@@ -46,22 +47,28 @@ export const SubscriptionDialog = ({ isOpen, onClose }: SubscriptionDialogProps)
         body: { returnUrl, cancelUrl },
       });
 
-      console.log('Checkout response:', { data, error });
+      console.log('Checkout session response:', { data, error });
 
-      if (error || !data?.sessionUrl) {
-        throw new Error(error?.message || 'Could not create checkout session');
+      if (error) {
+        console.error('Checkout error:', error);
+        throw new Error(error.message);
       }
 
-      // Store the session ID in localStorage before redirecting
+      if (!data?.sessionUrl) {
+        throw new Error('No checkout URL received');
+      }
+
+      // Store session ID if provided
       if (data.sessionId) {
+        console.log('Storing session ID:', data.sessionId);
         localStorage.setItem('stripe_checkout_session', data.sessionId);
       }
 
-      console.log('Redirecting to checkout:', data.sessionUrl);
+      console.log('Redirecting to:', data.sessionUrl);
       window.location.href = data.sessionUrl;
       
     } catch (error: any) {
-      console.error('Error creating checkout session:', error);
+      console.error('Error in checkout process:', error);
       setIsLoading(false);
       toast({
         title: "Error",
@@ -72,11 +79,14 @@ export const SubscriptionDialog = ({ isOpen, onClose }: SubscriptionDialogProps)
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => {
-      if (!isLoading) {
-        onClose();
-      }
-    }}>
+    <Dialog 
+      open={isOpen} 
+      onOpenChange={(open) => {
+        if (!isLoading && !open) {
+          onClose();
+        }
+      }}
+    >
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex gap-2 items-center text-2xl">

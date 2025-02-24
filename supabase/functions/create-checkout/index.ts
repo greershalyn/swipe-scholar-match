@@ -42,11 +42,9 @@ serve(async (req) => {
       throw new Error('No authorization header')
     }
 
-    // Get the JWT token from the authorization header
     const token = authHeader.replace('Bearer ', '')
 
     console.log('Verifying user token...');
-    // Verify the JWT token and get the user
     const {
       data: { user },
       error: userError,
@@ -57,16 +55,16 @@ serve(async (req) => {
       throw new Error('Invalid user token')
     }
 
-    console.log('Creating Stripe checkout session...');
-
-    // Ensure URLs are properly formatted but don't create URL objects
-    const success_url = returnUrl || `${req.headers.get('origin')}/questionnaire`;
-    const cancel_url = cancelUrl || `${req.headers.get('origin')}/essay-assistant`;
+    // Ensure success_url and cancel_url include required query parameters
+    const success_url = `${returnUrl}?session_id={CHECKOUT_SESSION_ID}`;
+    const cancel_url = `${cancelUrl}`;
     
-    console.log('Using URLs:', { success_url, cancel_url });
+    console.log('Creating checkout session with URLs:', {
+      success_url,
+      cancel_url
+    });
 
     const sessionParams = {
-      mode: 'subscription',
       payment_method_types: ['card'],
       line_items: [
         {
@@ -74,6 +72,7 @@ serve(async (req) => {
           quantity: 1,
         },
       ],
+      mode: 'subscription',
       success_url,
       cancel_url,
       client_reference_id: user.id,
@@ -81,21 +80,27 @@ serve(async (req) => {
       metadata: {
         profile_id: user.id,
       },
+      // Add additional required parameters
+      billing_address_collection: 'required',
+      payment_method_collection: 'always',
+      allow_promotion_codes: true,
+      customer_creation: 'always',
     };
 
-    console.log('Creating session with params:', sessionParams);
+    console.log('Creating session with params:', JSON.stringify(sessionParams, null, 2));
 
     const session = await stripe.checkout.sessions.create(sessionParams);
 
-    if (!session?.url) {
-      console.error('No session URL created');
-      throw new Error('Failed to create checkout session')
-    }
-
-    console.log('Checkout session created successfully:', {
-      sessionId: session.id,
-      url: session.url
+    console.log('Session created:', {
+      id: session.id,
+      url: session.url,
+      status: session.status,
     });
+
+    if (!session?.url) {
+      console.error('No session URL in response');
+      throw new Error('Failed to create checkout session - no URL returned')
+    }
 
     return new Response(
       JSON.stringify({ 
@@ -110,7 +115,7 @@ serve(async (req) => {
       }
     )
   } catch (error) {
-    console.error('Error creating checkout session:', error);
+    console.error('Error in checkout function:', error);
     return new Response(
       JSON.stringify({ 
         error: error.message,
