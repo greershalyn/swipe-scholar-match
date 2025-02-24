@@ -11,123 +11,107 @@ const corsHeaders = {
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response(null, { 
+      status: 200,
+      headers: corsHeaders 
+    });
   }
 
   try {
     // Parse the request body
     const { returnUrl, cancelUrl } = await req.json();
-    console.log('Received URLs:', { returnUrl, cancelUrl });
+    console.log('Received request with URLs:', { returnUrl, cancelUrl });
 
-    const stripeKey = Deno.env.get('STRIPE_SECRET_KEY')
-    if (!stripeKey) {
-      console.error('Stripe key missing');
-      throw new Error('Missing Stripe secret key')
+    // Validate required environment variables
+    const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+    if (!stripeKey || !supabaseUrl || !supabaseKey) {
+      throw new Error('Missing required environment variables');
     }
 
-    console.log('Initializing Stripe...');
+    // Initialize Stripe
     const stripe = new Stripe(stripeKey, {
       apiVersion: '2023-10-16',
-    })
-
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
-
-    // Get the authorization header from the request
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader) {
-      console.error('No auth header found');
-      throw new Error('No authorization header')
-    }
-
-    const token = authHeader.replace('Bearer ', '')
-
-    console.log('Verifying user token...');
-    const {
-      data: { user },
-      error: userError,
-    } = await supabaseClient.auth.getUser(token)
-
-    if (userError || !user) {
-      console.error('User verification failed:', userError);
-      throw new Error('Invalid user token')
-    }
-
-    // Ensure success_url and cancel_url include required query parameters
-    const success_url = `${returnUrl}?session_id={CHECKOUT_SESSION_ID}`;
-    const cancel_url = `${cancelUrl}`;
-    
-    console.log('Creating checkout session with URLs:', {
-      success_url,
-      cancel_url
     });
 
-    const sessionParams = {
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price: 'price_1Qw8Ds2KAO6RCCuY7p3eTjfa',
-          quantity: 1,
-        },
-      ],
+    // Initialize Supabase client
+    const supabaseClient = createClient(supabaseUrl, supabaseKey);
+
+    // Get and validate authorization
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'No authorization header' }),
+        { 
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
+
+    if (userError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid user token' }),
+        { 
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    // Create checkout session
+    const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
-      success_url,
-      cancel_url,
-      client_reference_id: user.id,
+      payment_method_types: ['card'],
+      line_items: [{
+        price: 'price_1Qw8Ds2KAO6RCCuY7p3eTjfa',
+        quantity: 1,
+      }],
+      success_url: `${returnUrl}?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: cancelUrl,
       customer_email: user.email,
+      client_reference_id: user.id,
       metadata: {
         profile_id: user.id,
       },
-      // Add additional required parameters
       billing_address_collection: 'required',
-      payment_method_collection: 'always',
       allow_promotion_codes: true,
-      customer_creation: 'always',
-    };
-
-    console.log('Creating session with params:', JSON.stringify(sessionParams, null, 2));
-
-    const session = await stripe.checkout.sessions.create(sessionParams);
-
-    console.log('Session created:', {
-      id: session.id,
-      url: session.url,
-      status: session.status,
     });
 
-    if (!session?.url) {
-      console.error('No session URL in response');
-      throw new Error('Failed to create checkout session - no URL returned')
-    }
+    console.log('Checkout session created:', {
+      id: session.id,
+      url: session.url,
+    });
 
+    // Return successful response
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         sessionUrl: session.url,
-        sessionId: session.id 
+        sessionId: session.id,
       }),
-      {
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json',
-        },
+      { 
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
-    )
+    );
+
   } catch (error) {
     console.error('Error in checkout function:', error);
+    
+    // Return error response with 400 status
     return new Response(
-      JSON.stringify({ 
-        error: error.message,
-        details: error.toString()
+      JSON.stringify({
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
       }),
-      {
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json',
-        },
+      { 
         status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
-    )
+    );
   }
-})
+});
