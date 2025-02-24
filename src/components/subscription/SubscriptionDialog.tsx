@@ -3,7 +3,6 @@ import React from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Crown, Lock, Loader2 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 
 interface SubscriptionDialogProps {
@@ -12,43 +11,11 @@ interface SubscriptionDialogProps {
 }
 
 export const SubscriptionDialog = ({ isOpen, onClose }: SubscriptionDialogProps) => {
-  const { toast } = useToast();
   const [isLoading, setIsLoading] = React.useState(false);
 
-  const handleUpgradeClick = async () => {
-    try {
-      setIsLoading(true);
-      console.log('Starting checkout process...');
-
-      const { data: { session }, error: authError } = await supabase.auth.getSession();
-      if (authError) {
-        throw new Error(authError.message);
-      }
-      
-      if (!session) {
-        toast({
-          title: "Authentication Required",
-          description: "Please sign in to upgrade your subscription.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Replace with your actual Stripe payment link
-      const paymentLink = 'https://buy.stripe.com/28o7sUcWUaeP3xSeUU';
-      
-      console.log('Redirecting to payment link:', paymentLink);
-      window.location.href = paymentLink;
-      
-    } catch (error: any) {
-      console.error('Error in checkout process:', error);
-      setIsLoading(false);
-      toast({
-        title: "Error",
-        description: error.message || "Could not initiate checkout. Please try again later.",
-        variant: "destructive",
-      });
-    }
+  const handleUpgradeClick = () => {
+    setIsLoading(true);
+    window.location.href = 'https://buy.stripe.com/28o7sUcWUaeP3xSeUU';
   };
 
   return (
