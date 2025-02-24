@@ -30,29 +30,32 @@ export const SubscriptionDialog = ({ isOpen, onClose }: SubscriptionDialogProps)
         return;
       }
 
-      console.log('Creating checkout session...');
-      const response = await supabase.functions.invoke('create-checkout', {
+      console.log('Creating checkout session...', {
+        returnUrl: window.location.origin + '/questionnaire',
+        cancelUrl: window.location.origin + '/essay-assistant'
+      });
+
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: {
-          returnUrl: window.location.origin + window.location.pathname,
-          cancelUrl: window.location.href,
+          returnUrl: window.location.origin + '/questionnaire',
+          cancelUrl: window.location.origin + '/essay-assistant'
         },
       });
 
-      console.log('Checkout response:', response);
+      console.log('Checkout response:', { data, error });
 
-      if (response.error) {
-        console.error('Checkout error:', response.error);
-        throw new Error(response.error.message || 'Failed to create checkout session');
+      if (error) {
+        console.error('Checkout error:', error);
+        throw new Error(error.message || 'Failed to create checkout session');
       }
 
-      const { sessionUrl } = response.data;
-      if (sessionUrl) {
-        console.log('Redirecting to checkout:', sessionUrl);
-        // Open in the same window
-        window.location.assign(sessionUrl);
-      } else {
+      if (!data?.sessionUrl) {
         throw new Error('No checkout URL received');
       }
+
+      console.log('Redirecting to checkout:', data.sessionUrl);
+      window.location.href = data.sessionUrl;
+      
     } catch (error) {
       console.error('Error creating checkout session:', error);
       toast({
