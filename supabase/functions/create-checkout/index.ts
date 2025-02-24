@@ -15,7 +15,13 @@ serve(async (req) => {
   }
 
   try {
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+    const stripeKey = Deno.env.get('STRIPE_SECRET_KEY')
+    if (!stripeKey) {
+      throw new Error('Missing Stripe secret key')
+    }
+
+    console.log('Initializing Stripe...')
+    const stripe = new Stripe(stripeKey, {
       apiVersion: '2023-10-16',
     })
 
@@ -33,6 +39,7 @@ serve(async (req) => {
     // Get the JWT token from the authorization header
     const token = authHeader.replace('Bearer ', '')
 
+    console.log('Verifying user token...')
     // Verify the JWT token and get the user
     const {
       data: { user },
@@ -43,6 +50,7 @@ serve(async (req) => {
       throw new Error('Invalid user token')
     }
 
+    console.log('Creating Stripe checkout session...')
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -71,6 +79,12 @@ serve(async (req) => {
       },
     })
 
+    if (!session.url) {
+      throw new Error('Failed to create checkout session')
+    }
+
+    console.log('Checkout session created successfully:', session.id)
+
     // Return the session URL
     return new Response(
       JSON.stringify({ sessionUrl: session.url }),
@@ -82,7 +96,7 @@ serve(async (req) => {
       }
     )
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Error creating checkout session:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       {
