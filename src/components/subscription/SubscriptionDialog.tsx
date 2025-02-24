@@ -2,7 +2,7 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Crown, Lock, Loader2 } from 'lucide-react';
+import { Crown, Lock } from 'lucide-react';
 
 interface SubscriptionDialogProps {
   isOpen: boolean;
@@ -10,19 +10,11 @@ interface SubscriptionDialogProps {
 }
 
 export const SubscriptionDialog = ({ isOpen, onClose }: SubscriptionDialogProps) => {
-  const [isLoading, setIsLoading] = React.useState(false);
-
-  const handleUpgradeClick = () => {
-    window.location.href = 'https://buy.stripe.com/28o7sUcWUaeP3xSeUU';
-  };
-
   return (
     <Dialog 
       open={isOpen} 
       onOpenChange={(open) => {
-        if (!open) {
-          onClose();
-        }
+        if (!open) onClose();
       }}
     >
       <DialogContent className="sm:max-w-[425px]">
@@ -61,12 +53,11 @@ export const SubscriptionDialog = ({ isOpen, onClose }: SubscriptionDialogProps)
           </div>
         </div>
         <div className="flex flex-col gap-3">
-          <Button 
-            onClick={handleUpgradeClick} 
-            className="w-full"
-          >
-            Upgrade to Premium
-          </Button>
+          <a href="https://buy.stripe.com/28o7sUcWUaeP3xSeUU" className="w-full">
+            <Button className="w-full">
+              Upgrade to Premium
+            </Button>
+          </a>
           <Button 
             variant="outline" 
             onClick={onClose} 
