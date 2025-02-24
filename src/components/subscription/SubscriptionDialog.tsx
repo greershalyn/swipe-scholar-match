@@ -34,27 +34,27 @@ export const SubscriptionDialog = ({ isOpen, onClose }: SubscriptionDialogProps)
         return;
       }
 
+      const returnUrl = `${window.location.origin}/questionnaire`;
+      const cancelUrl = `${window.location.origin}/essay-assistant`;
+
       console.log('Creating checkout session...', {
-        returnUrl: window.location.origin + '/questionnaire',
-        cancelUrl: window.location.origin + '/essay-assistant'
+        returnUrl,
+        cancelUrl
       });
 
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: {
-          returnUrl: window.location.origin + '/questionnaire',
-          cancelUrl: window.location.origin + '/essay-assistant'
-        },
+        body: { returnUrl, cancelUrl },
       });
 
       console.log('Checkout response:', { data, error });
 
-      if (error) {
-        console.error('Checkout error:', error);
-        throw new Error(error.message || 'Failed to create checkout session');
+      if (error || !data?.sessionUrl) {
+        throw new Error(error?.message || 'Could not create checkout session');
       }
 
-      if (!data?.sessionUrl) {
-        throw new Error('No checkout URL received');
+      // Store the session ID in localStorage before redirecting
+      if (data.sessionId) {
+        localStorage.setItem('stripe_checkout_session', data.sessionId);
       }
 
       console.log('Redirecting to checkout:', data.sessionUrl);
@@ -62,18 +62,21 @@ export const SubscriptionDialog = ({ isOpen, onClose }: SubscriptionDialogProps)
       
     } catch (error: any) {
       console.error('Error creating checkout session:', error);
+      setIsLoading(false);
       toast({
         title: "Error",
         description: error.message || "Could not initiate checkout. Please try again later.",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      if (!isLoading) {
+        onClose();
+      }
+    }}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex gap-2 items-center text-2xl">
@@ -124,7 +127,12 @@ export const SubscriptionDialog = ({ isOpen, onClose }: SubscriptionDialogProps)
               "Upgrade to Premium"
             )}
           </Button>
-          <Button variant="outline" onClick={onClose} className="w-full">
+          <Button 
+            variant="outline" 
+            onClick={onClose} 
+            className="w-full"
+            disabled={isLoading}
+          >
             Maybe Later
           </Button>
         </div>
