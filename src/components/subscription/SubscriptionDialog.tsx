@@ -32,19 +32,24 @@ export const SubscriptionDialog = ({ isOpen, onClose }: SubscriptionDialogProps)
 
       console.log('Creating checkout session...');
       const response = await supabase.functions.invoke('create-checkout', {
-        body: {},
+        body: {
+          returnUrl: window.location.origin + window.location.pathname,
+          cancelUrl: window.location.href,
+        },
       });
 
       console.log('Checkout response:', response);
 
       if (response.error) {
-        throw new Error(response.error.message);
+        console.error('Checkout error:', response.error);
+        throw new Error(response.error.message || 'Failed to create checkout session');
       }
 
       const { sessionUrl } = response.data;
       if (sessionUrl) {
         console.log('Redirecting to checkout:', sessionUrl);
-        window.location.href = sessionUrl;
+        // Open in the same window
+        window.location.assign(sessionUrl);
       } else {
         throw new Error('No checkout URL received');
       }
