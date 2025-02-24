@@ -18,6 +18,7 @@ export const SubscriptionDialog = ({ isOpen, onClose }: SubscriptionDialogProps)
   const handleUpgradeClick = async () => {
     try {
       setIsLoading(true);
+      console.log('Checking authentication...');
 
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -29,9 +30,12 @@ export const SubscriptionDialog = ({ isOpen, onClose }: SubscriptionDialogProps)
         return;
       }
 
+      console.log('Creating checkout session...');
       const response = await supabase.functions.invoke('create-checkout', {
         body: {},
       });
+
+      console.log('Checkout response:', response);
 
       if (response.error) {
         throw new Error(response.error.message);
@@ -39,6 +43,7 @@ export const SubscriptionDialog = ({ isOpen, onClose }: SubscriptionDialogProps)
 
       const { sessionUrl } = response.data;
       if (sessionUrl) {
+        console.log('Redirecting to checkout:', sessionUrl);
         window.location.href = sessionUrl;
       } else {
         throw new Error('No checkout URL received');
@@ -47,7 +52,7 @@ export const SubscriptionDialog = ({ isOpen, onClose }: SubscriptionDialogProps)
       console.error('Error creating checkout session:', error);
       toast({
         title: "Error",
-        description: "Could not initiate checkout. Please try again later.",
+        description: error.message || "Could not initiate checkout. Please try again later.",
         variant: "destructive",
       });
     } finally {
