@@ -32,10 +32,11 @@ const EssayAssistant = () => {
     );
   }
 
+  // If user doesn't have premium access, show the premium prompt with direct payment link
   if (!hasPremiumAccess) {
     return (
       <PremiumAccessPrompt
-        showSubscriptionDialog={showSubscriptionDialog}
+        showSubscriptionDialog={false}
         setShowSubscriptionDialog={setShowSubscriptionDialog}
       />
     );

@@ -5,7 +5,6 @@ import { Crown, Star, Lightbulb, FileCheck } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AccountDropdown } from '@/components/AccountDropdown';
-import { SubscriptionDialog } from '@/components/subscription/SubscriptionDialog';
 
 interface PremiumAccessPromptProps {
   showSubscriptionDialog: boolean;
@@ -16,10 +15,6 @@ export const PremiumAccessPrompt = ({
   showSubscriptionDialog,
   setShowSubscriptionDialog
 }: PremiumAccessPromptProps) => {
-  const handleOpenSubscription = () => {
-    setShowSubscriptionDialog(true);
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#9b87f5] via-[#D946EF] to-[#FDE1D3]">
       <div className="container px-4 py-8">
@@ -58,18 +53,18 @@ export const PremiumAccessPrompt = ({
                 Professional writing feedback
               </li>
             </ul>
-            <a href="https://buy.stripe.com/28o7sUcWUaeP3xSeUU" className="block w-full">
+            <a 
+              href="https://buy.stripe.com/28o7sUcWUaeP3xSeUU" 
+              className="block w-full"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <Button className="w-full mt-4">
                 Upgrade to Premium
               </Button>
             </a>
           </CardContent>
         </Card>
-
-        <SubscriptionDialog 
-          isOpen={showSubscriptionDialog} 
-          onClose={() => setShowSubscriptionDialog(false)} 
-        />
       </div>
     </div>
   );
