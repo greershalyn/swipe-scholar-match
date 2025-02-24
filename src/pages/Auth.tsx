@@ -7,12 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
+import { Crown, Star, Lightbulb, FileCheck } from "lucide-react";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
+  const [selectedTier, setSelectedTier] = useState<"free" | "premium" | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -36,27 +38,43 @@ const Auth = () => {
     setLoading(true);
     try {
       if (isSignUp) {
+        if (!selectedTier) {
+          toast({
+            title: "Please Select a Plan",
+            description: "Choose either the Free or Premium plan to continue.",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
+
         const { error } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            data: {
+              subscription_tier: selectedTier,
+            },
+          },
         });
         
-        // Check specifically for user_already_exists error
         if (error?.message.includes("User already registered")) {
           toast({
             title: "Account Exists",
             description: "An account with this email already exists. Please sign in instead.",
             variant: "destructive",
           });
-          setIsSignUp(false); // Switch to sign in mode
+          setIsSignUp(false);
         } else if (error) {
           throw error;
         } else {
+          // For premium signups, we'll redirect to payment after questionnaire
+          const redirectPath = selectedTier === 'premium' ? '/questionnaire?setup_payment=true' : '/questionnaire';
           toast({
             title: "Success!",
             description: "Please check your email to verify your account.",
           });
-          navigate("/questionnaire");
+          navigate(redirectPath);
         }
       } else {
         const { data: { user }, error } = await supabase.auth.signInWithPassword({
@@ -116,6 +134,66 @@ const Auth = () => {
                 required
               />
             </div>
+
+            {isSignUp && (
+              <div className="space-y-4 pt-4">
+                <Label>Select Your Plan</Label>
+                <div className="grid gap-4">
+                  <Card 
+                    className={`cursor-pointer transition-all ${
+                      selectedTier === 'free' ? 'ring-2 ring-purple-500' : ''
+                    }`}
+                    onClick={() => setSelectedTier('free')}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <h3 className="font-semibold">Free Plan</h3>
+                        <span className="text-lg font-bold">$0</span>
+                      </div>
+                      <ul className="text-sm space-y-2">
+                        <li className="flex items-center gap-2">
+                          <Star className="h-4 w-4 text-purple-500" />
+                          Access to scholarship database
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <Star className="h-4 w-4 text-purple-500" />
+                          Basic profile customization
+                        </li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+
+                  <Card 
+                    className={`cursor-pointer transition-all ${
+                      selectedTier === 'premium' ? 'ring-2 ring-purple-500' : ''
+                    }`}
+                    onClick={() => setSelectedTier('premium')}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <h3 className="font-semibold">Premium Plan</h3>
+                        <span className="text-lg font-bold">$10/month</span>
+                      </div>
+                      <ul className="text-sm space-y-2">
+                        <li className="flex items-center gap-2">
+                          <Crown className="h-4 w-4 text-yellow-500" />
+                          Everything in Free plan
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <Lightbulb className="h-4 w-4 text-yellow-500" />
+                          AI Essay Assistant
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <FileCheck className="h-4 w-4 text-yellow-500" />
+                          Professional writing feedback
+                        </li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
+
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Loading..." : isSignUp ? "Sign Up" : "Sign In"}
             </Button>
@@ -123,7 +201,10 @@ const Auth = () => {
               type="button"
               variant="ghost"
               className="w-full"
-              onClick={() => setIsSignUp(!isSignUp)}
+              onClick={() => {
+                setIsSignUp(!isSignUp);
+                setSelectedTier(null);
+              }}
             >
               {isSignUp
                 ? "Already have an account? Sign In"
