@@ -58,15 +58,15 @@ serve(async (req) => {
     }
 
     console.log('Creating Stripe checkout session...');
-    
-    // Ensure we have valid URLs with proper encoding
-    const success_url = new URL(returnUrl || `${req.headers.get('origin')}/questionnaire`).toString();
-    const cancel_url = new URL(cancelUrl || `${req.headers.get('origin')}/essay-assistant`).toString();
+
+    // Ensure URLs are properly formatted but don't create URL objects
+    const success_url = returnUrl || `${req.headers.get('origin')}/questionnaire`;
+    const cancel_url = cancelUrl || `${req.headers.get('origin')}/essay-assistant`;
     
     console.log('Using URLs:', { success_url, cancel_url });
 
-    // Create Stripe checkout session with improved configuration
-    const session = await stripe.checkout.sessions.create({
+    const sessionParams = {
+      mode: 'subscription',
       payment_method_types: ['card'],
       line_items: [
         {
@@ -74,16 +74,18 @@ serve(async (req) => {
           quantity: 1,
         },
       ],
-      mode: 'subscription',
       success_url,
       cancel_url,
+      client_reference_id: user.id,
       customer_email: user.email,
-      allow_promotion_codes: true,
-      billing_address_collection: 'auto',
       metadata: {
         profile_id: user.id,
       },
-    })
+    };
+
+    console.log('Creating session with params:', sessionParams);
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     if (!session?.url) {
       console.error('No session URL created');
@@ -95,7 +97,6 @@ serve(async (req) => {
       url: session.url
     });
 
-    // Return the session URL and ID
     return new Response(
       JSON.stringify({ 
         sessionUrl: session.url,
