@@ -2,7 +2,7 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Crown, Lock } from 'lucide-react';
+import { Crown, Lock, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -20,7 +20,11 @@ export const SubscriptionDialog = ({ isOpen, onClose }: SubscriptionDialogProps)
       setIsLoading(true);
       console.log('Checking authentication...');
 
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error: authError } = await supabase.auth.getSession();
+      if (authError) {
+        throw new Error(authError.message);
+      }
+      
       if (!session) {
         toast({
           title: "Authentication Required",
@@ -56,7 +60,7 @@ export const SubscriptionDialog = ({ isOpen, onClose }: SubscriptionDialogProps)
       console.log('Redirecting to checkout:', data.sessionUrl);
       window.location.href = data.sessionUrl;
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating checkout session:', error);
       toast({
         title: "Error",
@@ -111,7 +115,14 @@ export const SubscriptionDialog = ({ isOpen, onClose }: SubscriptionDialogProps)
             className="w-full"
             disabled={isLoading}
           >
-            {isLoading ? "Processing..." : "Upgrade to Premium"}
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              "Upgrade to Premium"
+            )}
           </Button>
           <Button variant="outline" onClick={onClose} className="w-full">
             Maybe Later
