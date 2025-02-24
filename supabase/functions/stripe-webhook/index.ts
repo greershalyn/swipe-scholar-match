@@ -46,15 +46,25 @@ serve(async (req) => {
         const profile_id = session.metadata?.profile_id
 
         if (profile_id) {
-          // Create subscription record
-          await supabaseClient.from('subscriptions').insert({
-            profile_id: profile_id,
-            status: 'active',
-            subscription_type: 'premium',
-            amount_cents: 1000,
-            current_period_start: new Date().toISOString(),
-            current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
-          })
+          // Update the user's subscription status
+          await supabaseClient
+            .from('subscriptions')
+            .upsert({
+              profile_id: profile_id,
+              status: 'active',
+              subscription_type: 'premium',
+              amount_cents: 1000,
+              current_period_start: new Date().toISOString(),
+              current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+            })
+
+          // Update the profile's subscription tier
+          await supabaseClient
+            .from('profiles')
+            .update({ subscription_tier: 'premium' })
+            .eq('id', profile_id)
+
+          console.log('Successfully updated subscription for profile:', profile_id)
         }
         break
       }
@@ -64,10 +74,21 @@ serve(async (req) => {
         const profile_id = subscription.metadata?.profile_id
 
         if (profile_id) {
-          await supabaseClient.from('subscriptions').update({
-            status: subscription.status,
-            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-          }).eq('profile_id', profile_id)
+          await supabaseClient
+            .from('subscriptions')
+            .update({
+              status: subscription.status,
+              current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+            })
+            .eq('profile_id', profile_id)
+
+          // Update profile subscription tier based on subscription status
+          await supabaseClient
+            .from('profiles')
+            .update({ 
+              subscription_tier: subscription.status === 'active' ? 'premium' : 'free' 
+            })
+            .eq('id', profile_id)
         }
         break
       }

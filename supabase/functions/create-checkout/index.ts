@@ -19,8 +19,7 @@ serve(async (req) => {
 
   try {
     // Parse the request body
-    const { returnUrl, cancelUrl } = await req.json();
-    console.log('Received request with URLs:', { returnUrl, cancelUrl });
+    const { returnUrl } = await req.json();
 
     // Validate required environment variables
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
@@ -64,7 +63,7 @@ serve(async (req) => {
       );
     }
 
-    // Create checkout session
+    // Create checkout session with proper success and cancel URLs
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       payment_method_types: ['card'],
@@ -72,8 +71,8 @@ serve(async (req) => {
         price: 'price_1Qw8Ds2KAO6RCCuY7p3eTjfa',
         quantity: 1,
       }],
-      success_url: `${returnUrl}?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: cancelUrl,
+      success_url: `${returnUrl}?session_id={CHECKOUT_SESSION_ID}&success=true`,
+      cancel_url: `${returnUrl}?canceled=true`,
       customer_email: user.email,
       client_reference_id: user.id,
       metadata: {
@@ -103,7 +102,6 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in checkout function:', error);
     
-    // Return error response with 400 status
     return new Response(
       JSON.stringify({
         error: error instanceof Error ? error.message : 'Unknown error occurred',
