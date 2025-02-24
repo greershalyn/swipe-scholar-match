@@ -35,7 +35,7 @@ export const SubscriptionDialog = ({ isOpen, onClose }: SubscriptionDialogProps)
       }
 
       // Replace with your actual Stripe payment link
-      const paymentLink = 'https://buy.stripe.com/test_8wMeXS2tqd3Z1bO4gh';
+      const paymentLink = 'https://buy.stripe.com/28o7sUcWUaeP3xSeUU';
       
       console.log('Redirecting to payment link:', paymentLink);
       window.location.href = paymentLink;
