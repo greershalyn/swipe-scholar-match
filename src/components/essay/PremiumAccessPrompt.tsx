@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Crown, Star, Lightbulb, FileCheck } from 'lucide-react';
@@ -6,31 +5,24 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Button } from '@/components/ui/button';
 import { AccountDropdown } from '@/components/AccountDropdown';
 import { SubscriptionDialog } from '@/components/subscription/SubscriptionDialog';
-
 interface PremiumAccessPromptProps {
   showSubscriptionDialog: boolean;
   setShowSubscriptionDialog: (show: boolean) => void;
 }
-
-export const PremiumAccessPrompt = ({ 
-  showSubscriptionDialog, 
-  setShowSubscriptionDialog 
+export const PremiumAccessPrompt = ({
+  showSubscriptionDialog,
+  setShowSubscriptionDialog
 }: PremiumAccessPromptProps) => {
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-[#9b87f5] via-[#D946EF] to-[#FDE1D3]">
+  return <div className="min-h-screen bg-gradient-to-b from-[#9b87f5] via-[#D946EF] to-[#FDE1D3]">
       <div className="container px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <Link to="/">
-            <img 
-              src="/lovable-uploads/24f07198-1e4c-4eea-8e07-259aa77d1711.png"
-              alt="SwipeScholar Logo"
-              className="h-24 w-auto"
-            />
+            <img src="/lovable-uploads/24f07198-1e4c-4eea-8e07-259aa77d1711.png" alt="SwipeScholar Logo" className="h-24 w-auto" />
           </Link>
           <AccountDropdown />
         </div>
 
-        <Card className="max-w-2xl mx-auto">
+        <Card className="max-w-2xl mx-auto bg-slate-50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Crown className="h-6 w-6 text-yellow-500" />
@@ -58,20 +50,13 @@ export const PremiumAccessPrompt = ({
                 Professional writing feedback
               </li>
             </ul>
-            <Button 
-              onClick={() => setShowSubscriptionDialog(true)}
-              className="w-full mt-4"
-            >
+            <Button onClick={() => setShowSubscriptionDialog(true)} className="w-full mt-4">
               Upgrade to Premium
             </Button>
           </CardContent>
         </Card>
 
-        <SubscriptionDialog 
-          isOpen={showSubscriptionDialog}
-          onClose={() => setShowSubscriptionDialog(false)}
-        />
+        <SubscriptionDialog isOpen={showSubscriptionDialog} onClose={() => setShowSubscriptionDialog(false)} />
       </div>
-    </div>
-  );
+    </div>;
 };
