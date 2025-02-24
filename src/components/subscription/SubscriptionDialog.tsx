@@ -34,9 +34,9 @@ export const SubscriptionDialog = ({ isOpen, onClose }: SubscriptionDialogProps)
         return;
       }
 
-      // Ensure we're using absolute URLs
-      const returnUrl = new URL('/questionnaire', window.location.origin).toString();
-      const cancelUrl = new URL('/essay-assistant', window.location.origin).toString();
+      // Create absolute URLs but don't construct URL objects to avoid encoding issues
+      const returnUrl = `${window.location.origin}/questionnaire`;
+      const cancelUrl = `${window.location.origin}/essay-assistant`;
 
       console.log('Creating checkout session with URLs:', {
         returnUrl,
@@ -64,8 +64,14 @@ export const SubscriptionDialog = ({ isOpen, onClose }: SubscriptionDialogProps)
         localStorage.setItem('stripe_checkout_session', data.sessionId);
       }
 
-      console.log('Redirecting to:', data.sessionUrl);
-      window.location.href = data.sessionUrl;
+      // Create a temporary form to handle the redirect
+      const form = document.createElement('form');
+      form.method = 'GET';
+      form.action = data.sessionUrl;
+      document.body.appendChild(form);
+      
+      console.log('Submitting form to redirect to:', data.sessionUrl);
+      form.submit();
       
     } catch (error: any) {
       console.error('Error in checkout process:', error);
