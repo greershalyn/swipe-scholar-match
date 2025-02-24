@@ -34,8 +34,8 @@ export const SubscriptionDialog = ({ isOpen, onClose }: SubscriptionDialogProps)
         return;
       }
 
-      // Use a direct payment link
-      const paymentLink = 'https://buy.stripe.com/your_payment_link_here'; // Replace with your actual Stripe payment link
+      // Replace with your actual Stripe payment link
+      const paymentLink = 'https://buy.stripe.com/test_8wMeXS2tqd3Z1bO4gh';
       
       console.log('Redirecting to payment link:', paymentLink);
       window.location.href = paymentLink;
