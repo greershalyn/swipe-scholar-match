@@ -15,12 +15,17 @@ serve(async (req) => {
   }
 
   try {
+    // Parse the request body
+    const { returnUrl, cancelUrl } = await req.json();
+    console.log('Received URLs:', { returnUrl, cancelUrl });
+
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY')
     if (!stripeKey) {
+      console.error('Stripe key missing');
       throw new Error('Missing Stripe secret key')
     }
 
-    console.log('Initializing Stripe...')
+    console.log('Initializing Stripe...');
     const stripe = new Stripe(stripeKey, {
       apiVersion: '2023-10-16',
     })
@@ -33,13 +38,14 @@ serve(async (req) => {
     // Get the authorization header from the request
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
+      console.error('No auth header found');
       throw new Error('No authorization header')
     }
 
     // Get the JWT token from the authorization header
     const token = authHeader.replace('Bearer ', '')
 
-    console.log('Verifying user token...')
+    console.log('Verifying user token...');
     // Verify the JWT token and get the user
     const {
       data: { user },
@@ -47,11 +53,19 @@ serve(async (req) => {
     } = await supabaseClient.auth.getUser(token)
 
     if (userError || !user) {
+      console.error('User verification failed:', userError);
       throw new Error('Invalid user token')
     }
 
-    console.log('Creating Stripe checkout session...')
-    // Create Stripe checkout session
+    console.log('Creating Stripe checkout session...');
+    
+    // Ensure we have valid URLs
+    const success_url = returnUrl || req.headers.get('origin') + '/questionnaire';
+    const cancel_url = cancelUrl || req.headers.get('origin') + '/essay-assistant';
+    
+    console.log('Using URLs:', { success_url, cancel_url });
+
+    // Create Stripe checkout session with explicit price ID
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -71,8 +85,8 @@ serve(async (req) => {
         },
       ],
       mode: 'subscription',
-      success_url: `${req.headers.get('origin')}/questionnaire`,
-      cancel_url: `${req.headers.get('origin')}/auth`,
+      success_url,
+      cancel_url,
       customer_email: user.email,
       metadata: {
         profile_id: user.id,
@@ -80,10 +94,14 @@ serve(async (req) => {
     })
 
     if (!session.url) {
+      console.error('No session URL created');
       throw new Error('Failed to create checkout session')
     }
 
-    console.log('Checkout session created successfully:', session.id)
+    console.log('Checkout session created successfully:', {
+      sessionId: session.id,
+      url: session.url
+    });
 
     // Return the session URL
     return new Response(
@@ -96,9 +114,12 @@ serve(async (req) => {
       }
     )
   } catch (error) {
-    console.error('Error creating checkout session:', error)
+    console.error('Error creating checkout session:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: error.toString()
+      }),
       {
         headers: {
           ...corsHeaders,
