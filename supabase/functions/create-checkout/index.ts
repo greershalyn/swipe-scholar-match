@@ -65,7 +65,7 @@ serve(async (req) => {
     
     console.log('Using URLs:', { success_url, cancel_url });
 
-    // Create Stripe checkout session with price ID
+    // Create Stripe checkout session with the provided price ID
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
