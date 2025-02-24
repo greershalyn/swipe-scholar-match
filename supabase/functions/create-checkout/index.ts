@@ -65,22 +65,12 @@ serve(async (req) => {
     
     console.log('Using URLs:', { success_url, cancel_url });
 
-    // Create Stripe checkout session with explicit price ID
+    // Create Stripe checkout session with price ID
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
         {
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: 'Premium Subscription',
-              description: 'Access to premium features including AI Essay Assistant',
-            },
-            unit_amount: 1000, // $10.00
-            recurring: {
-              interval: 'month',
-            },
-          },
+          price: 'price_YOUR_PRICE_ID', // Replace this with your actual price ID from Stripe
           quantity: 1,
         },
       ],
