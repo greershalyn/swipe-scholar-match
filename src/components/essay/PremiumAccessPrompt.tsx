@@ -15,6 +15,10 @@ export const PremiumAccessPrompt = ({
   showSubscriptionDialog,
   setShowSubscriptionDialog
 }: PremiumAccessPromptProps) => {
+  // Get the current domain for the return URL
+  const domain = window.location.origin;
+  const stripeUrl = `https://buy.stripe.com/28o7sUcWUaeP3xSeUU?return_url=${encodeURIComponent(domain + '/essay-assistant')}`;
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#9b87f5] via-[#D946EF] to-[#FDE1D3]">
       <div className="container px-4 py-8">
@@ -54,7 +58,7 @@ export const PremiumAccessPrompt = ({
               </li>
             </ul>
             <a 
-              href="https://buy.stripe.com/28o7sUcWUaeP3xSeUU" 
+              href={stripeUrl}
               className="block w-full"
               target="_blank"
               rel="noopener noreferrer"
