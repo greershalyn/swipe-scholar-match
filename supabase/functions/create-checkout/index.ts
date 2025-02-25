@@ -1,7 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import Stripe from 'https://esm.sh/stripe@12.4.0'
+import Stripe from "https://esm.sh/stripe@12.4.0"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,105 +10,62 @@ const corsHeaders = {
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { 
-      status: 200,
-      headers: corsHeaders 
-    });
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    // Parse the request body
-    const { returnUrl } = await req.json();
-
-    // Validate required environment variables
-    const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-
-    if (!stripeKey || !supabaseUrl || !supabaseKey) {
-      throw new Error('Missing required environment variables');
-    }
-
-    // Initialize Stripe
-    const stripe = new Stripe(stripeKey, {
+    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
       apiVersion: '2023-10-16',
-    });
+    })
 
-    // Initialize Supabase client
-    const supabaseClient = createClient(supabaseUrl, supabaseKey);
+    const { profile_id, return_url } = await req.json()
 
-    // Get and validate authorization
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'No authorization header' }),
-        { 
-          status: 401,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
+    if (!profile_id) {
+      throw new Error('Profile ID is required')
     }
 
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
-
-    if (userError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid user token' }),
-        { 
-          status: 401,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
-
-    // Create checkout session with proper success and cancel URLs
+    // Create a checkout session
     const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
       payment_method_types: ['card'],
-      line_items: [{
-        price: 'price_1Qw8Ds2KAO6RCCuY7p3eTjfa',
-        quantity: 1,
-      }],
-      success_url: `${returnUrl}?session_id={CHECKOUT_SESSION_ID}&success=true`,
-      cancel_url: `${returnUrl}?canceled=true`,
-      customer_email: user.email,
-      client_reference_id: user.id,
+      line_items: [
+        {
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: 'SwipeScholar Premium Subscription',
+              description: 'Monthly access to premium features including Essay Assistant',
+            },
+            unit_amount: 1000, // $10.00
+            recurring: {
+              interval: 'month',
+            },
+          },
+          quantity: 1,
+        },
+      ],
+      mode: 'subscription',
+      success_url: return_url || 'http://localhost:5173/essay-assistant',
+      cancel_url: 'http://localhost:5173/',
       metadata: {
-        profile_id: user.id,
+        profile_id,
       },
-      billing_address_collection: 'required',
-      allow_promotion_codes: true,
-    });
+    })
 
-    console.log('Checkout session created:', {
-      id: session.id,
-      url: session.url,
-    });
-
-    // Return successful response
     return new Response(
-      JSON.stringify({
-        sessionUrl: session.url,
-        sessionId: session.id,
-      }),
-      { 
+      JSON.stringify({ url: session.url }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
-    );
-
+    )
   } catch (error) {
-    console.error('Error in checkout function:', error);
-    
+    console.error('Error creating checkout session:', error)
     return new Response(
-      JSON.stringify({
-        error: error instanceof Error ? error.message : 'Unknown error occurred',
-      }),
-      { 
+      JSON.stringify({ error: error.message }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
-    );
+    )
   }
-});
+})

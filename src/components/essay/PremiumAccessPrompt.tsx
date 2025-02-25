@@ -1,10 +1,12 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Crown, Star, Lightbulb, FileCheck } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AccountDropdown } from '@/components/AccountDropdown';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/components/ui/use-toast';
 
 interface PremiumAccessPromptProps {
   showSubscriptionDialog: boolean;
@@ -15,9 +17,46 @@ export const PremiumAccessPrompt = ({
   showSubscriptionDialog,
   setShowSubscriptionDialog
 }: PremiumAccessPromptProps) => {
-  // Get the current domain for the return URL
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
   const domain = window.location.origin;
-  const stripeUrl = `https://buy.stripe.com/test_9AQbLN1LP0gY0bS8ww?return_url=${encodeURIComponent(domain + '/essay-assistant')}`;
+
+  const handleUpgradeClick = async () => {
+    setLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: "Error",
+          description: "Please sign in to upgrade to premium",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const response = await supabase.functions.invoke('create-checkout', {
+        body: {
+          profile_id: user.id,
+          return_url: `${domain}/essay-assistant`,
+        },
+      });
+
+      if (response.error) throw response.error;
+      
+      // Redirect to Stripe Checkout
+      window.location.href = response.data.url;
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to start checkout process. Please try again.",
+        variant: "destructive",
+      });
+      console.error('Checkout error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#9b87f5] via-[#D946EF] to-[#FDE1D3]">
@@ -57,16 +96,13 @@ export const PremiumAccessPrompt = ({
                 Professional writing feedback
               </li>
             </ul>
-            <a 
-              href={stripeUrl}
-              className="block w-full"
-              target="_blank"
-              rel="noopener noreferrer"
+            <Button 
+              className="w-full mt-4"
+              onClick={handleUpgradeClick}
+              disabled={loading}
             >
-              <Button className="w-full mt-4">
-                Upgrade to Premium
-              </Button>
-            </a>
+              {loading ? "Processing..." : "Upgrade to Premium"}
+            </Button>
           </CardContent>
         </Card>
       </div>

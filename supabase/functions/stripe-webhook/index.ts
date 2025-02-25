@@ -9,7 +9,6 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -19,7 +18,6 @@ serve(async (req) => {
       apiVersion: '2023-10-16',
     })
 
-    // Get the signature from the header
     const signature = req.headers.get('stripe-signature')
     if (!signature) {
       throw new Error('No Stripe signature found')
@@ -27,7 +25,6 @@ serve(async (req) => {
 
     const body = await req.text()
     
-    // Verify the webhook signature
     const event = stripe.webhooks.constructEvent(
       body,
       signature,
@@ -39,14 +36,16 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Handle the event
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
         const profile_id = session.metadata?.profile_id
+        const subscription = session.subscription as string
 
         if (profile_id) {
-          // Update the user's subscription status
+          // Get subscription details
+          const subscriptionData = await stripe.subscriptions.retrieve(subscription)
+          
           await supabaseClient
             .from('subscriptions')
             .upsert({
@@ -54,41 +53,16 @@ serve(async (req) => {
               status: 'active',
               subscription_type: 'premium',
               amount_cents: 1000,
-              current_period_start: new Date().toISOString(),
-              current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+              current_period_start: new Date(subscriptionData.current_period_start * 1000).toISOString(),
+              current_period_end: new Date(subscriptionData.current_period_end * 1000).toISOString(),
             })
 
-          // Update the profile's subscription tier
           await supabaseClient
             .from('profiles')
             .update({ subscription_tier: 'premium' })
             .eq('id', profile_id)
 
           console.log('Successfully updated subscription for profile:', profile_id)
-        }
-        break
-      }
-      case 'customer.subscription.updated':
-      case 'customer.subscription.deleted': {
-        const subscription = event.data.object as Stripe.Subscription
-        const profile_id = subscription.metadata?.profile_id
-
-        if (profile_id) {
-          await supabaseClient
-            .from('subscriptions')
-            .update({
-              status: subscription.status,
-              current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-            })
-            .eq('profile_id', profile_id)
-
-          // Update profile subscription tier based on subscription status
-          await supabaseClient
-            .from('profiles')
-            .update({ 
-              subscription_tier: subscription.status === 'active' ? 'premium' : 'free' 
-            })
-            .eq('id', profile_id)
         }
         break
       }
