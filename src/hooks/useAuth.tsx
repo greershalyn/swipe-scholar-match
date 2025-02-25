@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,7 +13,7 @@ export const useAuth = () => {
   const { toast } = useToast();
 
   const domain = window.location.origin;
-  const stripeUrl = `https://buy.stripe.com/28o7sUcWUaeP3xSeUU?return_url=${encodeURIComponent(domain + '/questionnaire')}`;
+  const stripeUrl = `https://buy.stripe.com/test_9AQbLN1LP0gY0bS8ww?return_url=${encodeURIComponent(domain + '/questionnaire')}`;
 
   const checkProfileCompletion = async (userId: string) => {
     const { data, error } = await supabase
