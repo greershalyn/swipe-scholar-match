@@ -18,6 +18,9 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const domain = window.location.origin;
+  const stripeUrl = `https://buy.stripe.com/28o7sUcWUaeP3xSeUU?return_url=${encodeURIComponent(domain + '/questionnaire')}`;
+
   const checkProfileCompletion = async (userId: string) => {
     const { data, error } = await supabase
       .from("profiles")
@@ -68,13 +71,18 @@ const Auth = () => {
         } else if (error) {
           throw error;
         } else {
-          // For premium signups, we'll redirect to payment after questionnaire
-          const redirectPath = selectedTier === 'premium' ? '/questionnaire?setup_payment=true' : '/questionnaire';
           toast({
             title: "Success!",
             description: "Please check your email to verify your account.",
           });
-          navigate(redirectPath);
+          
+          // If premium tier selected, redirect to payment page
+          if (selectedTier === 'premium') {
+            window.location.href = stripeUrl;
+          } else {
+            // For free tier, redirect to questionnaire
+            navigate('/questionnaire');
+          }
         }
       } else {
         const { data: { user }, error } = await supabase.auth.signInWithPassword({
