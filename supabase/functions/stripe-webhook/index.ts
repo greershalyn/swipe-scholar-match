@@ -1,84 +1,80 @@
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import Stripe from "https://esm.sh/stripe@12.4.0"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
+import { Stripe } from 'https://esm.sh/stripe@12.5.0'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
+  apiVersion: '2023-10-16',
+  httpClient: Stripe.createFetchHttpClient(),
+})
+
+const supabaseAdmin = createClient(
+  Deno.env.get('SUPABASE_URL') ?? '',
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+)
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+  const signature = req.headers.get('stripe-signature')
+  
+  if (!signature) {
+    return new Response('No signature', { status: 400 })
   }
 
   try {
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
-      apiVersion: '2023-10-16',
-    })
-
-    const signature = req.headers.get('stripe-signature')
-    if (!signature) {
-      throw new Error('No Stripe signature found')
-    }
-
     const body = await req.text()
-    
-    const event = stripe.webhooks.constructEvent(
-      body,
-      signature,
-      Deno.env.get('STRIPE_WEBHOOK_SIGNING_SECRET') || ''
-    )
-
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+    const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SIGNING_SECRET')
+    const event = stripe.webhooks.constructEvent(body, signature, webhookSecret!)
 
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
-        const profile_id = session.metadata?.profile_id
-        const subscription = session.subscription as string
+        const customerId = session.customer as string
+        const subscriptionId = session.subscription as string
+        const profileId = session.client_reference_id
 
-        if (profile_id) {
-          // Get subscription details
-          const subscriptionData = await stripe.subscriptions.retrieve(subscription)
-          
-          await supabaseClient
-            .from('subscriptions')
-            .upsert({
-              profile_id: profile_id,
-              status: 'active',
-              subscription_type: 'premium',
-              amount_cents: 1000,
-              current_period_start: new Date(subscriptionData.current_period_start * 1000).toISOString(),
-              current_period_end: new Date(subscriptionData.current_period_end * 1000).toISOString(),
-            })
-
-          await supabaseClient
-            .from('profiles')
-            .update({ subscription_tier: 'premium' })
-            .eq('id', profile_id)
-
-          console.log('Successfully updated subscription for profile:', profile_id)
+        if (!profileId) {
+          throw new Error('No profile ID')
         }
+
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId)
+        
+        await supabaseAdmin.from('subscriptions').upsert({
+          profile_id: profileId,
+          status: subscription.status,
+          subscription_type: 'premium',
+          amount_cents: subscription.items.data[0].price.unit_amount,
+          current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+          current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+        })
+        break
+      }
+      
+      case 'customer.subscription.updated':
+      case 'customer.subscription.deleted': {
+        const subscription = event.data.object as Stripe.Subscription
+        const profileId = subscription.metadata.profile_id
+
+        if (!profileId) {
+          throw new Error('No profile ID in metadata')
+        }
+
+        await supabaseAdmin.from('subscriptions').upsert({
+          profile_id: profileId,
+          status: subscription.status,
+          subscription_type: 'premium',
+          amount_cents: subscription.items.data[0].price.unit_amount,
+          current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+          current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+        })
         break
       }
     }
 
     return new Response(JSON.stringify({ received: true }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
     })
   } catch (err) {
-    console.error('Error processing webhook:', err)
-    return new Response(
-      JSON.stringify({ error: err.message }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
-      }
-    )
+    console.error('Webhook error:', err)
+    return new Response('Webhook Error: ' + (err as Error).message, { status: 400 })
   }
 })
