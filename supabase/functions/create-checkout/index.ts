@@ -7,9 +7,17 @@ const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
   httpClient: Stripe.createFetchHttpClient(),
 })
 
-const PREMIUM_PRICE_ID = 'price_XXXXX' // You'll need to replace this with your actual Stripe Price ID
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
 
 serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
   try {
     const { profile_id, return_url } = await req.json()
     
@@ -22,7 +30,7 @@ serve(async (req) => {
       payment_method_types: ['card'],
       line_items: [
         {
-          price: PREMIUM_PRICE_ID,
+          price: 'price_1Qw8Ds2KAO6RCCuY7p3eTjfa',
           quantity: 1,
         },
       ],
@@ -37,12 +45,16 @@ serve(async (req) => {
     })
 
     return new Response(JSON.stringify({ url: session.url }), {
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error) {
-    return new Response(JSON.stringify({ error: (error as Error).message }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' },
-    })
+    console.error('Checkout error:', error)
+    return new Response(
+      JSON.stringify({ error: (error as Error).message }),
+      { 
+        status: 400, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    )
   }
 })
