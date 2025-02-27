@@ -14,18 +14,27 @@ const supabaseAdmin = createClient(
 )
 
 serve(async (req) => {
+  console.log('Webhook received request:', {
+    method: req.method,
+    headers: Object.fromEntries(req.headers.entries()),
+  });
+
   const signature = req.headers.get('stripe-signature')
   
   if (!signature) {
+    console.log('Missing stripe-signature header');
     return new Response('No signature', { status: 400 })
   }
 
   try {
     const body = await req.text()
+    console.log('Webhook received body:', body.substring(0, 100) + '...');  // Log first 100 chars for safety
+    
     const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SIGNING_SECRET')
+    console.log('Webhook secret present:', !!webhookSecret);
+    
     const event = stripe.webhooks.constructEvent(body, signature, webhookSecret!)
-
-    console.log('Processing webhook event:', event.type)
+    console.log('Event constructed successfully:', event.type);
 
     switch (event.type) {
       case 'checkout.session.completed': {
@@ -33,10 +42,15 @@ serve(async (req) => {
         const profileId = session.client_reference_id
 
         if (!profileId) {
+          console.error('Missing profile_id in session:', session);
           throw new Error('No profile ID in session')
         }
 
-        console.log('Processing completed checkout for profile:', profileId)
+        console.log('Processing completed checkout for profile:', {
+          profileId,
+          sessionId: session.id,
+          amount: session.amount_total,
+        });
 
         // Immediately update the profile's subscription tier
         const { error: profileError } = await supabaseAdmin
@@ -48,6 +62,7 @@ serve(async (req) => {
           console.error('Error updating profile:', profileError)
           throw profileError
         }
+        console.log('Successfully updated profile subscription tier to premium');
 
         // Create or update subscription record
         const { error: subscriptionError } = await supabaseAdmin
@@ -65,8 +80,8 @@ serve(async (req) => {
           console.error('Error updating subscription:', subscriptionError)
           throw subscriptionError
         }
+        console.log('Successfully created/updated subscription record');
 
-        console.log('Successfully processed checkout session')
         break
       }
       
@@ -76,8 +91,15 @@ serve(async (req) => {
         const profileId = subscription.metadata.profile_id
 
         if (!profileId) {
+          console.error('Missing profile_id in subscription metadata:', subscription);
           throw new Error('No profile ID in metadata')
         }
+
+        console.log('Processing subscription update:', {
+          profileId,
+          subscriptionId: subscription.id,
+          status: subscription.status,
+        });
 
         // Update profile subscription tier based on subscription status
         const newTier = subscription.status === 'active' ? 'premium' : 'free'
@@ -91,6 +113,7 @@ serve(async (req) => {
           console.error('Error updating profile:', profileError)
           throw profileError
         }
+        console.log('Successfully updated profile subscription tier to:', newTier);
 
         // Update subscription record
         const { error: subscriptionError } = await supabaseAdmin
@@ -108,17 +131,22 @@ serve(async (req) => {
           console.error('Error updating subscription:', subscriptionError)
           throw subscriptionError
         }
+        console.log('Successfully updated subscription record');
 
-        console.log('Successfully processed subscription update')
         break
       }
     }
 
     return new Response(JSON.stringify({ received: true }), {
       headers: { 'Content-Type': 'application/json' },
+      status: 200,
     })
   } catch (err) {
-    console.error('Webhook error:', err)
+    console.error('Detailed webhook error:', {
+      error: err,
+      message: err.message,
+      stack: err.stack,
+    });
     return new Response('Webhook Error: ' + (err as Error).message, { status: 400 })
   }
 })
