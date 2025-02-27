@@ -41,8 +41,7 @@ serve(async (req) => {
       payment_method_types: ['card'],
       line_items: [
         {
-          // Using a test price ID for development
-          price: 'price_H5ggYwtDq4fbrJ', // This is a test price ID
+          price: 'price_1QwuhW2KAO6RCCuYpy5ZDxxF',
           quantity: 1,
         },
       ],
