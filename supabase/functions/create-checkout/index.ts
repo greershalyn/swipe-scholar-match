@@ -1,5 +1,6 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 import { Stripe } from 'https://esm.sh/stripe@12.5.0'
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') ?? '', {
@@ -15,74 +16,63 @@ const corsHeaders = {
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { 
-      headers: corsHeaders 
-    });
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    // Get the request body
-    const body = await req.json();
-    const { profile_id, return_url } = body;
-    
-    if (!profile_id || !return_url) {
-      throw new Error('Missing required fields: profile_id and return_url are required');
+    const { profile_id, return_url } = await req.json()
+    console.log('Creating checkout session for profile:', profile_id)
+
+    if (!profile_id) {
+      throw new Error('profile_id is required')
     }
 
-    console.log('Creating checkout session with:', {
-      profile_id,
-      return_url,
-      stripe_key_present: !!Deno.env.get('STRIPE_SECRET_KEY'),
-    });
-
-    // Create a checkout session with a test price
+    // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
       payment_method_types: ['card'],
       line_items: [
         {
-          price: 'price_1QwuhW2KAO6RCCuYpy5ZDxxF',
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: 'Premium Subscription',
+              description: 'Access to premium features including AI Essay Assistant',
+            },
+            unit_amount: 999, // $9.99
+          },
           quantity: 1,
         },
       ],
-      success_url: `${return_url}?success=true&session_id={CHECKOUT_SESSION_ID}`,
+      mode: 'payment',
+      success_url: `${return_url}?success=true`,
       cancel_url: `${return_url}?success=false`,
       client_reference_id: profile_id,
       metadata: {
-        profile_id,
+        profile_id: profile_id,
       },
-    });
+    })
 
-    console.log('Checkout session created successfully:', {
+    console.log('Checkout session created:', {
       sessionId: session.id,
-      url: session.url,
-    });
+      profileId: profile_id,
+      url: session.url
+    })
 
     return new Response(
       JSON.stringify({ url: session.url }),
-      { 
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      },
+    )
   } catch (error) {
-    console.error('Error in create-checkout:', error);
-    
+    console.error('Error creating checkout session:', error)
     return new Response(
-      JSON.stringify({
-        error: error.message,
-        details: 'Failed to create checkout session'
-      }),
-      { 
+      JSON.stringify({ error: error.message }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
+      },
+    )
   }
 })
