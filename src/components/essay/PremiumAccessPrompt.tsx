@@ -35,24 +35,37 @@ export const PremiumAccessPrompt = ({
         return;
       }
 
-      const response = await supabase.functions.invoke('create-checkout', {
+      console.log('Initiating checkout for user:', user.id);
+      
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: {
           profile_id: user.id,
           return_url: `${domain}/essay-assistant`,
         },
       });
 
-      if (response.error) throw response.error;
-      
+      console.log('Checkout response:', { data, error });
+
+      if (error) {
+        console.error('Checkout error:', error);
+        throw error;
+      }
+
+      if (!data?.url) {
+        throw new Error('No checkout URL received');
+      }
+
       // Redirect to Stripe Checkout
-      window.location.href = response.data.url;
+      console.log('Redirecting to checkout URL:', data.url);
+      window.location.href = data.url;
+      
     } catch (error) {
+      console.error('Detailed checkout error:', error);
       toast({
         title: "Error",
         description: "Failed to start checkout process. Please try again.",
         variant: "destructive",
       });
-      console.error('Checkout error:', error);
     } finally {
       setLoading(false);
     }
