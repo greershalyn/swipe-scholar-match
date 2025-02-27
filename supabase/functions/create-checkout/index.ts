@@ -20,73 +20,69 @@ serve(async (req) => {
     });
   }
 
-  // Get the request body
-  let body;
   try {
-    body = await req.json();
-  } catch (error) {
-    return new Response(
-      JSON.stringify({ error: 'Invalid request body' }),
-      { 
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    );
-  }
+    // Get the request body
+    const body = await req.json();
+    const { profile_id, return_url } = body;
+    
+    if (!profile_id || !return_url) {
+      throw new Error('Missing required fields: profile_id and return_url are required');
+    }
 
-  const { profile_id, return_url } = body;
-  
-  if (!profile_id || !return_url) {
-    return new Response(
-      JSON.stringify({ error: 'Missing required fields: profile_id and return_url are required' }),
-      { 
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    );
-  }
+    console.log('Creating checkout session with:', {
+      profile_id,
+      return_url,
+      stripe_key_present: !!Deno.env.get('STRIPE_SECRET_KEY'),
+    });
 
-  try {
-    console.log('Creating checkout session for profile:', profile_id);
-    console.log('Return URL:', return_url);
-
+    // Create a checkout session with a test price
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       payment_method_types: ['card'],
       line_items: [
         {
-          price: 'price_1Qw8Ds2KAO6RCCuY7p3eTjfa',
+          // Using a test price ID for development
+          price: 'price_H5ggYwtDq4fbrJ', // This is a test price ID
           quantity: 1,
         },
       ],
-      success_url: `${return_url}?success=true`,
+      success_url: `${return_url}?success=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${return_url}?success=false`,
       client_reference_id: profile_id,
-      subscription_data: {
-        metadata: {
-          profile_id,
-        },
+      metadata: {
+        profile_id,
       },
     });
 
-    console.log('Checkout session created:', session.id);
+    console.log('Checkout session created successfully:', {
+      sessionId: session.id,
+      url: session.url,
+    });
 
     return new Response(
       JSON.stringify({ url: session.url }),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { 
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
       }
     );
+
   } catch (error) {
-    console.error('Checkout error:', error);
+    console.error('Error in create-checkout:', error);
+    
     return new Response(
-      JSON.stringify({ 
-        error: (error as Error).message,
+      JSON.stringify({
+        error: error.message,
         details: 'Failed to create checkout session'
       }),
       { 
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { 
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
       }
     );
   }
