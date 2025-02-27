@@ -29,22 +29,15 @@ serve(async (req) => {
 
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
+      mode: 'subscription', // Changed back to subscription mode
       payment_method_types: ['card'],
       line_items: [
         {
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: 'Premium Subscription',
-              description: 'Access to premium features including AI Essay Assistant',
-            },
-            unit_amount: 999, // $9.99
-          },
+          price: 'price_1QwuhW2KAO6RCCuYpy5ZDxxF', // Use your predefined price ID
           quantity: 1,
         },
       ],
-      mode: 'payment',
-      success_url: `${return_url}?success=true`,
+      success_url: `${return_url}?success=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${return_url}?success=false`,
       client_reference_id: profile_id,
       metadata: {
@@ -55,7 +48,8 @@ serve(async (req) => {
     console.log('Checkout session created:', {
       sessionId: session.id,
       profileId: profile_id,
-      url: session.url
+      url: session.url,
+      mode: session.mode,
     })
 
     return new Response(
