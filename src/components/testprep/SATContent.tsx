@@ -2,6 +2,8 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import PracticeSection from './PracticeSection';
+import StrategySection from './StrategySection';
+import StudyPlanSection from './StudyPlanSection';
 import { quizData } from '@/data/testPrepQuizzes';
 
 type SATContentProps = {
@@ -82,27 +84,27 @@ const SATContent = ({ activeQuizzes, toggleQuiz, handleQuizComplete }: SATConten
             onQuizComplete={handleQuizComplete}
           />
           
-          <div className="border p-4 rounded-lg">
-            <h3 className="text-lg font-semibold mb-2">Study Plans</h3>
-            <p>Follow structured study plans based on your timeline and goals.</p>
-            <ul className="list-disc list-inside mt-2 text-gray-700">
-              <li>1-month intensive plan</li>
-              <li>3-month comprehensive plan</li>
-              <li>6-month gradual preparation</li>
-            </ul>
-          </div>
+          <StudyPlanSection
+            title="Study Plans"
+            description="Follow structured study plans based on your timeline and goals."
+            plans={[
+              { text: "1-month intensive plan" },
+              { text: "3-month comprehensive plan" },
+              { text: "6-month gradual preparation" }
+            ]}
+          />
         </div>
 
-        <div className="bg-purple-100 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold mb-2">Score Improvement Strategies</h3>
-          <p>Learn proven techniques to boost your SAT score:</p>
-          <ul className="list-disc list-inside mt-2 text-gray-700">
-            <li>Error analysis & correction</li>
-            <li>Subject-specific strategy guides</li>
-            <li>Targeted practice for weak areas</li>
-            <li>Mental preparation & test anxiety management</li>
-          </ul>
-        </div>
+        <StrategySection 
+          title="Score Improvement Strategies"
+          description="Learn proven techniques to boost your SAT score:"
+          strategies={[
+            { text: "Error analysis & correction" },
+            { text: "Subject-specific strategy guides" },
+            { text: "Targeted practice for weak areas" },
+            { text: "Mental preparation & test anxiety management" }
+          ]}
+        />
       </CardContent>
     </Card>
   );

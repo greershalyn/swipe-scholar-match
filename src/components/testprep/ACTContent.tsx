@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import PracticeSection from './PracticeSection';
+import StrategySection from './StrategySection';
 import { quizData } from '@/data/testPrepQuizzes';
 
 type ACTContentProps = {
@@ -95,16 +96,16 @@ const ACTContent = ({ activeQuizzes, toggleQuiz, handleQuizComplete }: ACTConten
           onQuizComplete={handleQuizComplete}
         />
 
-        <div className="bg-purple-100 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold mb-2">Test-Taking Strategies</h3>
-          <p>Master essential strategies for maximizing your ACT score:</p>
-          <ul className="list-disc list-inside mt-2 text-gray-700">
-            <li>Time management techniques</li>
-            <li>Process of elimination</li>
-            <li>Strategic guessing methods</li>
-            <li>Practice test schedule planning</li>
-          </ul>
-        </div>
+        <StrategySection
+          title="Test-Taking Strategies"
+          description="Master essential strategies for maximizing your ACT score:"
+          strategies={[
+            { text: "Time management techniques" },
+            { text: "Process of elimination" },
+            { text: "Strategic guessing methods" },
+            { text: "Practice test schedule planning" }
+          ]}
+        />
       </CardContent>
     </Card>
   );
