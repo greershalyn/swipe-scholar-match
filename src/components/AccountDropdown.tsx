@@ -1,7 +1,6 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { User, Wallet, BookOpen, Pencil, GraduationCap } from "lucide-react";
+import { User, Wallet, BookOpen, Pencil, GraduationCap, Star } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -74,6 +73,57 @@ export const AccountDropdown = () => {
     }
   };
 
+  // New function to manually upgrade account for testing
+  const handleUpgradeAccountForTesting = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Error",
+          description: "You need to be logged in to upgrade your account.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Update the user's subscription tier to premium directly
+      const { error } = await supabase
+        .from('profiles')
+        .update({ subscription_tier: 'premium' })
+        .eq('id', session.user.id);
+
+      if (error) throw error;
+
+      // Also create a subscription record
+      const { error: subscriptionError } = await supabase
+        .from('subscriptions')
+        .upsert({
+          profile_id: session.user.id,
+          status: 'active',
+          subscription_type: 'premium',
+          amount_cents: 1999,
+          current_period_start: new Date().toISOString(),
+          current_period_end: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // 1 year from now
+        });
+
+      if (subscriptionError) throw subscriptionError;
+
+      toast({
+        title: "Account Upgraded",
+        description: "Your account has been upgraded to premium for testing.",
+      });
+      
+      // Refresh the page to make sure the UI updates
+      window.location.reload();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: `Failed to upgrade account: ${error.message}`,
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <>
       <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
@@ -103,6 +153,14 @@ export const AccountDropdown = () => {
           <DropdownMenuItem onClick={() => navigate("/test-prep")} className="flex items-center">
             <GraduationCap className="mr-2 h-4 w-4" />
             <span>Test Prep</span>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem 
+            onClick={handleUpgradeAccountForTesting}
+            className="flex items-center text-purple-600 focus:text-purple-600 focus:bg-purple-50"
+          >
+            <Star className="mr-2 h-4 w-4" />
+            <span>Upgrade to Premium (Test)</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleLogout}>
