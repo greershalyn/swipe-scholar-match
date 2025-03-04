@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Card, CardContent } from '@/components/ui/card';
@@ -21,12 +21,24 @@ type QuizProps = {
   onComplete?: (score: number, total: number) => void;
 };
 
-const Quiz = ({ questions, sectionTitle, onComplete }: QuizProps) => {
+const Quiz = ({ questions: originalQuestions, sectionTitle, onComplete }: QuizProps) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
   const [score, setScore] = useState(0);
   const [quizCompleted, setQuizCompleted] = useState(false);
+  const [questions, setQuestions] = useState<QuizQuestion[]>([]);
+
+  // Initialize or shuffle questions
+  useEffect(() => {
+    shuffleQuestions();
+  }, [originalQuestions]);
+
+  const shuffleQuestions = () => {
+    // Create a copy of the original questions and shuffle them
+    const shuffled = [...originalQuestions].sort(() => Math.random() - 0.5);
+    setQuestions(shuffled);
+  };
 
   const currentQuestion = questions[currentQuestionIndex];
 
@@ -69,12 +81,18 @@ const Quiz = ({ questions, sectionTitle, onComplete }: QuizProps) => {
   };
 
   const handleRestartQuiz = () => {
+    // Shuffle questions for a new set when restarting
+    shuffleQuestions();
     setCurrentQuestionIndex(0);
     setSelectedAnswer(null);
     setIsAnswerSubmitted(false);
     setScore(0);
     setQuizCompleted(false);
   };
+
+  if (!currentQuestion) {
+    return <div>Loading questions...</div>;
+  }
 
   if (quizCompleted) {
     const finalScore = score + (selectedAnswer === currentQuestion.correctAnswer ? 1 : 0);
