@@ -5,6 +5,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from "@/hooks/use-toast";
 import { CheckCircle, XCircle } from 'lucide-react';
+import QuizResultCard from './QuizResultCard';
 
 export type QuizQuestion = {
   id: string;
@@ -77,34 +78,12 @@ const Quiz = ({ questions, sectionTitle, onComplete }: QuizProps) => {
 
   if (quizCompleted) {
     const finalScore = score + (selectedAnswer === currentQuestion.correctAnswer ? 1 : 0);
-    const percentage = Math.round((finalScore / questions.length) * 100);
-    
     return (
-      <Card className="mt-4 bg-white">
-        <CardContent className="pt-6">
-          <h3 className="text-xl font-bold mb-4">Quiz Completed!</h3>
-          <div className="text-center py-6">
-            <div className="text-4xl font-bold mb-2">{percentage}%</div>
-            <p className="text-lg mb-4">You scored {finalScore} out of {questions.length}</p>
-            
-            {percentage >= 70 ? (
-              <div className="flex items-center justify-center gap-2 text-green-600 mb-6">
-                <CheckCircle className="h-6 w-6" />
-                <span>Great job! You have a good understanding of this topic.</span>
-              </div>
-            ) : (
-              <div className="flex items-center justify-center gap-2 text-amber-600 mb-6">
-                <XCircle className="h-6 w-6" />
-                <span>You might want to review this topic a bit more.</span>
-              </div>
-            )}
-            
-            <Button onClick={handleRestartQuiz} className="mt-4">
-              Restart Quiz
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <QuizResultCard
+        score={finalScore}
+        totalQuestions={questions.length}
+        onRestartQuiz={handleRestartQuiz}
+      />
     );
   }
 
