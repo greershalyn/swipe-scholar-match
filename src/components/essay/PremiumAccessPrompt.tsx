@@ -21,6 +21,7 @@ export const PremiumAccessPrompt = ({
 }: PremiumAccessPromptProps) => {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { toast } = useToast();
   const location = useLocation();
   const domain = window.location.origin;
@@ -49,8 +50,15 @@ export const PremiumAccessPrompt = ({
 
   const handleUpgradeClick = async () => {
     setLoading(true);
+    setErrorMessage(null);
+    
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError) {
+        console.error('Auth error:', userError);
+        throw new Error(`Authentication error: ${userError.message}`);
+      }
       
       if (!user) {
         toast({
@@ -63,33 +71,39 @@ export const PremiumAccessPrompt = ({
 
       console.log('Initiating checkout for user:', user.id);
       
+      // Make sure we have the return URL properly formatted
+      const returnUrl = `${domain}${location.pathname}`;
+      console.log('Return URL:', returnUrl);
+      
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: {
           profile_id: user.id,
-          return_url: `${domain}${location.pathname}`,
+          return_url: returnUrl,
         },
       });
 
       console.log('Checkout response:', { data, error });
 
       if (error) {
-        console.error('Checkout error:', error);
-        throw error;
+        console.error('Checkout error from invoke:', error);
+        throw new Error(`Error from checkout service: ${error.message || 'Unknown error'}`);
       }
 
       if (!data?.url) {
-        throw new Error('No checkout URL received');
+        throw new Error('No checkout URL received from Stripe');
       }
 
       // Redirect to Stripe Checkout
       console.log('Redirecting to checkout URL:', data.url);
       window.location.href = data.url;
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Detailed checkout error:', error);
+      const errorMsg = error.message || 'Failed to start checkout process. Please try again.';
+      setErrorMessage(errorMsg);
       toast({
         title: "Error",
-        description: "Failed to start checkout process. Please try again.",
+        description: errorMsg,
         variant: "destructive",
       });
     } finally {
@@ -152,6 +166,14 @@ export const PremiumAccessPrompt = ({
                 Professional writing feedback
               </li>
             </ul>
+            
+            {errorMessage && (
+              <div className="p-3 mt-2 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
+                <p className="font-medium">Error: {errorMessage}</p>
+                <p className="mt-1">Please try again or contact support if the issue persists.</p>
+              </div>
+            )}
+            
             <Button 
               className="w-full mt-4"
               onClick={handleUpgradeClick}
