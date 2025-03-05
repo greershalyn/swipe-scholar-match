@@ -49,6 +49,16 @@ export const PremiumAccessPrompt = ({
       
       // Try to refresh subscription status
       handleRefreshSubscription();
+    } else if (successParam === 'false') {
+      toast({
+        title: "Payment cancelled",
+        description: "Your payment was cancelled. You can try again when you're ready.",
+        variant: "destructive",
+      });
+      
+      // Clean URL
+      const newUrl = location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
     }
   }, [location.search]);
 
@@ -79,22 +89,25 @@ export const PremiumAccessPrompt = ({
       const returnUrl = `${domain}${location.pathname}`;
       console.log('Return URL:', returnUrl);
       
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
+      const response = await supabase.functions.invoke('create-checkout', {
         body: {
           profile_id: user.id,
           return_url: returnUrl,
         },
       });
 
-      console.log('Checkout response:', { data, error });
+      console.log('Checkout response:', response);
+      
+      const { data, error } = response;
 
       if (error) {
         console.error('Checkout error from invoke:', error);
-        throw new Error(`Error from checkout service: ${error.message || 'Unknown error'}`);
+        throw new Error(`Error from checkout service: ${error.message || JSON.stringify(error)}`);
       }
 
       if (!data?.url) {
-        throw new Error('No checkout URL received from Stripe');
+        console.error('No URL received in response:', data);
+        throw new Error('No checkout URL received from payment service');
       }
 
       // Redirect to Stripe Checkout
@@ -126,6 +139,11 @@ export const PremiumAccessPrompt = ({
         });
       } catch (error) {
         console.error('Error refreshing subscription:', error);
+        toast({
+          title: "Error",
+          description: "Failed to refresh subscription status. Please try again.",
+          variant: "destructive",
+        });
       } finally {
         setRefreshing(false);
       }

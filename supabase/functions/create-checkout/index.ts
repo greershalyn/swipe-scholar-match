@@ -32,12 +32,18 @@ serve(async (req) => {
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
     if (!stripeKey) {
       console.error('Missing STRIPE_SECRET_KEY environment variable');
-      throw new Error('Stripe is not properly configured');
+      return new Response(
+        JSON.stringify({ error: 'Stripe is not properly configured. Please contact support.' }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500,
+        }
+      );
     }
     
     // Parse request body
     const body = await req.text();
-    console.log('Request body:', body);
+    console.log('Request body received:', body.substring(0, 100) + '...');
     
     let requestData;
     try {
@@ -58,6 +64,7 @@ serve(async (req) => {
     console.log('Return URL:', return_url);
 
     if (!profile_id) {
+      console.error('Missing profile_id in request');
       return new Response(
         JSON.stringify({ error: 'Profile ID is required' }),
         {
@@ -68,6 +75,7 @@ serve(async (req) => {
     }
 
     if (!return_url) {
+      console.error('Missing return_url in request');
       return new Response(
         JSON.stringify({ error: 'Return URL is required' }),
         {
@@ -150,10 +158,14 @@ serve(async (req) => {
     } catch (stripeError) {
       console.error('Stripe checkout creation error:', stripeError);
       
+      // Provide a more user-friendly error message
+      const errorMessage = stripeError.message || 'Failed to create checkout session';
+      console.error('Error message:', errorMessage);
+      
       return new Response(
         JSON.stringify({ 
-          error: `Stripe error: ${stripeError.message}`,
-          details: stripeError 
+          error: `Stripe error: ${errorMessage}`,
+          details: JSON.stringify(stripeError) 
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -163,10 +175,12 @@ serve(async (req) => {
     }
   } catch (error) {
     console.error('General error in checkout function:', error);
+    const errorMessage = error.message || 'Unknown error occurred';
+    console.error('Error message:', errorMessage);
     
     return new Response(
       JSON.stringify({ 
-        error: error.message || 'Unknown error occurred',
+        error: errorMessage,
         details: JSON.stringify(error)
       }),
       {
