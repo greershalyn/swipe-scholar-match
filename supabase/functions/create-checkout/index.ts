@@ -13,6 +13,12 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Create Supabase client
+const supabaseAdmin = createClient(
+  Deno.env.get('SUPABASE_URL') ?? '',
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+)
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -25,6 +31,18 @@ serve(async (req) => {
 
     if (!profile_id) {
       throw new Error('profile_id is required')
+    }
+
+    // Get user profile to pre-populate checkout if possible
+    let userEmail = null;
+    try {
+      const { data: userData } = await supabaseAdmin.auth.admin.getUserById(profile_id);
+      if (userData?.user?.email) {
+        userEmail = userData.user.email;
+        console.log('Found user email:', userEmail);
+      }
+    } catch (e) {
+      console.log('Error fetching user data:', e.message);
     }
 
     // Create Stripe checkout session
@@ -40,10 +58,16 @@ serve(async (req) => {
       success_url: `${return_url}?success=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${return_url}?success=false`,
       client_reference_id: profile_id,
+      customer_email: userEmail,
       metadata: {
         profile_id: profile_id,
       },
       subscription_data: {
+        metadata: {
+          profile_id: profile_id
+        }
+      },
+      payment_intent_data: {
         metadata: {
           profile_id: profile_id
         }

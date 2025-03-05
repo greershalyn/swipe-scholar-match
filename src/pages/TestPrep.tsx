@@ -13,7 +13,7 @@ import ACTContent from '@/components/testprep/ACTContent';
 import SATContent from '@/components/testprep/SATContent';
 
 const TestPrep = () => {
-  const { hasPremiumAccess, isCheckingAccess } = useSubscriptionCheck();
+  const { hasPremiumAccess, isCheckingAccess, refreshSubscription } = useSubscriptionCheck();
   const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
   const [activeQuizzes, setActiveQuizzes] = useState<Record<string, boolean>>({});
   const { toast } = useToast();
@@ -28,6 +28,7 @@ const TestPrep = () => {
       <PremiumAccessPrompt
         showSubscriptionDialog={showSubscriptionDialog}
         setShowSubscriptionDialog={setShowSubscriptionDialog}
+        onRefreshSubscription={refreshSubscription}
       />
     );
   }

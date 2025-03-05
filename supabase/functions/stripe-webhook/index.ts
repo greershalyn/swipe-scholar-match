@@ -1,4 +1,3 @@
-
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 import { Stripe } from 'https://esm.sh/stripe@12.5.0'
@@ -43,7 +42,7 @@ serve(async (req) => {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
-        const profileId = session.client_reference_id
+        const profileId = session.client_reference_id || session.metadata?.profile_id
         
         if (!profileId) {
           console.error('Missing profile_id in session:', session);
@@ -54,6 +53,8 @@ serve(async (req) => {
           profileId,
           sessionId: session.id,
           amount: session.amount_total,
+          customer: session.customer,
+          paymentStatus: session.payment_status
         });
 
         // Immediately update the profile's subscription tier
@@ -159,7 +160,6 @@ serve(async (req) => {
           throw subscriptionError
         }
         console.log('Successfully updated subscription record');
-
         break
       }
 
@@ -187,6 +187,54 @@ serve(async (req) => {
           console.log('Successfully updated profile tier after payment');
         } else {
           console.log('Payment succeeded but no profile_id in metadata');
+          
+          // Try to find the customer and associated payment methods
+          if (paymentIntent.customer) {
+            console.log('Attempting to find user by customer ID:', paymentIntent.customer);
+            
+            // Get customer details to find any associated metadata
+            try {
+              const customer = await stripe.customers.retrieve(paymentIntent.customer as string);
+              if (customer && !customer.deleted && customer.metadata?.profile_id) {
+                const customerProfileId = customer.metadata.profile_id;
+                console.log('Found profile ID from customer metadata:', customerProfileId);
+                
+                // Update profile with the customer's profile ID
+                const { error: customerProfileError } = await supabaseAdmin
+                  .from('profiles')
+                  .update({ subscription_tier: 'premium' })
+                  .eq('id', customerProfileId);
+                
+                if (customerProfileError) {
+                  console.error('Error updating profile from customer metadata:', customerProfileError);
+                } else {
+                  console.log('Successfully updated profile from customer metadata');
+                  
+                  // Also update subscription records
+                  const subscriptionData = {
+                    profile_id: customerProfileId,
+                    status: 'active',
+                    subscription_type: 'premium',
+                    amount_cents: paymentIntent.amount,
+                    current_period_start: new Date().toISOString(),
+                    current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+                  };
+                  
+                  const { error: subError } = await supabaseAdmin
+                    .from('subscriptions')
+                    .upsert([subscriptionData]);
+                    
+                  if (subError) {
+                    console.error('Error creating subscription from customer metadata:', subError);
+                  } else {
+                    console.log('Successfully created subscription from customer metadata');
+                  }
+                }
+              }
+            } catch (customerError) {
+              console.error('Error retrieving customer:', customerError);
+            }
+          }
         }
         
         break

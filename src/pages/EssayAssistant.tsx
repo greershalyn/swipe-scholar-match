@@ -14,7 +14,7 @@ import { EssaySuggestion, ExpandedFramework } from '@/types/essay';
 type StepType = 1 | 2 | 3 | 4;
 
 const EssayAssistant = () => {
-  const { hasPremiumAccess, isCheckingAccess } = useSubscriptionCheck();
+  const { hasPremiumAccess, isCheckingAccess, refreshSubscription } = useSubscriptionCheck();
   const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
   const [step, setStep] = useState<StepType>(1);
   const [essayTopic, setEssayTopic] = useState('');
@@ -36,8 +36,9 @@ const EssayAssistant = () => {
   if (!hasPremiumAccess) {
     return (
       <PremiumAccessPrompt
-        showSubscriptionDialog={false}
+        showSubscriptionDialog={showSubscriptionDialog}
         setShowSubscriptionDialog={setShowSubscriptionDialog}
+        onRefreshSubscription={refreshSubscription}
       />
     );
   }
