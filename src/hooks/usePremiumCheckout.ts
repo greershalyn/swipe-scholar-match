@@ -29,6 +29,7 @@ export const usePremiumCheckout = () => {
           description: "Please sign in to upgrade to premium",
           variant: "destructive",
         });
+        setLoading(false);
         return;
       }
 
@@ -46,6 +47,11 @@ export const usePremiumCheckout = () => {
       });
 
       console.log('Checkout response:', response);
+      
+      if (response.error) {
+        console.error('Checkout error from invoke:', response.error);
+        throw new Error(`Error from checkout service: ${response.error.message || JSON.stringify(response.error)}`);
+      }
       
       const { data, error } = response;
 
@@ -72,7 +78,6 @@ export const usePremiumCheckout = () => {
         description: errorMsg,
         variant: "destructive",
       });
-      return null;
     } finally {
       setLoading(false);
     }

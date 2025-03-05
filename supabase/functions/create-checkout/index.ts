@@ -105,22 +105,25 @@ serve(async (req) => {
       // Continue without email, don't fail the checkout
     }
 
+    // Get the price ID from environment variables
     const priceId = Deno.env.get('STRIPE_PRICE_ID');
     console.log('Using price ID:', priceId);
     
     if (!priceId) {
-      console.warn('No STRIPE_PRICE_ID env variable set, using fallback value');
+      console.warn('No STRIPE_PRICE_ID env variable set, using fallback price');
     }
 
     // Create Stripe checkout session
     try {
       console.log('Creating Stripe checkout session...');
-      const session = await stripe.checkout.sessions.create({
+      
+      // Define checkout session parameters
+      const sessionParams = {
         mode: 'subscription',
         payment_method_types: ['card'],
         line_items: [
           {
-            price: priceId || 'price_1QwuhW2KAO6RCCuYpy5ZDxxF', // Use environment variable if available
+            price: priceId || 'price_1QwuhW2KAO6RCCuYpy5ZDxxF', // Fallback price ID
             quantity: 1,
           },
         ],
@@ -141,7 +144,11 @@ serve(async (req) => {
             profile_id: profile_id
           }
         }
-      });
+      };
+      
+      console.log('Session parameters:', JSON.stringify(sessionParams, null, 2));
+      
+      const session = await stripe.checkout.sessions.create(sessionParams);
 
       console.log('Checkout session created:', {
         sessionId: session.id,
