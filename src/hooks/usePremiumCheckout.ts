@@ -39,8 +39,9 @@ export const usePremiumCheckout = () => {
       const returnUrl = `${domain}${location.pathname}`;
       console.log('Return URL:', returnUrl);
       
-      // Call the Supabase Edge Function with detailed error handling
       try {
+        // Call the Supabase Edge Function
+        console.log('Calling create-checkout function...');
         const response = await supabase.functions.invoke('create-checkout', {
           body: {
             profile_id: user.id,
@@ -75,7 +76,7 @@ export const usePremiumCheckout = () => {
         // Redirect to Stripe Checkout
         console.log('Redirecting to checkout URL:', data.url);
         window.location.href = data.url;
-      } catch (invokeError) {
+      } catch (invokeError: any) {
         console.error('Function invoke error:', invokeError);
         throw invokeError;
       }

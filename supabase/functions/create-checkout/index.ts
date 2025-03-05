@@ -105,21 +105,10 @@ serve(async (req) => {
       // Continue without email, don't fail the checkout
     }
 
-    // Get the price ID from environment variables
-    const priceId = Deno.env.get('STRIPE_PRICE_ID');
+    // Use the hard-coded price ID instead of environment variable
+    const priceId = 'price_1QwuhW2KAO6RCCuYpy5ZDxxF';
     console.log('Using price ID:', priceId);
     
-    if (!priceId) {
-      console.error('No STRIPE_PRICE_ID env variable set');
-      return new Response(
-        JSON.stringify({ error: 'Stripe price ID is not configured. Please contact support.' }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 500,
-        }
-      );
-    }
-
     // Create Stripe checkout session
     try {
       console.log('Creating Stripe checkout session...');
