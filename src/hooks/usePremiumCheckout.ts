@@ -39,35 +39,46 @@ export const usePremiumCheckout = () => {
       const returnUrl = `${domain}${location.pathname}`;
       console.log('Return URL:', returnUrl);
       
-      const response = await supabase.functions.invoke('create-checkout', {
-        body: {
-          profile_id: user.id,
-          return_url: returnUrl,
-        },
-      });
-
-      console.log('Checkout response:', response);
-      
-      if (response.error) {
-        console.error('Checkout error from invoke:', response.error);
-        throw new Error(`Error from checkout service: ${response.error.message || JSON.stringify(response.error)}`);
+      // Call the Supabase Edge Function with detailed error handling
+      try {
+        const response = await supabase.functions.invoke('create-checkout', {
+          body: {
+            profile_id: user.id,
+            return_url: returnUrl,
+          },
+        });
+        
+        console.log('Full checkout response:', JSON.stringify(response, null, 2));
+        
+        if (response.error) {
+          console.error('Checkout invoke error:', response.error);
+          throw new Error(`Error from checkout service: ${response.error.message || JSON.stringify(response.error)}`);
+        }
+        
+        const { data, error } = response;
+        
+        if (error) {
+          console.error('Data error in response:', error);
+          throw new Error(`Error from checkout service: ${error.message || JSON.stringify(error)}`);
+        }
+        
+        if (!data) {
+          console.error('No data received in response');
+          throw new Error('No data received from checkout service');
+        }
+        
+        if (!data.url) {
+          console.error('No URL in checkout response:', data);
+          throw new Error('No checkout URL received from payment service');
+        }
+        
+        // Redirect to Stripe Checkout
+        console.log('Redirecting to checkout URL:', data.url);
+        window.location.href = data.url;
+      } catch (invokeError) {
+        console.error('Function invoke error:', invokeError);
+        throw invokeError;
       }
-      
-      const { data, error } = response;
-
-      if (error) {
-        console.error('Checkout error from invoke:', error);
-        throw new Error(`Error from checkout service: ${error.message || JSON.stringify(error)}`);
-      }
-
-      if (!data?.url) {
-        console.error('No URL received in response:', data);
-        throw new Error('No checkout URL received from payment service');
-      }
-
-      // Redirect to Stripe Checkout
-      console.log('Redirecting to checkout URL:', data.url);
-      window.location.href = data.url;
       
     } catch (error: any) {
       console.error('Detailed checkout error:', error);

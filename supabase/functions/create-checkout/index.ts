@@ -43,7 +43,7 @@ serve(async (req) => {
     
     // Parse request body
     const body = await req.text();
-    console.log('Request body received:', body.substring(0, 100) + '...');
+    console.log('Request body received:', body.substring(0, 500)); // Show more of the request body for debugging
     
     let requestData;
     try {
@@ -110,7 +110,14 @@ serve(async (req) => {
     console.log('Using price ID:', priceId);
     
     if (!priceId) {
-      console.warn('No STRIPE_PRICE_ID env variable set, using fallback price');
+      console.error('No STRIPE_PRICE_ID env variable set');
+      return new Response(
+        JSON.stringify({ error: 'Stripe price ID is not configured. Please contact support.' }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500,
+        }
+      );
     }
 
     // Create Stripe checkout session
@@ -123,7 +130,7 @@ serve(async (req) => {
         payment_method_types: ['card'],
         line_items: [
           {
-            price: priceId || 'price_1QwuhW2KAO6RCCuYpy5ZDxxF', // Fallback price ID
+            price: priceId,
             quantity: 1,
           },
         ],
