@@ -1,13 +1,17 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Crown, Star, Lightbulb, FileCheck, RefreshCw, AlertTriangle } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 import { AccountDropdown } from '@/components/AccountDropdown';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+
+// Import the new smaller components
+import { PremiumHeader } from '@/components/premium/PremiumHeader';
+import { PremiumFeaturesList } from '@/components/premium/PremiumFeaturesList';
+import { ErrorDisplay } from '@/components/premium/ErrorDisplay';
+import { UpgradeButton } from '@/components/premium/UpgradeButton';
+import { RefreshSubscriptionButton } from '@/components/premium/RefreshSubscriptionButton';
 
 interface PremiumAccessPromptProps {
   showSubscriptionDialog: boolean;
@@ -141,62 +145,22 @@ export const PremiumAccessPrompt = ({
 
         <Card className="max-w-2xl mx-auto bg-slate-50">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Crown className="h-6 w-6 text-yellow-500" />
-              Premium Feature
-            </CardTitle>
-            <CardDescription>
-              Upgrade to Premium to access our powerful Essay Assistant
-            </CardDescription>
+            <PremiumHeader />
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-lg">
-              The Essay Assistant is a premium feature that helps you craft compelling scholarship essays with:
-            </p>
-            <ul className="space-y-2">
-              <li className="flex items-center gap-2">
-                <Star className="h-4 w-4 text-yellow-500" />
-                AI-powered writing suggestions
-              </li>
-              <li className="flex items-center gap-2">
-                <Lightbulb className="h-4 w-4 text-yellow-500" />
-                Personalized essay frameworks
-              </li>
-              <li className="flex items-center gap-2">
-                <FileCheck className="h-4 w-4 text-yellow-500" />
-                Professional writing feedback
-              </li>
-            </ul>
-            
-            {errorMessage && (
-              <Alert variant="destructive" className="mt-4">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertDescription className="ml-2">
-                  {errorMessage}
-                </AlertDescription>
-              </Alert>
-            )}
-            
-            <Button 
-              className="w-full mt-4"
+            <PremiumFeaturesList />
+            <ErrorDisplay errorMessage={errorMessage} />
+            <UpgradeButton 
               onClick={handleUpgradeClick}
-              disabled={loading}
-            >
-              {loading ? "Processing..." : "Upgrade to Premium"}
-            </Button>
+              loading={loading}
+            />
           </CardContent>
           {onRefreshSubscription && (
             <CardFooter className="flex justify-center border-t pt-4">
-              <Button
-                variant="outline"
-                size="sm"
+              <RefreshSubscriptionButton
                 onClick={handleRefreshSubscription}
-                disabled={refreshing}
-                className="flex items-center gap-1"
-              >
-                <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-                {refreshing ? "Refreshing..." : "Refresh Subscription Status"}
-              </Button>
+                refreshing={refreshing}
+              />
             </CardFooter>
           )}
         </Card>
