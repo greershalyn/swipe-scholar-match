@@ -1,12 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Crown, Star, Lightbulb, FileCheck, RefreshCw } from 'lucide-react';
+import { Crown, Star, Lightbulb, FileCheck, RefreshCw, AlertTriangle } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AccountDropdown } from '@/components/AccountDropdown';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface PremiumAccessPromptProps {
   showSubscriptionDialog: boolean;
@@ -168,10 +169,12 @@ export const PremiumAccessPrompt = ({
             </ul>
             
             {errorMessage && (
-              <div className="p-3 mt-2 bg-red-50 border border-red-200 rounded-md text-red-700 text-sm">
-                <p className="font-medium">Error: {errorMessage}</p>
-                <p className="mt-1">Please try again or contact support if the issue persists.</p>
-              </div>
+              <Alert variant="destructive" className="mt-4">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription className="ml-2">
+                  {errorMessage}
+                </AlertDescription>
+              </Alert>
             )}
             
             <Button 

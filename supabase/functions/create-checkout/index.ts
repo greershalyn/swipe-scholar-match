@@ -26,25 +26,8 @@ serve(async (req) => {
   }
 
   try {
-    const body = await req.text();
-    console.log('Received request body:', body);
+    console.log('Received checkout request');
     
-    let requestData;
-    try {
-      requestData = JSON.parse(body);
-    } catch (e) {
-      console.error('Error parsing request body:', e);
-      throw new Error('Invalid request body: ' + e.message);
-    }
-    
-    const { profile_id, return_url } = requestData;
-    console.log('Creating checkout session for profile:', profile_id);
-    console.log('Return URL:', return_url);
-
-    if (!profile_id) {
-      throw new Error('profile_id is required');
-    }
-
     // Verify that we have a Stripe key configured
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
     if (!stripeKey) {
@@ -52,17 +35,58 @@ serve(async (req) => {
       throw new Error('Stripe is not properly configured');
     }
     
+    // Parse request body
+    const body = await req.text();
+    console.log('Request body:', body);
+    
+    let requestData;
+    try {
+      requestData = JSON.parse(body);
+    } catch (e) {
+      console.error('Error parsing request body:', e);
+      return new Response(
+        JSON.stringify({ error: 'Invalid request format' }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400,
+        },
+      );
+    }
+    
+    const { profile_id, return_url } = requestData;
+    console.log('Profile ID:', profile_id);
+    console.log('Return URL:', return_url);
+
+    if (!profile_id) {
+      return new Response(
+        JSON.stringify({ error: 'Profile ID is required' }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400,
+        },
+      );
+    }
+
+    if (!return_url) {
+      return new Response(
+        JSON.stringify({ error: 'Return URL is required' }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400,
+        },
+      );
+    }
+    
     // Get user profile to pre-populate checkout if possible
     let userEmail = null;
     try {
+      console.log('Fetching user data for profile ID:', profile_id);
       const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(profile_id);
       
       if (userError) {
         console.error('Error fetching user data:', userError.message);
-        throw userError;
-      }
-      
-      if (userData?.user?.email) {
+        // Continue without email, don't fail the checkout
+      } else if (userData?.user?.email) {
         userEmail = userData.user.email;
         console.log('Found user email:', userEmail);
       } else {
@@ -74,7 +98,7 @@ serve(async (req) => {
     }
 
     const priceId = Deno.env.get('STRIPE_PRICE_ID');
-    console.log('Using price ID:', priceId || 'default fallback value');
+    console.log('Using price ID:', priceId);
     
     if (!priceId) {
       console.warn('No STRIPE_PRICE_ID env variable set, using fallback value');
@@ -82,6 +106,7 @@ serve(async (req) => {
 
     // Create Stripe checkout session
     try {
+      console.log('Creating Stripe checkout session...');
       const session = await stripe.checkout.sessions.create({
         mode: 'subscription',
         payment_method_types: ['card'],
@@ -110,11 +135,9 @@ serve(async (req) => {
         }
       });
 
-      console.log('Checkout session created successfully:', {
+      console.log('Checkout session created:', {
         sessionId: session.id,
-        profileId: profile_id,
-        url: session.url,
-        mode: session.mode,
+        url: session.url
       });
 
       return new Response(
@@ -126,15 +149,29 @@ serve(async (req) => {
       );
     } catch (stripeError) {
       console.error('Stripe checkout creation error:', stripeError);
-      throw new Error(`Stripe error: ${stripeError.message}`);
+      
+      return new Response(
+        JSON.stringify({ 
+          error: `Stripe error: ${stripeError.message}`,
+          details: stripeError 
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400,
+        },
+      );
     }
   } catch (error) {
-    console.error('Error creating checkout session:', error);
+    console.error('General error in checkout function:', error);
+    
     return new Response(
-      JSON.stringify({ error: error.message || 'Unknown error occurred' }),
+      JSON.stringify({ 
+        error: error.message || 'Unknown error occurred',
+        details: JSON.stringify(error)
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
+        status: 500,
       },
     );
   }
