@@ -29,11 +29,11 @@ serve(async (req) => {
 
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
-      mode: 'subscription', // Changed back to subscription mode
+      mode: 'subscription',
       payment_method_types: ['card'],
       line_items: [
         {
-          price: 'price_1QwuhW2KAO6RCCuYpy5ZDxxF', // Use your predefined price ID
+          price: Deno.env.get('STRIPE_PRICE_ID') || 'price_1QwuhW2KAO6RCCuYpy5ZDxxF', // Use environment variable if available
           quantity: 1,
         },
       ],
@@ -43,6 +43,11 @@ serve(async (req) => {
       metadata: {
         profile_id: profile_id,
       },
+      subscription_data: {
+        metadata: {
+          profile_id: profile_id
+        }
+      }
     })
 
     console.log('Checkout session created:', {
