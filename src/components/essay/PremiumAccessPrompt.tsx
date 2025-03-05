@@ -1,7 +1,7 @@
 
-import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import React, { useState } from 'react';
+import { usePremiumCheckout } from '@/hooks/usePremiumCheckout';
+import { usePaymentSuccess } from '@/hooks/usePaymentSuccess';
 import { useToast } from '@/components/ui/use-toast';
 
 // Import the components
@@ -23,112 +23,22 @@ export const PremiumAccessPrompt = ({
   setShowSubscriptionDialog,
   onRefreshSubscription
 }: PremiumAccessPromptProps) => {
-  const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { toast } = useToast();
-  const location = useLocation();
-  const domain = window.location.origin;
   
-  // Check for success parameter in URL
-  const queryParams = new URLSearchParams(location.search);
-  const successParam = queryParams.get('success');
-  const sessionId = queryParams.get('session_id');
+  const { 
+    initiateCheckout, 
+    loading, 
+    errorMessage, 
+    setErrorMessage 
+  } = usePremiumCheckout();
   
-  useEffect(() => {
-    // If returning from successful payment, show message and try to refresh
-    if (successParam === 'true' && sessionId) {
-      toast({
-        title: "Payment received!",
-        description: "Please wait while we update your account status...",
-      });
-      
-      // Clean URL
-      const newUrl = location.pathname;
-      window.history.replaceState({}, document.title, newUrl);
-      
-      // Try to refresh subscription status
-      handleRefreshSubscription();
-    } else if (successParam === 'false') {
-      toast({
-        title: "Payment cancelled",
-        description: "Your payment was cancelled. You can try again when you're ready.",
-        variant: "destructive",
-      });
-      
-      // Clean URL
-      const newUrl = location.pathname;
-      window.history.replaceState({}, document.title, newUrl);
-    }
-  }, [location.search]);
+  // Use the payment success hook
+  usePaymentSuccess({
+    onPaymentSuccess: onRefreshSubscription ? handleRefreshSubscription : undefined
+  });
 
-  const handleUpgradeClick = async () => {
-    setLoading(true);
-    setErrorMessage(null);
-    
-    try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      
-      if (userError) {
-        console.error('Auth error:', userError);
-        throw new Error(`Authentication error: ${userError.message}`);
-      }
-      
-      if (!user) {
-        toast({
-          title: "Error",
-          description: "Please sign in to upgrade to premium",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      console.log('Initiating checkout for user:', user.id);
-      
-      // Make sure we have the return URL properly formatted
-      const returnUrl = `${domain}${location.pathname}`;
-      console.log('Return URL:', returnUrl);
-      
-      const response = await supabase.functions.invoke('create-checkout', {
-        body: {
-          profile_id: user.id,
-          return_url: returnUrl,
-        },
-      });
-
-      console.log('Checkout response:', response);
-      
-      const { data, error } = response;
-
-      if (error) {
-        console.error('Checkout error from invoke:', error);
-        throw new Error(`Error from checkout service: ${error.message || JSON.stringify(error)}`);
-      }
-
-      if (!data?.url) {
-        console.error('No URL received in response:', data);
-        throw new Error('No checkout URL received from payment service');
-      }
-
-      // Redirect to Stripe Checkout
-      console.log('Redirecting to checkout URL:', data.url);
-      window.location.href = data.url;
-      
-    } catch (error: any) {
-      console.error('Detailed checkout error:', error);
-      const errorMsg = error.message || 'Failed to start checkout process. Please try again.';
-      setErrorMessage(errorMsg);
-      toast({
-        title: "Error",
-        description: errorMsg,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  const handleRefreshSubscription = async () => {
+  async function handleRefreshSubscription() {
     if (onRefreshSubscription) {
       setRefreshing(true);
       try {
@@ -148,14 +58,14 @@ export const PremiumAccessPrompt = ({
         setRefreshing(false);
       }
     }
-  };
+  }
 
   const cardContent = (
     <>
       <PremiumFeaturesList />
       <ErrorDisplay errorMessage={errorMessage} />
       <UpgradeButton 
-        onClick={handleUpgradeClick}
+        onClick={initiateCheckout}
         loading={loading}
       />
     </>
