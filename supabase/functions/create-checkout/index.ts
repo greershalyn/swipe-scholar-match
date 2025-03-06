@@ -106,11 +106,20 @@ serve(async (req) => {
       console.error('Error in user fetch operation:', e);
     }
 
-    // Make sure we're using a valid price ID
-    // For live mode, this should be a price ID that exists in the Stripe account
-    // For test mode, use the test price ID
-    const priceId = Deno.env.get('STRIPE_PRICE_ID') || 'price_1QwuhW2KAO6RCCuYpy5ZDxxF';
-    console.log('Using price ID:', priceId);
+    // Get the proper price ID based on mode (test vs live)
+    const isTestMode = stripeKey.startsWith('sk_test');
+    
+    // Use environment variable STRIPE_PRICE_ID if available, otherwise use defaults
+    let priceId = Deno.env.get('STRIPE_PRICE_ID');
+
+    if (!priceId) {
+      // Fallback price IDs if environment variable is not set
+      priceId = isTestMode
+        ? 'price_1QwuhW2KAO6RCCuYpy5ZDxxF' // Test mode default price
+        : 'price_1QyNW02KAO6RCCuYHj2sUkQe'; // Live mode default price
+    }
+    
+    console.log('Using price ID:', priceId, 'in', isTestMode ? 'TEST MODE' : 'LIVE MODE');
     
     // Create Stripe checkout session
     try {

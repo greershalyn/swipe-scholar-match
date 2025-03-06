@@ -43,7 +43,7 @@ export const usePremiumCheckout = () => {
       
       try {
         console.log('Calling create-checkout function...');
-        const { data, error } = await supabase.functions.invoke('create-checkout', {
+        const response = await supabase.functions.invoke('create-checkout', {
           body: {
             profile_id: user.id,
             return_url: returnUrl,
@@ -51,11 +51,18 @@ export const usePremiumCheckout = () => {
           },
         });
         
-        console.log('Checkout response:', data);
+        const { data, error } = response;
+        console.log('Checkout response status:', response.status);
+        console.log('Checkout response data:', data);
         
         if (error) {
           console.error('Checkout invoke error:', error);
           throw new Error(`Error from checkout service: ${error.message || JSON.stringify(error)}`);
+        }
+        
+        if (response.status !== 200) {
+          console.error('Non-200 response from checkout function:', response);
+          throw new Error(`Checkout service returned ${response.status}: ${JSON.stringify(data)}`);
         }
         
         if (!data?.url) {
