@@ -47,6 +47,8 @@ export const useAuth = () => {
           return;
         }
 
+        console.log('Signing up user with tier:', selectedTier);
+        
         // First sign up the user to create their account
         const { data, error } = await supabase.auth.signUp({
           email,
@@ -81,6 +83,9 @@ export const useAuth = () => {
             localStorage.setItem('pending_checkout', timestamp);
             localStorage.setItem('new_premium_user', 'true'); // Add flag for new premium users
             
+            // IMPORTANT: Only redirect to premium if we successfully create a checkout session
+            let checkoutSuccess = false;
+            
             try {
               console.log('New premium user signed up, initiating checkout for:', data.user.id);
               const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
@@ -99,6 +104,7 @@ export const useAuth = () => {
               
               if (checkoutData?.url) {
                 console.log('Redirecting to checkout URL:', checkoutData.url);
+                checkoutSuccess = true;
                 window.location.href = checkoutData.url;
                 return; // Exit early as we're redirecting
               } else {
@@ -107,12 +113,37 @@ export const useAuth = () => {
               }
             } catch (checkoutError: any) {
               console.error('Error initiating checkout:', checkoutError);
-              // If checkout fails, still navigate to questionnaire
-              navigate('/questionnaire');
+              toast({
+                title: "Checkout Error",
+                description: "Could not initiate payment process. Please try again or contact support.",
+                variant: "destructive",
+              });
+              // Continue to questionnaire as fallback, but don't grant premium
+              // We also need to update the user's tier back to free since checkout failed
+              try {
+                const { error: updateError } = await supabase
+                  .from('profiles')
+                  .update({ subscription_tier: 'free' })
+                  .eq('id', data.user.id);
+                
+                if (updateError) {
+                  console.error('Error updating subscription tier to free:', updateError);
+                }
+              } catch (err) {
+                console.error('Error downgrading tier after checkout failure:', err);
+              }
             }
-          } else {
-            navigate('/questionnaire');
+            
+            // Clean up only if checkout failed and we're continuing to questionnaire
+            if (!checkoutSuccess) {
+              localStorage.removeItem('pending_checkout');
+              localStorage.removeItem('new_premium_user');
+            }
           }
+          
+          // Only navigate to questionnaire if we didn't start a checkout
+          // (either free tier or premium tier with failed checkout)
+          navigate('/questionnaire');
         }
       } else {
         const { data: { user }, error } = await supabase.auth.signInWithPassword({

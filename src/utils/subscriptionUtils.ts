@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 /**
  * Directly updates the user's subscription status to premium in the database
  * This provides an immediate fallback in case the webhook hasn't processed yet
+ * Should ONLY be called after confirming payment was successful
  * @returns {Promise<boolean>} Whether the update was successful
  */
 export const updateProfileDirectlyToPremium = async (): Promise<boolean> => {
@@ -16,7 +17,14 @@ export const updateProfileDirectlyToPremium = async (): Promise<boolean> => {
     
     console.log('Directly updating profile to premium for user:', session.user.id);
     
-    // Update profile to premium immediately
+    // First verify if there's an active subscription or pending checkout
+    const pendingCheckout = localStorage.getItem('pending_checkout');
+    if (!pendingCheckout) {
+      console.warn('No pending checkout found, refusing to grant premium access');
+      return false;
+    }
+    
+    // Update profile to premium only if there was a pending checkout
     const { error: profileError } = await supabase
       .from('profiles')
       .update({ subscription_tier: 'premium' })
@@ -91,6 +99,24 @@ export const checkPremiumAccess = async (): Promise<boolean> => {
       return false;
     }
     
+    console.log('Checking premium access for user:', session.user.id);
+    
+    // Check for valid subscription record
+    const { data: subscription, error: subError } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('profile_id', session.user.id)
+      .eq('status', 'active')
+      .maybeSingle();
+      
+    if (subError) {
+      console.error('Error checking subscription:', subError);
+    } else if (subscription) {
+      console.log('Found active subscription:', subscription);
+      return true;
+    }
+    
+    // Also check profile subscription tier as fallback
     const { data: profile, error } = await supabase
       .from('profiles')
       .select('subscription_tier')
@@ -102,6 +128,7 @@ export const checkPremiumAccess = async (): Promise<boolean> => {
       return false;
     }
     
+    console.log('Profile subscription tier:', profile?.subscription_tier);
     return profile?.subscription_tier === 'premium';
   } catch (err) {
     console.error('Error checking premium access:', err);

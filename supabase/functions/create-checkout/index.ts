@@ -64,6 +64,7 @@ serve(async (req) => {
     console.log('Return URL:', return_url);
     console.log('Timestamp:', timestamp);
     console.log('Is new user:', is_new_user);
+    console.log('Using Stripe key type:', stripeKey.startsWith('sk_test') ? 'TEST MODE' : 'LIVE MODE');
 
     if (!profile_id) {
       console.error('Missing profile_id in request');
@@ -105,7 +106,10 @@ serve(async (req) => {
       console.error('Error in user fetch operation:', e);
     }
 
-    const priceId = 'price_1QwuhW2KAO6RCCuYpy5ZDxxF';
+    // Make sure we're using a valid price ID
+    // For live mode, this should be a price ID that exists in the Stripe account
+    // For test mode, use the test price ID
+    const priceId = Deno.env.get('STRIPE_PRICE_ID') || 'price_1QwuhW2KAO6RCCuYpy5ZDxxF';
     console.log('Using price ID:', priceId);
     
     // Create Stripe checkout session
