@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { PencilIcon } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -10,6 +10,7 @@ import { EssayEditor } from '@/components/essay/EssayEditor';
 import { DocumentReviewTool } from '@/components/essay/DocumentReviewTool';
 import { analyzeEssayTopic, generateEssaySuggestions } from '@/utils/essayUtils';
 import { EssaySuggestion, ExpandedFramework } from '@/types/essay';
+import { useToast } from '@/hooks/use-toast';
 
 type StepType = 1 | 2 | 3 | 4;
 
@@ -23,6 +24,44 @@ const EssayAssistant = () => {
   const [suggestions, setSuggestions] = useState<EssaySuggestion[]>([]);
   const [expandedFramework, setExpandedFramework] = useState<ExpandedFramework | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (step === 2 && !selectedPrompt && essayTopic) {
+      try {
+        const prompt = analyzeEssayTopic(essayTopic);
+        setSelectedPrompt(prompt);
+      } catch (error) {
+        console.error('Error analyzing essay topic:', error);
+        toast({
+          title: "Error",
+          description: "Failed to analyze your essay topic. Please try again.",
+          variant: "destructive",
+        });
+      }
+    }
+
+    if (step === 3 && suggestions.length === 0 && !isLoading && essayTopic && response) {
+      const fetchSuggestions = async () => {
+        setIsLoading(true);
+        try {
+          const fetchedSuggestions = await generateEssaySuggestions(essayTopic, response);
+          setSuggestions(fetchedSuggestions);
+        } catch (error) {
+          console.error('Error generating suggestions:', error);
+          toast({
+            title: "Error",
+            description: "Failed to generate essay suggestions. Please try again.",
+            variant: "destructive",
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      
+      fetchSuggestions();
+    }
+  }, [step, essayTopic, response, suggestions.length, isLoading, toast, selectedPrompt]);
 
   if (isCheckingAccess) {
     return (
@@ -44,6 +83,8 @@ const EssayAssistant = () => {
   }
 
   const handleNextStep = () => {
+    if (step === 4) return;
+    
     setStep((prevStep: StepType) => {
       const nextStep = prevStep + 1;
       return nextStep as StepType;
@@ -51,6 +92,8 @@ const EssayAssistant = () => {
   };
 
   const handlePreviousStep = () => {
+    if (step === 1) return;
+    
     setStep((prevStep: StepType) => {
       const nextStep = prevStep - 1;
       return nextStep as StepType;
@@ -59,6 +102,8 @@ const EssayAssistant = () => {
 
   const handleFrameworkGenerated = (framework: ExpandedFramework) => {
     setExpandedFramework(framework);
+    // Automatically move to the next step when a framework is selected
+    handleNextStep();
   };
 
   return (
@@ -82,7 +127,7 @@ const EssayAssistant = () => {
           </div>
 
           <Tabs defaultValue="framework" className="mb-8">
-            <TabsList className="grid grid-cols-2 w-[400px] mb-6">
+            <TabsList className="grid grid-cols-2 w-full max-w-md mx-auto mb-6">
               <TabsTrigger value="framework" className="flex gap-2">
                 <PencilIcon className="h-4 w-4" />
                 Essay Framework
@@ -111,7 +156,9 @@ const EssayAssistant = () => {
             </TabsContent>
 
             <TabsContent value="review">
-              <DocumentReviewTool />
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <DocumentReviewTool />
+              </div>
             </TabsContent>
           </Tabs>
         </div>

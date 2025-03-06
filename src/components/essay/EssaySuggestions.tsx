@@ -20,14 +20,18 @@ export const EssaySuggestions = ({
   onFrameworkGenerated 
 }: EssaySuggestionsProps) => {
   const [selectedSuggestion, setSelectedSuggestion] = useState<number | null>(null);
+  const [loadingIndex, setLoadingIndex] = useState<number | null>(null);
 
   const handleSuggestionSelect = async (index: number) => {
     setSelectedSuggestion(index);
+    setLoadingIndex(index);
     try {
       const framework = await generateExpandedFramework(suggestions[index], essayTopic, personalResponse);
       onFrameworkGenerated(framework);
     } catch (error) {
       console.error('Error generating framework:', error);
+    } finally {
+      setLoadingIndex(null);
     }
   };
 
@@ -54,13 +58,23 @@ export const EssaySuggestions = ({
                   <p className="text-sm font-medium text-muted-foreground">Essay Framework:</p>
                   <p className="text-sm">{suggestion.framework}</p>
                 </div>
-                <Button 
-                  variant="secondary" 
-                  className="w-full mt-4"
-                  onClick={() => handleSuggestionSelect(index)}
-                >
-                  Select This Approach
-                </Button>
+                <div className="flex justify-center mt-4">
+                  <Button 
+                    variant="secondary" 
+                    className="w-full max-w-xs"
+                    onClick={() => handleSuggestionSelect(index)}
+                    disabled={loadingIndex !== null}
+                  >
+                    {loadingIndex === index ? (
+                      <div className="flex items-center gap-2">
+                        <div className="animate-spin h-4 w-4 border-b-2 border-purple-700" />
+                        <span>Loading...</span>
+                      </div>
+                    ) : (
+                      "Select This Approach"
+                    )}
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

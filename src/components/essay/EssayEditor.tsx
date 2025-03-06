@@ -143,12 +143,14 @@ export const EssayEditor = ({
             variant="outline"
             onClick={onPreviousStep}
             disabled={isFirstStep}
+            className="min-w-[100px]"
           >
             Previous
           </Button>
           <Button
             onClick={handleNextStep}
             disabled={isLastStep || (step === 3 && !expandedFramework)}
+            className="min-w-[100px]"
           >
             {isLastStep ? 'Done' : 'Next Step'}
           </Button>
