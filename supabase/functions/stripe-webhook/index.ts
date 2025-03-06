@@ -21,6 +21,56 @@ const supabaseAdmin = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
 )
 
+// Helper function to update a user's profile to premium
+async function updateProfileToPremium(profileId) {
+  console.log(`Updating profile ${profileId} to premium status`);
+  const { error } = await supabaseAdmin
+    .from('profiles')
+    .update({ subscription_tier: 'premium' })
+    .eq('id', profileId);
+    
+  if (error) {
+    console.error('Error updating profile to premium:', error);
+    return false;
+  } 
+  
+  console.log('Successfully updated profile to premium tier');
+  return true;
+}
+
+// Helper function to update a user's profile to free
+async function updateProfileToFree(profileId) {
+  console.log(`Updating profile ${profileId} to free status`);
+  const { error } = await supabaseAdmin
+    .from('profiles')
+    .update({ subscription_tier: 'free' })
+    .eq('id', profileId);
+    
+  if (error) {
+    console.error('Error updating profile to free:', error);
+    return false;
+  }
+  
+  console.log('Successfully updated profile to free tier');
+  return true;
+}
+
+// Helper function to record or update subscription
+async function updateSubscriptionRecord(subscriptionData) {
+  console.log(`Recording subscription info:`, subscriptionData);
+  const { error } = await supabaseAdmin
+    .from('subscriptions')
+    .upsert(subscriptionData);
+    
+  if (error) {
+    console.error('Error recording subscription:', error);
+    return false;
+  }
+  
+  console.log('Successfully recorded subscription information');
+  return true;
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -85,56 +135,39 @@ serve(async (req) => {
           clientReferenceId: session.client_reference_id
         })
 
-        if (!session.client_reference_id) {
-          console.error('Missing client_reference_id in checkout session')
+        // Extract profile ID from clientReferenceId, metadata.profile_id, or subscription metadata
+        const profileId = session.client_reference_id || 
+                         session.metadata?.profile_id || 
+                         null;
+                         
+        if (!profileId) {
+          console.error('Missing profile ID in checkout session')
           return new Response(
-            JSON.stringify({ error: 'Missing client_reference_id' }),
+            JSON.stringify({ error: 'Missing profile ID information' }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           )
         }
 
-        // Immediately update user's profile to premium status
-        try {
-          console.log(`Updating profile ${session.client_reference_id} to premium status`);
-          const { error: profileError } = await supabaseAdmin
-            .from('profiles')
-            .update({ subscription_tier: 'premium' })
-            .eq('id', session.client_reference_id);
-
-          if (profileError) {
-            console.error('Error updating profile to premium:', profileError);
-            // Continue processing despite error
-          } else {
-            console.log('Successfully updated profile to premium tier');
-          }
-        } catch (err) {
-          console.error('Unexpected error updating profile:', err);
+        // First update profile to premium - critically important step
+        const profileUpdated = await updateProfileToPremium(profileId);
+        if (!profileUpdated) {
+          console.error('Failed to update profile to premium status');
         }
 
-        // Insert or update subscription record
-        try {
-          console.log(`Recording subscription ${session.subscription} for profile ${session.client_reference_id}`);
-          const { error: subError } = await supabaseAdmin
-            .from('subscriptions')
-            .upsert({
-              id: session.subscription,
-              profile_id: session.client_reference_id,
-              customer_id: session.customer,
-              status: 'active',
-              price_id: session.metadata?.price_id,
-              current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now as placeholder
-              created_at: new Date(),
-              updated_at: new Date()
-            });
-
-          if (subError) {
-            console.error('Error storing subscription:', subError);
-            // Continue processing despite error
-          } else {
-            console.log('Successfully recorded subscription information');
-          }
-        } catch (err) {
-          console.error('Unexpected error storing subscription:', err);
+        // Store subscription record
+        if (session.subscription) {
+          const subscriptionData = {
+            id: session.subscription,
+            profile_id: profileId,
+            customer_id: session.customer,
+            status: 'active',
+            price_id: session.metadata?.price_id,
+            current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now as placeholder
+            created_at: new Date(),
+            updated_at: new Date()
+          };
+          
+          await updateSubscriptionRecord(subscriptionData);
         }
 
         console.log('Successfully processed checkout.session.completed event');
@@ -155,30 +188,17 @@ serve(async (req) => {
             const profileId = subscription.metadata.profile_id
             
             // Update subscription record
-            const { error: subError } = await supabaseAdmin
-              .from('subscriptions')
-              .update({
-                status: subscription.status,
-                current_period_end: new Date(subscription.current_period_end * 1000),
-                updated_at: new Date()
-              })
-              .eq('id', invoice.subscription)
-
-            if (subError) {
-              console.error('Error updating subscription:', subError)
-            }
+            const subscriptionData = {
+              id: invoice.subscription,
+              status: subscription.status,
+              current_period_end: new Date(subscription.current_period_end * 1000),
+              updated_at: new Date()
+            };
+            
+            await updateSubscriptionRecord(subscriptionData);
 
             // Ensure profile has premium status
-            const { error: profileError } = await supabaseAdmin
-              .from('profiles')
-              .update({ subscription_tier: 'premium' })
-              .eq('id', profileId)
-
-            if (profileError) {
-              console.error('Error updating profile:', profileError)
-            } else {
-              console.log('Successfully updated profile to premium')
-            }
+            await updateProfileToPremium(profileId);
           } else {
             console.warn('No profile_id found in subscription metadata')
           }
@@ -202,43 +222,21 @@ serve(async (req) => {
         }
         
         // Update subscription status
-        const { error: subError } = await supabaseAdmin
-          .from('subscriptions')
-          .update({
-            status: subscription.status,
-            current_period_end: new Date(subscription.current_period_end * 1000),
-            updated_at: new Date(),
-            cancel_at_period_end: subscription.cancel_at_period_end
-          })
-          .eq('id', subscription.id)
-
-        if (subError) {
-          console.error('Error updating subscription:', subError)
-        }
+        const subscriptionData = {
+          id: subscription.id,
+          status: subscription.status,
+          current_period_end: new Date(subscription.current_period_end * 1000),
+          updated_at: new Date(),
+          cancel_at_period_end: subscription.cancel_at_period_end
+        };
+        
+        await updateSubscriptionRecord(subscriptionData);
         
         // Update the profile subscription tier based on status
         if (subscription.status === 'active') {
-          const { error: profileError } = await supabaseAdmin
-            .from('profiles')
-            .update({ subscription_tier: 'premium' })
-            .eq('id', profileId)
-
-          if (profileError) {
-            console.error('Error updating profile to premium:', profileError)
-          } else {
-            console.log('Updated profile to premium')
-          }
+          await updateProfileToPremium(profileId);
         } else if (subscription.status === 'canceled' || subscription.status === 'unpaid') {
-          const { error: profileError } = await supabaseAdmin
-            .from('profiles')
-            .update({ subscription_tier: 'free' })
-            .eq('id', profileId)
-
-          if (profileError) {
-            console.error('Error updating profile to free:', profileError)
-          } else {
-            console.log('Updated profile to free')
-          }
+          await updateProfileToFree(profileId);
         }
         break
       }
@@ -252,29 +250,16 @@ serve(async (req) => {
         
         if (profileId) {
           // Update the profile subscription tier to free
-          const { error: profileError } = await supabaseAdmin
-            .from('profiles')
-            .update({ subscription_tier: 'free' })
-            .eq('id', profileId)
-
-          if (profileError) {
-            console.error('Error downgrading profile to free:', profileError)
-          } else {
-            console.log('Successfully downgraded profile to free tier')
-          }
+          await updateProfileToFree(profileId);
           
           // Update subscription record
-          const { error: subError } = await supabaseAdmin
-            .from('subscriptions')
-            .update({
-              status: 'canceled',
-              updated_at: new Date()
-            })
-            .eq('id', subscription.id)
-
-          if (subError) {
-            console.error('Error updating subscription record:', subError)
-          }
+          const subscriptionData = {
+            id: subscription.id,
+            status: 'canceled',
+            updated_at: new Date()
+          };
+          
+          await updateSubscriptionRecord(subscriptionData);
         } else {
           console.warn('No profile_id found in subscription metadata')
         }

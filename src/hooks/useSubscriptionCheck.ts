@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Profile } from '@/types/profile';
 
@@ -14,8 +14,8 @@ export const useSubscriptionCheck = () => {
   const [retryCount, setRetryCount] = useState(0);
   const lastCheckTimeRef = useRef(0);
   const checkInProgressRef = useRef(false);
-  const statusUpdatedRef = useRef(false);
   const initialCheckDoneRef = useRef(false);
+  const statusUpdatedRef = useRef(false);
   
   // Extract query parameters
   const queryParams = new URLSearchParams(location.search);
@@ -25,7 +25,7 @@ export const useSubscriptionCheck = () => {
   // Check if we just returned from a payment flow
   const isPostPayment = successParam === 'true' && sessionId;
 
-  // Define the check function using useCallback to prevent re-creation on each render
+  // Define the check function
   const checkPremiumAccess = useCallback(async (isForceRefresh = false) => {
     // Prevent concurrent checks
     if (checkInProgressRef.current) {
@@ -59,18 +59,19 @@ export const useSubscriptionCheck = () => {
       if (!session) {
         console.log('No active session found');
         navigate('/auth');
-        checkInProgressRef.current = false;
         initialCheckDoneRef.current = true;
+        checkInProgressRef.current = false;
         return;
       }
 
       console.log('Fetching profile for user:', session.user.id);
       
       // Add cache bypass for forced refreshes and post-payment checks
-      const cacheOptions = isForceRefresh || isPostPayment 
+      const queryOptions = isForceRefresh || isPostPayment 
         ? { headers: { 'Cache-Control': 'no-cache' } }
         : undefined;
         
+      // Fetch the user's profile to check subscription status
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('subscription_tier')
@@ -93,12 +94,12 @@ export const useSubscriptionCheck = () => {
       console.log('Profile subscription tier:', (profile as Profile)?.subscription_tier);
       console.log('Has premium access:', isPremium);
       
-      // Update state only if there's an actual change to prevent unnecessary renders
+      // If premium status has changed, update state
       if (hasPremiumAccess !== isPremium) {
         console.log('Updating premium access state:', isPremium);
         setHasPremiumAccess(isPremium);
         
-        // If premium status changed to true, mark as updated
+        // If premium status changed to true after payment, mark as updated
         if (isPremium && isPostPayment) {
           statusUpdatedRef.current = true;
           setRetryCount(0);
@@ -132,7 +133,7 @@ export const useSubscriptionCheck = () => {
           // After 10 retries, we still don't have premium
           toast({
             title: "Premium update pending",
-            description: "Your payment was successful but your account is still being updated. Please use the refresh button or try again later.",
+            description: "Your payment was successful but your account is still being updated. Please try again later.",
           });
           setRetryCount(0);
         }
@@ -189,7 +190,7 @@ export const useSubscriptionCheck = () => {
       // Use increasing delays to prevent too frequent refreshes
       const delay = Math.min(3000 + (retryCount * 1000), 10000);
       
-      const checkInterval = setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         if (statusUpdatedRef.current || retryCount >= 10) {
           return;
         }
@@ -198,7 +199,7 @@ export const useSubscriptionCheck = () => {
         checkPremiumAccess(true);
       }, delay);
       
-      return () => clearTimeout(checkInterval);
+      return () => clearTimeout(timeoutId);
     }
   }, [isPostPayment, hasPremiumAccess, retryCount, checkPremiumAccess]);
 

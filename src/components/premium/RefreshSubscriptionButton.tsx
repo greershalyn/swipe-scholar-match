@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -15,56 +15,62 @@ export const RefreshSubscriptionButton = ({
   const [progress, setProgress] = useState(0);
   const [localRefreshing, setLocalRefreshing] = useState(false);
   const [isClickable, setIsClickable] = useState(true);
+  const progressTimerRef = useRef<number | undefined>(undefined);
+  const cooldownTimerRef = useRef<number | undefined>(undefined);
   
-  // Ensure local state syncs with prop
+  // Clean up function to clear any active timers
+  const clearTimers = () => {
+    if (progressTimerRef.current) {
+      clearInterval(progressTimerRef.current);
+      progressTimerRef.current = undefined;
+    }
+    
+    if (cooldownTimerRef.current) {
+      clearTimeout(cooldownTimerRef.current);
+      cooldownTimerRef.current = undefined;
+    }
+  };
+  
+  // Sync local state with props in a controlled way
   useEffect(() => {
     if (refreshing && !localRefreshing) {
       setLocalRefreshing(true);
       setIsClickable(false);
+      
+      // Start progress animation
+      clearTimers();
+      setProgress(0);
+      
+      const animationDuration = 3000;
+      const intervalTime = 30;
+      const steps = animationDuration / intervalTime;
+      const increment = 100 / steps;
+      
+      progressTimerRef.current = window.setInterval(() => {
+        setProgress(prev => {
+          const newProgress = prev + increment;
+          return newProgress >= 100 ? 100 : newProgress;
+        });
+      }, intervalTime);
+      
     } else if (!refreshing && localRefreshing) {
-      // Add a small delay before resetting local state to ensure animations complete
-      const timeout = setTimeout(() => {
+      // Add a small delay before resetting local state
+      clearTimers();
+      
+      setTimeout(() => {
         setLocalRefreshing(false);
         setProgress(0);
+        
         // Add cooldown period to prevent spam clicking
-        setTimeout(() => {
+        cooldownTimerRef.current = window.setTimeout(() => {
           setIsClickable(true);
         }, 1000);
       }, 300);
-      
-      return () => clearTimeout(timeout);
     }
+    
+    // Clean up on unmount
+    return clearTimers;
   }, [refreshing, localRefreshing]);
-  
-  // Handle progress animation
-  useEffect(() => {
-    if (!localRefreshing) {
-      return;
-    }
-    
-    // Reset progress when refresh starts
-    setProgress(0);
-    
-    // Animate progress over 3 seconds
-    const animationDuration = 3000; // 3 seconds
-    const intervalTime = 30; // Update every 30ms for smooth animation
-    const steps = animationDuration / intervalTime;
-    const increment = 100 / steps;
-    
-    let currentProgress = 0;
-    const interval = setInterval(() => {
-      currentProgress += increment;
-      
-      if (currentProgress >= 100) {
-        clearInterval(interval);
-        currentProgress = 100;
-      }
-      
-      setProgress(currentProgress);
-    }, intervalTime);
-    
-    return () => clearInterval(interval);
-  }, [localRefreshing]);
   
   const handleClick = () => {
     if (isClickable && !localRefreshing) {

@@ -12,15 +12,7 @@ export const usePaymentSuccess = ({ onPaymentSuccess }: UsePaymentSuccessProps) 
   const { toast } = useToast();
   const processedRef = useRef(false);
   const checkCountRef = useRef(0);
-  const refreshIntervalRef = useRef<number | undefined>(undefined);
-  
-  // Clean up function to clear any active intervals
-  const clearRefreshInterval = () => {
-    if (refreshIntervalRef.current) {
-      clearInterval(refreshIntervalRef.current);
-      refreshIntervalRef.current = undefined;
-    }
-  };
+  const isProcessingRef = useRef(false);
   
   useEffect(() => {
     // Extract query parameters
@@ -29,14 +21,14 @@ export const usePaymentSuccess = ({ onPaymentSuccess }: UsePaymentSuccessProps) 
     const sessionId = queryParams.get('session_id');
     
     // Prevent processing the same payment success multiple times
-    if (processedRef.current) {
+    if (processedRef.current || isProcessingRef.current) {
       return;
     }
     
     // If returning from successful payment, show message and try to refresh
     if (successParam === 'true' && sessionId) {
-      processedRef.current = true;
       console.log('Payment success detected with session ID:', sessionId);
+      processedRef.current = true;
       
       toast({
         title: "Payment received!",
@@ -49,6 +41,9 @@ export const usePaymentSuccess = ({ onPaymentSuccess }: UsePaymentSuccessProps) 
       
       // Try to refresh subscription status
       if (onPaymentSuccess) {
+        // Set processing flag to prevent concurrent executions
+        isProcessingRef.current = true;
+        
         // Call with slight delay to allow webhook to process
         setTimeout(async () => {
           console.log('Calling onPaymentSuccess callback');
@@ -58,18 +53,12 @@ export const usePaymentSuccess = ({ onPaymentSuccess }: UsePaymentSuccessProps) 
             console.error('Error in payment success callback:', err);
           }
           
-          // Set up additional checks, but use setTimeout rather than setInterval
-          // to avoid potential overlapping requests
-          checkCountRef.current = 0;
-          
-          // Clear any existing interval
-          clearRefreshInterval();
-          
-          // Schedule first additional check
-          const scheduleNextCheck = () => {
+          // Schedule additional checks with exponential backoff
+          const scheduleNextCheck = async () => {
             checkCountRef.current += 1;
             
             if (checkCountRef.current >= 5) {
+              isProcessingRef.current = false;
               return;
             }
             
@@ -81,10 +70,12 @@ export const usePaymentSuccess = ({ onPaymentSuccess }: UsePaymentSuccessProps) 
               console.log(`Executing additional subscription check #${checkCountRef.current}`);
               try {
                 await onPaymentSuccess();
+                
                 // Schedule next check
                 scheduleNextCheck();
               } catch (err) {
                 console.error('Error in additional payment success check:', err);
+                
                 // Even if there's an error, try the next check
                 scheduleNextCheck();
               }
@@ -108,18 +99,11 @@ export const usePaymentSuccess = ({ onPaymentSuccess }: UsePaymentSuccessProps) 
       window.history.replaceState({}, document.title, newUrl);
     }
     
-    // Clean up interval on unmount
-    return () => {
-      clearRefreshInterval();
-    };
-  }, [location.search, onPaymentSuccess, toast]);
-  
-  // Reset the processed ref when the URL changes (for testing purposes)
-  useEffect(() => {
+    // Reset the processed ref when the URL changes (for testing purposes)
     return () => {
       processedRef.current = false;
       checkCountRef.current = 0;
-      clearRefreshInterval();
+      isProcessingRef.current = false;
     };
-  }, []);
+  }, [location.search, onPaymentSuccess, toast]);
 };
