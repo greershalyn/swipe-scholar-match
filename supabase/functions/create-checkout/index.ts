@@ -105,7 +105,7 @@ serve(async (req) => {
       // Continue without email, don't fail the checkout
     }
 
-    // Use the hard-coded price ID instead of environment variable
+    // Use the hardcoded price ID
     const priceId = 'price_1QwuhW2KAO6RCCuYpy5ZDxxF';
     console.log('Using price ID:', priceId);
     
@@ -144,7 +144,34 @@ serve(async (req) => {
       
       console.log('Session parameters:', JSON.stringify(sessionParams, null, 2));
       
-      const session = await stripe.checkout.sessions.create(sessionParams);
+      // Attempt to create the Stripe session
+      let session;
+      try {
+        session = await stripe.checkout.sessions.create(sessionParams);
+      } catch (stripeError) {
+        console.error('Stripe API error details:', stripeError);
+        return new Response(
+          JSON.stringify({ 
+            error: `Stripe API error: ${stripeError.message || 'Unknown error'}`,
+            details: JSON.stringify(stripeError)
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 400,
+          }
+        );
+      }
+
+      if (!session || !session.url) {
+        console.error('No session or URL returned from Stripe');
+        return new Response(
+          JSON.stringify({ error: 'Failed to create a valid checkout session' }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 500,
+          }
+        );
+      }
 
       console.log('Checkout session created:', {
         sessionId: session.id,
