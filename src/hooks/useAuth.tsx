@@ -47,6 +47,7 @@ export const useAuth = () => {
           return;
         }
 
+        // First sign up the user to create their account
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -64,9 +65,11 @@ export const useAuth = () => {
             variant: "destructive",
           });
           setIsSignUp(false);
+          setLoading(false);
+          return;
         } else if (error) {
           throw error;
-        } else {
+        } else if (data?.user) {
           toast({
             title: "Success!",
             description: "Please check your email to verify your account.",
@@ -79,30 +82,28 @@ export const useAuth = () => {
             localStorage.setItem('new_premium_user', 'true'); // Add flag for new premium users
             
             try {
-              // If user just signed up with premium selected, initiate checkout directly
-              if (data.user) {
-                console.log('Calling create-checkout for new premium user:', data.user.id);
-                const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
-                  body: {
-                    profile_id: data.user.id,
-                    return_url: returnUrl,
-                    timestamp: timestamp,
-                    is_new_user: true, // Add flag to indicate this is a new user
-                  },
-                });
-                
-                if (checkoutError) {
-                  console.error('Checkout invoke error:', checkoutError);
-                  throw checkoutError;
-                }
-                
-                if (checkoutData?.url) {
-                  console.log('Redirecting to checkout URL:', checkoutData.url);
-                  window.location.href = checkoutData.url;
-                  return; // Exit early as we're redirecting
-                } else {
-                  throw new Error('No checkout URL received');
-                }
+              console.log('New premium user signed up, initiating checkout for:', data.user.id);
+              const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
+                body: {
+                  profile_id: data.user.id,
+                  return_url: returnUrl,
+                  timestamp: timestamp,
+                  is_new_user: true,
+                },
+              });
+              
+              if (checkoutError) {
+                console.error('Checkout invoke error:', checkoutError);
+                throw checkoutError;
+              }
+              
+              if (checkoutData?.url) {
+                console.log('Redirecting to checkout URL:', checkoutData.url);
+                window.location.href = checkoutData.url;
+                return; // Exit early as we're redirecting
+              } else {
+                console.error('No checkout URL received', checkoutData);
+                throw new Error('No checkout URL received');
               }
             } catch (checkoutError: any) {
               console.error('Error initiating checkout:', checkoutError);
