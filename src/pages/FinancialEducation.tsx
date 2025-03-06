@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ExternalLink, Book, DollarSign, GraduationCap, ShieldCheck, PiggyBank } from 'lucide-react';
+import { ExternalLink, Book, DollarSign, GraduationCap, ShieldCheck, PiggyBank, AlertTriangle } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AccountDropdown } from '@/components/AccountDropdown';
@@ -46,6 +46,15 @@ const FinancialEducation = () => {
                 <Button variant="outline" className="w-full justify-between" asChild>
                   <a href="https://studentaid.gov/understand-aid/types/grants" target="_blank" rel="noopener noreferrer">
                     Federal Student Aid - Grants Guide
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
+                </Button>
+                <Button variant="outline" className="w-full justify-between" asChild>
+                  <a href="https://consumer.ftc.gov/articles/how-avoid-scholarship-and-financial-aid-scams" target="_blank" rel="noopener noreferrer">
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                      <span>Federal Trade Commission - How to Avoid Scholarship Scams</span>
+                    </div>
                     <ExternalLink className="h-4 w-4" />
                   </a>
                 </Button>
