@@ -11,6 +11,16 @@ export const usePaymentSuccess = ({ onPaymentSuccess }: UsePaymentSuccessProps) 
   const location = useLocation();
   const { toast } = useToast();
   const processedRef = useRef(false);
+  const checkCountRef = useRef(0);
+  const refreshIntervalRef = useRef<number | undefined>(undefined);
+  
+  // Clean up function to clear any active intervals
+  const clearRefreshInterval = () => {
+    if (refreshIntervalRef.current) {
+      clearInterval(refreshIntervalRef.current);
+      refreshIntervalRef.current = undefined;
+    }
+  };
   
   useEffect(() => {
     // Extract query parameters
@@ -40,25 +50,38 @@ export const usePaymentSuccess = ({ onPaymentSuccess }: UsePaymentSuccessProps) 
       // Try to refresh subscription status
       if (onPaymentSuccess) {
         // Call with slight delay to allow webhook to process
-        setTimeout(() => {
+        setTimeout(async () => {
           console.log('Calling onPaymentSuccess callback');
-          onPaymentSuccess().catch(err => {
+          try {
+            await onPaymentSuccess();
+          } catch (err) {
             console.error('Error in payment success callback:', err);
-          });
+          }
           
-          // Set up periodic checks (3 additional times)
-          let checkCount = 0;
-          const checkInterval = setInterval(() => {
-            if (checkCount >= 3) {
-              clearInterval(checkInterval);
+          // Set up periodic checks with increasing delays
+          checkCountRef.current = 0;
+          
+          // Clear any existing interval
+          clearRefreshInterval();
+          
+          // Create new interval with increasing delays
+          refreshIntervalRef.current = window.setInterval(async () => {
+            checkCountRef.current += 1;
+            
+            if (checkCountRef.current >= 3) {
+              clearRefreshInterval();
               return;
             }
             
-            checkCount++;
-            console.log(`Additional subscription check #${checkCount}`);
-            onPaymentSuccess().catch(err => {
+            // Exponential backoff for checks
+            const delay = Math.pow(2, checkCountRef.current) * 1000;
+            console.log(`Additional subscription check #${checkCountRef.current} in ${delay}ms`);
+            
+            try {
+              await onPaymentSuccess();
+            } catch (err) {
               console.error('Error in additional payment success check:', err);
-            });
+            }
           }, 3000);
         }, 1000);
       }
@@ -74,12 +97,19 @@ export const usePaymentSuccess = ({ onPaymentSuccess }: UsePaymentSuccessProps) 
       const newUrl = location.pathname;
       window.history.replaceState({}, document.title, newUrl);
     }
+    
+    // Clean up interval on unmount
+    return () => {
+      clearRefreshInterval();
+    };
   }, [location.search, onPaymentSuccess, toast]);
   
   // Reset the processed ref when the URL changes (for testing purposes)
   useEffect(() => {
     return () => {
       processedRef.current = false;
+      checkCountRef.current = 0;
+      clearRefreshInterval();
     };
   }, []);
 };
