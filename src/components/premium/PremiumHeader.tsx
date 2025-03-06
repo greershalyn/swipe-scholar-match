@@ -11,7 +11,7 @@ export const PremiumHeader = () => {
         Premium Feature
       </CardTitle>
       <CardDescription>
-        Upgrade to Premium to access our powerful Essay Assistant
+        Upgrade to Premium to access our powerful Essay Assistant and Test Prep tools
       </CardDescription>
     </>
   );
