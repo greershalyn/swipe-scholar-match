@@ -24,14 +24,14 @@ export const quizData: QuizData = {
       questions: [
         {
           id: "act-eng-1",
-          question: "Choose the most appropriate replacement for the underlined portion. The company announced that they're going to hire more employees than they did last year.",
+          question: "Choose the most appropriate replacement for the highlighted text: The company announced that <span class='bg-yellow-200 px-1'>they're</span> going to hire more employees than they did last year.",
           options: [
-            "that they're",
-            "that it's",
-            "that it is",
-            "that they are"
+            "they're",
+            "it's",
+            "it is",
+            "they are"
           ],
-          correctAnswer: "that it's",
+          correctAnswer: "it's",
           explanation: "Since 'company' is singular, we need to use the singular pronoun 'it' rather than the plural 'they'."
         },
         {

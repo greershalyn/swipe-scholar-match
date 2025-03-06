@@ -194,7 +194,7 @@ const Quiz = ({ questions: originalQuestions, sectionTitle, onComplete }: QuizPr
         </div>
         
         <div className="py-3 px-1">
-          <p className="text-lg font-medium mb-4">{currentQuestion.question}</p>
+          <p className="text-lg font-medium mb-4" dangerouslySetInnerHTML={{ __html: currentQuestion.question }}></p>
           
           <RadioGroup value={selectedAnswer || ""} className="space-y-3" onValueChange={handleAnswerSelect}>
             {currentQuestion.options.map((option, index) => (
