@@ -14,21 +14,27 @@ export const RefreshSubscriptionButton = ({
 }: RefreshSubscriptionButtonProps) => {
   const [progress, setProgress] = useState(0);
   const [localRefreshing, setLocalRefreshing] = useState(false);
+  const [isClickable, setIsClickable] = useState(true);
   
   // Ensure local state syncs with prop
   useEffect(() => {
-    if (refreshing) {
+    if (refreshing && !localRefreshing) {
       setLocalRefreshing(true);
-    } else {
+      setIsClickable(false);
+    } else if (!refreshing && localRefreshing) {
       // Add a small delay before resetting local state to ensure animations complete
       const timeout = setTimeout(() => {
         setLocalRefreshing(false);
         setProgress(0);
+        // Add cooldown period to prevent spam clicking
+        setTimeout(() => {
+          setIsClickable(true);
+        }, 1000);
       }, 300);
       
       return () => clearTimeout(timeout);
     }
-  }, [refreshing]);
+  }, [refreshing, localRefreshing]);
   
   // Handle progress animation
   useEffect(() => {
@@ -61,7 +67,7 @@ export const RefreshSubscriptionButton = ({
   }, [localRefreshing]);
   
   const handleClick = () => {
-    if (!localRefreshing) {
+    if (isClickable && !localRefreshing) {
       onClick();
     }
   };
@@ -71,8 +77,8 @@ export const RefreshSubscriptionButton = ({
       variant="outline"
       size="sm"
       onClick={handleClick}
-      disabled={localRefreshing}
-      className="flex items-center gap-1 relative overflow-hidden"
+      disabled={!isClickable || localRefreshing}
+      className={`flex items-center gap-1 relative overflow-hidden transition-all ${!isClickable && !localRefreshing ? 'opacity-70' : ''}`}
     >
       <RefreshCw className={`h-4 w-4 ${localRefreshing ? 'animate-spin' : ''}`} />
       <span>{localRefreshing ? "Refreshing..." : "Refresh Subscription Status"}</span>

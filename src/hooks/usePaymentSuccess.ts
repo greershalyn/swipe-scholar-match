@@ -58,32 +58,42 @@ export const usePaymentSuccess = ({ onPaymentSuccess }: UsePaymentSuccessProps) 
             console.error('Error in payment success callback:', err);
           }
           
-          // Set up periodic checks with increasing delays
+          // Set up additional checks, but use setTimeout rather than setInterval
+          // to avoid potential overlapping requests
           checkCountRef.current = 0;
           
           // Clear any existing interval
           clearRefreshInterval();
           
-          // Create new interval with increasing delays
-          refreshIntervalRef.current = window.setInterval(async () => {
+          // Schedule first additional check
+          const scheduleNextCheck = () => {
             checkCountRef.current += 1;
             
-            if (checkCountRef.current >= 3) {
-              clearRefreshInterval();
+            if (checkCountRef.current >= 5) {
               return;
             }
             
-            // Exponential backoff for checks
+            // Calculate exponential backoff delay
             const delay = Math.pow(2, checkCountRef.current) * 1000;
-            console.log(`Additional subscription check #${checkCountRef.current} in ${delay}ms`);
+            console.log(`Additional subscription check #${checkCountRef.current} scheduled in ${delay}ms`);
             
-            try {
-              await onPaymentSuccess();
-            } catch (err) {
-              console.error('Error in additional payment success check:', err);
-            }
-          }, 3000);
-        }, 1000);
+            setTimeout(async () => {
+              console.log(`Executing additional subscription check #${checkCountRef.current}`);
+              try {
+                await onPaymentSuccess();
+                // Schedule next check
+                scheduleNextCheck();
+              } catch (err) {
+                console.error('Error in additional payment success check:', err);
+                // Even if there's an error, try the next check
+                scheduleNextCheck();
+              }
+            }, delay);
+          };
+          
+          // Start the check sequence
+          scheduleNextCheck();
+        }, 1500);
       }
     } else if (successParam === 'false') {
       processedRef.current = true;

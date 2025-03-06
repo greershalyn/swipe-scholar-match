@@ -15,6 +15,7 @@ export const useSubscriptionCheck = () => {
   const lastCheckTimeRef = useRef(0);
   const checkInProgressRef = useRef(false);
   const statusUpdatedRef = useRef(false);
+  const initialCheckDoneRef = useRef(false);
   
   // Extract query parameters
   const queryParams = new URLSearchParams(location.search);
@@ -34,12 +35,17 @@ export const useSubscriptionCheck = () => {
     
     try {
       checkInProgressRef.current = true;
-      setIsCheckingAccess(true);
+      
+      // Only show loading state if this is the initial check or a manual refresh
+      if (!initialCheckDoneRef.current || isForceRefresh) {
+        setIsCheckingAccess(true);
+      }
+      
       console.log('Checking premium access, force refresh:', isForceRefresh);
       
       // Don't check too frequently unless it's a manual refresh
       const now = Date.now();
-      if (!isForceRefresh && !isPostPayment && now - lastCheckTimeRef.current < 2000) {
+      if (!isForceRefresh && !isPostPayment && now - lastCheckTimeRef.current < 3000) {
         console.log('Skipping check - too soon since last check');
         setIsCheckingAccess(false);
         checkInProgressRef.current = false;
@@ -54,12 +60,17 @@ export const useSubscriptionCheck = () => {
         console.log('No active session found');
         navigate('/auth');
         checkInProgressRef.current = false;
+        initialCheckDoneRef.current = true;
         return;
       }
 
       console.log('Fetching profile for user:', session.user.id);
       
       // Add cache bypass for forced refreshes and post-payment checks
+      const cacheOptions = isForceRefresh || isPostPayment 
+        ? { headers: { 'Cache-Control': 'no-cache' } }
+        : undefined;
+        
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('subscription_tier')
@@ -74,6 +85,7 @@ export const useSubscriptionCheck = () => {
           variant: "destructive",
         });
         checkInProgressRef.current = false;
+        initialCheckDoneRef.current = true;
         return;
       }
 
@@ -125,6 +137,8 @@ export const useSubscriptionCheck = () => {
           setRetryCount(0);
         }
       }
+      
+      initialCheckDoneRef.current = true;
     } catch (error) {
       console.error('Error checking premium access:', error);
       toast({
@@ -139,6 +153,7 @@ export const useSubscriptionCheck = () => {
     }
   }, [hasPremiumAccess, navigate, retryCount, toast, isPostPayment]);
 
+  // Initial check on page load
   useEffect(() => {
     // If we have success and session_id in the URL, this is a return from Stripe
     if (isPostPayment) {
@@ -160,17 +175,17 @@ export const useSubscriptionCheck = () => {
       // Clean up URL params
       const newUrl = window.location.pathname;
       window.history.replaceState({}, document.title, newUrl);
-    } else {
+    } else if (!initialCheckDoneRef.current) {
       // Regular check on page load - with slight delay to avoid race conditions with auth
       setTimeout(() => {
         checkPremiumAccess();
       }, 500);
     }
-  }, [location.search]);
+  }, [checkPremiumAccess, location.search, toast]);
 
   // Controlled post-payment check interval with increasing delays
   useEffect(() => {
-    if (isPostPayment && !hasPremiumAccess && !statusUpdatedRef.current) {
+    if (isPostPayment && !hasPremiumAccess && !statusUpdatedRef.current && retryCount > 0) {
       // Use increasing delays to prevent too frequent refreshes
       const delay = Math.min(3000 + (retryCount * 1000), 10000);
       
@@ -191,6 +206,7 @@ export const useSubscriptionCheck = () => {
   useEffect(() => {
     return () => {
       statusUpdatedRef.current = false;
+      initialCheckDoneRef.current = false;
       setRetryCount(0);
     };
   }, []);
