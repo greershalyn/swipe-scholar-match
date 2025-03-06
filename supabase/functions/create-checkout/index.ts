@@ -110,7 +110,7 @@ serve(async (req) => {
     try {
       console.log('Creating Stripe checkout session...');
       
-      // Define checkout session parameters
+      // Define checkout session parameters - FIXED: Removed payment_intent_data
       const sessionParams = {
         mode: 'subscription',
         payment_method_types: ['card'],
@@ -128,11 +128,6 @@ serve(async (req) => {
           profile_id: profile_id,
         },
         subscription_data: {
-          metadata: {
-            profile_id: profile_id
-          }
-        },
-        payment_intent_data: {
           metadata: {
             profile_id: profile_id
           }

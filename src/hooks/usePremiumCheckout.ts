@@ -47,7 +47,7 @@ export const usePremiumCheckout = () => {
           },
         });
         
-        console.log('Full checkout response:', JSON.stringify(data, null, 2));
+        console.log('Checkout response:', data);
         
         if (error) {
           console.error('Checkout invoke error:', error);
