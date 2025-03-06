@@ -100,10 +100,50 @@ const ACTContent = ({ activeQuizzes, toggleQuiz, handleQuizComplete }: ACTConten
           title="Test-Taking Strategies"
           description="Master essential strategies for maximizing your ACT score:"
           strategies={[
-            { text: "Time management techniques" },
-            { text: "Process of elimination" },
-            { text: "Strategic guessing methods" },
-            { text: "Practice test schedule planning" }
+            { 
+              text: "Time management techniques", 
+              tips: [
+                "Allocate specific time to each section based on question count and difficulty",
+                "For English: 9 minutes per passage (5 passages in 45 minutes)",
+                "For Math: 1 minute per question, leaving 5 minutes for review",
+                "For Reading: 8-9 minutes per passage (4 passages in 35 minutes)",
+                "For Science: 5-6 minutes per passage (6-7 passages in 35 minutes)",
+                "Skip difficult questions and return to them later to avoid time traps"
+              ]
+            },
+            { 
+              text: "Process of elimination", 
+              tips: [
+                "Always eliminate obviously incorrect answers first",
+                "For reading passages, cross out answers that contradict the text",
+                "In math, eliminate values that don't satisfy the given conditions",
+                "For English questions, eliminate choices that create grammatical errors",
+                "When two answers seem correct, look for subtle differences that make one better",
+                "If stuck between two choices, try substituting each into the question context"
+              ]
+            },
+            { 
+              text: "Strategic guessing methods", 
+              tips: [
+                "Never leave an answer blank - there's no penalty for wrong answers",
+                "If you can eliminate even one answer choice, guessing improves your odds",
+                "Look for patterns in answer choices (the longest/most detailed is often correct)",
+                "For math problems, try plugging in answer choices to check if they work",
+                "In reading questions, be wary of extreme language (always, never, etc.)",
+                "When completely unsure, choose the same letter consistently to improve probability"
+              ]
+            },
+            { 
+              text: "Practice test schedule planning", 
+              tips: [
+                "Take a diagnostic test 3-4 months before your exam date",
+                "Schedule weekly practice sessions focusing on your weakest areas",
+                "Complete at least 3-5 full-length practice tests under timed conditions",
+                "Take your final practice test a week before the actual exam",
+                "Review all your mistakes after each practice test",
+                "Create a study calendar with specific goals for each week leading up to the test"
+              ]
+            }
           ]}
         />
       </CardContent>
