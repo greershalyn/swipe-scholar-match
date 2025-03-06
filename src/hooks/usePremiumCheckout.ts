@@ -47,7 +47,7 @@ export const usePremiumCheckout = () => {
           body: {
             profile_id: user.id,
             return_url: returnUrl,
-            timestamp: timestamp, // Add timestamp to body
+            timestamp: timestamp,
           },
         });
         
