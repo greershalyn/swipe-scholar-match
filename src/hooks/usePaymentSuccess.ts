@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
@@ -10,6 +10,7 @@ interface UsePaymentSuccessProps {
 export const usePaymentSuccess = ({ onPaymentSuccess }: UsePaymentSuccessProps) => {
   const location = useLocation();
   const { toast } = useToast();
+  const processedRef = useRef(false);
   
   useEffect(() => {
     // Extract query parameters
@@ -17,8 +18,14 @@ export const usePaymentSuccess = ({ onPaymentSuccess }: UsePaymentSuccessProps) 
     const successParam = queryParams.get('success');
     const sessionId = queryParams.get('session_id');
     
+    // Prevent processing the same payment success multiple times
+    if (processedRef.current) {
+      return;
+    }
+    
     // If returning from successful payment, show message and try to refresh
     if (successParam === 'true' && sessionId) {
+      processedRef.current = true;
       console.log('Payment success detected with session ID:', sessionId);
       
       toast({
@@ -56,6 +63,7 @@ export const usePaymentSuccess = ({ onPaymentSuccess }: UsePaymentSuccessProps) 
         }, 1000);
       }
     } else if (successParam === 'false') {
+      processedRef.current = true;
       toast({
         title: "Payment cancelled",
         description: "Your payment was cancelled. You can try again when you're ready.",
@@ -67,4 +75,11 @@ export const usePaymentSuccess = ({ onPaymentSuccess }: UsePaymentSuccessProps) 
       window.history.replaceState({}, document.title, newUrl);
     }
   }, [location.search, onPaymentSuccess, toast]);
+  
+  // Reset the processed ref when the URL changes (for testing purposes)
+  useEffect(() => {
+    return () => {
+      processedRef.current = false;
+    };
+  }, []);
 };

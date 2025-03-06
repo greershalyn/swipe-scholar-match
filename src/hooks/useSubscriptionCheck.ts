@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,7 +12,8 @@ export const useSubscriptionCheck = () => {
   const [hasPremiumAccess, setHasPremiumAccess] = useState(false);
   const [isCheckingAccess, setIsCheckingAccess] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
-  const [lastCheckTime, setLastCheckTime] = useState(0);
+  const lastCheckTimeRef = useRef(0);
+  const checkInProgressRef = useRef(false);
   
   // Extract query parameters
   const queryParams = new URLSearchParams(location.search);
@@ -22,77 +23,36 @@ export const useSubscriptionCheck = () => {
   // Check if we just returned from a payment flow
   const isPostPayment = successParam === 'true' && sessionId;
 
-  useEffect(() => {
-    // If we have success and session_id in the URL, this is a return from Stripe
-    if (isPostPayment) {
-      toast({
-        title: "Payment successful!",
-        description: "Your account has been upgraded to premium.",
-      });
-      
-      // Clean up URL params after showing the message
-      const newUrl = window.location.pathname;
-      window.history.replaceState({}, document.title, newUrl);
-      
-      // Immediately check premium access with a small delay to allow webhook to process
-      setTimeout(() => {
-        checkPremiumAccess(true);
-      }, 1000);
-    } else if (successParam === 'false') {
-      toast({
-        title: "Payment cancelled",
-        description: "Your payment was not completed. You can try again later.",
-        variant: "destructive",
-      });
-      
-      // Clean up URL params after showing the message
-      const newUrl = window.location.pathname;
-      window.history.replaceState({}, document.title, newUrl);
-    } else {
-      // Regular check on page load
-      checkPremiumAccess();
+  // Define the check function using useCallback to prevent re-creation on each render
+  const checkPremiumAccess = useCallback(async (isPostPayment = false) => {
+    // Prevent concurrent checks - this avoids the flickering
+    if (checkInProgressRef.current) {
+      console.log('Check already in progress, skipping');
+      return;
     }
-  }, [location.search]);
-
-  // Add a more aggressive check when returning from payment flow
-  useEffect(() => {
-    if (isPostPayment && !hasPremiumAccess) {
-      // If we just came back from payment but don't have premium yet, 
-      // set up an interval to check more frequently
-      const checkInterval = setInterval(() => {
-        if (hasPremiumAccess || retryCount >= 10) {
-          clearInterval(checkInterval);
-          return;
-        }
-        
-        console.log(`Payment completed, polling for subscription status. Attempt ${retryCount + 1}/10`);
-        checkPremiumAccess(true);
-      }, 3000); // Check every 3 seconds
-      
-      return () => clearInterval(checkInterval);
-    }
-  }, [isPostPayment, hasPremiumAccess, retryCount]);
-
-  const checkPremiumAccess = async (isPostPayment = false) => {
+    
     try {
+      checkInProgressRef.current = true;
       setIsCheckingAccess(true);
       console.log('Checking premium access, post payment:', isPostPayment);
       
       // Don't check too frequently - prevent excessive checks
       const now = Date.now();
-      if (!isPostPayment && now - lastCheckTime < 2000) {
+      if (!isPostPayment && now - lastCheckTimeRef.current < 2000) {
         console.log('Skipping check - too soon since last check');
         setIsCheckingAccess(false);
+        checkInProgressRef.current = false;
         return;
       }
       
-      setLastCheckTime(now);
+      lastCheckTimeRef.current = now;
       
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
         console.log('No active session found');
         navigate('/auth');
+        checkInProgressRef.current = false;
         return;
       }
 
@@ -115,6 +75,7 @@ export const useSubscriptionCheck = () => {
           description: "Could not verify subscription status",
           variant: "destructive",
         });
+        checkInProgressRef.current = false;
         return;
       }
 
@@ -122,7 +83,10 @@ export const useSubscriptionCheck = () => {
       console.log('Profile subscription tier:', (profile as Profile)?.subscription_tier);
       console.log('Has premium access:', isPremium);
       
-      setHasPremiumAccess(isPremium);
+      // Only update state if the value has changed to prevent unnecessary re-renders
+      if (hasPremiumAccess !== isPremium) {
+        setHasPremiumAccess(isPremium);
+      }
       
       // If user just completed payment but still doesn't have premium, retry a few times
       if (isPostPayment && !isPremium) {
@@ -166,8 +130,61 @@ export const useSubscriptionCheck = () => {
       });
     } finally {
       setIsCheckingAccess(false);
+      checkInProgressRef.current = false;
     }
-  };
+  }, [hasPremiumAccess, navigate, retryCount, toast]);
 
-  return { hasPremiumAccess, isCheckingAccess, refreshSubscription: checkPremiumAccess };
+  useEffect(() => {
+    // If we have success and session_id in the URL, this is a return from Stripe
+    if (isPostPayment) {
+      // Clean up URL params after showing the message
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+      
+      // Initial check with a small delay to allow webhook to process
+      setTimeout(() => {
+        checkPremiumAccess(true);
+      }, 1000);
+    } else if (successParam === 'false') {
+      toast({
+        title: "Payment cancelled",
+        description: "Your payment was not completed. You can try again later.",
+        variant: "destructive",
+      });
+      
+      // Clean up URL params after showing the message
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+    } else {
+      // Regular check on page load - with slight delay to avoid race conditions with auth
+      setTimeout(() => {
+        checkPremiumAccess();
+      }, 500);
+    }
+  }, [location.search, checkPremiumAccess]);
+
+  // Add a more controlled check when returning from payment flow
+  useEffect(() => {
+    if (isPostPayment && !hasPremiumAccess) {
+      // If we just came back from payment but don't have premium yet, 
+      // set up an interval to check more frequently
+      const checkInterval = setInterval(() => {
+        if (hasPremiumAccess || retryCount >= 10) {
+          clearInterval(checkInterval);
+          return;
+        }
+        
+        console.log(`Payment completed, polling for subscription status. Attempt ${retryCount + 1}/10`);
+        checkPremiumAccess(true);
+      }, 3000); // Check every 3 seconds
+      
+      return () => clearInterval(checkInterval);
+    }
+  }, [isPostPayment, hasPremiumAccess, retryCount, checkPremiumAccess]);
+
+  return { 
+    hasPremiumAccess, 
+    isCheckingAccess, 
+    refreshSubscription: () => checkPremiumAccess(true) 
+  };
 };
