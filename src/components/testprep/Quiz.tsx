@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -21,6 +20,9 @@ type QuizProps = {
   onComplete?: (score: number, total: number) => void;
 };
 
+// Track previously seen question IDs across quiz sessions
+const seenQuestionsMap: Record<string, Set<string>> = {};
+
 const Quiz = ({ questions: originalQuestions, sectionTitle, onComplete }: QuizProps) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -28,17 +30,61 @@ const Quiz = ({ questions: originalQuestions, sectionTitle, onComplete }: QuizPr
   const [score, setScore] = useState(0);
   const [quizCompleted, setQuizCompleted] = useState(false);
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
-
-  // Initialize or shuffle questions
+  
+  // Initialize or shuffle questions with preference for unseen questions
   useEffect(() => {
-    shuffleQuestions();
-  }, [originalQuestions]);
-
-  const shuffleQuestions = () => {
-    // Create a copy of the original questions and shuffle them
-    const shuffled = [...originalQuestions].sort(() => Math.random() - 0.5);
+    // Create a unique key for this quiz section to track its seen questions
+    const quizKey = `${sectionTitle.toLowerCase().replace(/\s+/g, '-')}`;
+    
+    // Initialize seen questions set for this quiz if it doesn't exist
+    if (!seenQuestionsMap[quizKey]) {
+      seenQuestionsMap[quizKey] = new Set<string>();
+    }
+    
+    // Get the set of seen question IDs for this quiz
+    const seenQuestions = seenQuestionsMap[quizKey];
+    
+    // Separate questions into seen and unseen
+    const unseenQuestions = originalQuestions.filter(q => !seenQuestions.has(q.id));
+    const previouslySeen = originalQuestions.filter(q => seenQuestions.has(q.id));
+    
+    // If we have enough unseen questions, use those
+    // Otherwise, mix in some previously seen ones
+    let selectedQuestions: QuizQuestion[] = [];
+    
+    // We'll show 3 questions per quiz (or fewer if not enough questions exist)
+    const questionsToShow = Math.min(3, originalQuestions.length);
+    
+    if (unseenQuestions.length >= questionsToShow) {
+      // We have enough unseen questions
+      selectedQuestions = [...unseenQuestions]
+        .sort(() => Math.random() - 0.5)
+        .slice(0, questionsToShow);
+    } else {
+      // Use all unseen questions + some previously seen ones
+      selectedQuestions = [
+        ...unseenQuestions,
+        ...previouslySeen
+          .sort(() => Math.random() - 0.5)
+          .slice(0, questionsToShow - unseenQuestions.length)
+      ];
+      
+      // If we've seen all questions, reset the seen questions tracking
+      // for this quiz to keep it fresh
+      if (unseenQuestions.length === 0 && seenQuestions.size === originalQuestions.length) {
+        console.log(`All questions seen for ${quizKey}, resetting tracking`);
+        seenQuestionsMap[quizKey].clear();
+      }
+    }
+    
+    // Shuffle the final selection
+    const shuffled = selectedQuestions.sort(() => Math.random() - 0.5);
     setQuestions(shuffled);
-  };
+    
+    // Log for debugging
+    console.log(`Quiz ${quizKey}: ${unseenQuestions.length} unseen, ${previouslySeen.length} seen, showing ${shuffled.length} questions`);
+    
+  }, [originalQuestions, sectionTitle]);
 
   const currentQuestion = questions[currentQuestionIndex];
 
@@ -73,6 +119,14 @@ const Quiz = ({ questions: originalQuestions, sectionTitle, onComplete }: QuizPr
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
+      // Track seen questions for this quiz section
+      const quizKey = `${sectionTitle.toLowerCase().replace(/\s+/g, '-')}`;
+      
+      // Mark all questions in this session as seen
+      questions.forEach(q => {
+        seenQuestionsMap[quizKey].add(q.id);
+      });
+      
       setQuizCompleted(true);
       if (onComplete) {
         onComplete(score + (selectedAnswer === currentQuestion.correctAnswer ? 1 : 0), questions.length);
@@ -81,13 +135,17 @@ const Quiz = ({ questions: originalQuestions, sectionTitle, onComplete }: QuizPr
   };
 
   const handleRestartQuiz = () => {
-    // Shuffle questions for a new set when restarting
-    shuffleQuestions();
+    // Reset the quiz state
     setCurrentQuestionIndex(0);
     setSelectedAnswer(null);
     setIsAnswerSubmitted(false);
     setScore(0);
     setQuizCompleted(false);
+    
+    // This will trigger the useEffect to get a new set of questions
+    // with preference for unseen questions
+    const quizKey = `${sectionTitle.toLowerCase().replace(/\s+/g, '-')}`;
+    setQuestions([]);
   };
 
   if (!currentQuestion) {
