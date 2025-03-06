@@ -35,45 +35,30 @@ export const usePremiumCheckout = () => {
 
       console.log('Initiating checkout for user:', user.id);
       
-      // Make sure we have the return URL properly formatted
       const returnUrl = `${domain}${location.pathname}`;
       console.log('Return URL:', returnUrl);
       
       try {
-        // Call the Supabase Edge Function
         console.log('Calling create-checkout function...');
-        const response = await supabase.functions.invoke('create-checkout', {
+        const { data, error } = await supabase.functions.invoke('create-checkout', {
           body: {
             profile_id: user.id,
             return_url: returnUrl,
           },
         });
         
-        console.log('Full checkout response:', JSON.stringify(response, null, 2));
-        
-        if (response.error) {
-          console.error('Checkout invoke error:', response.error);
-          throw new Error(`Error from checkout service: ${response.error.message || JSON.stringify(response.error)}`);
-        }
-        
-        const { data, error } = response;
+        console.log('Full checkout response:', JSON.stringify(data, null, 2));
         
         if (error) {
-          console.error('Data error in response:', error);
+          console.error('Checkout invoke error:', error);
           throw new Error(`Error from checkout service: ${error.message || JSON.stringify(error)}`);
         }
         
-        if (!data) {
-          console.error('No data received in response');
-          throw new Error('No data received from checkout service');
-        }
-        
-        if (!data.url) {
+        if (!data?.url) {
           console.error('No URL in checkout response:', data);
-          throw new Error('No checkout URL received from payment service');
+          throw new Error('No checkout URL received');
         }
         
-        // Redirect to Stripe Checkout
         console.log('Redirecting to checkout URL:', data.url);
         window.location.href = data.url;
       } catch (invokeError: any) {
@@ -83,7 +68,7 @@ export const usePremiumCheckout = () => {
       
     } catch (error: any) {
       console.error('Detailed checkout error:', error);
-      const errorMsg = error.message || 'Failed to start checkout process. Please try again.';
+      const errorMsg = error.message || 'Failed to start checkout process';
       setErrorMessage(errorMsg);
       toast({
         title: "Error",

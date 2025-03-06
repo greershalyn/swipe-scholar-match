@@ -33,7 +33,7 @@ serve(async (req) => {
     if (!stripeKey) {
       console.error('Missing STRIPE_SECRET_KEY environment variable');
       return new Response(
-        JSON.stringify({ error: 'Stripe is not properly configured. Please contact support.' }),
+        JSON.stringify({ error: 'Stripe is not properly configured.' }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 500,
@@ -43,7 +43,7 @@ serve(async (req) => {
     
     // Parse request body
     const body = await req.text();
-    console.log('Request body received:', body.substring(0, 500)); // Show more of the request body for debugging
+    console.log('Request body:', body);
     
     let requestData;
     try {
@@ -55,7 +55,7 @@ serve(async (req) => {
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 400,
-        },
+        }
       );
     }
     
@@ -70,7 +70,7 @@ serve(async (req) => {
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 400,
-        },
+        }
       );
     }
 
@@ -81,7 +81,7 @@ serve(async (req) => {
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 400,
-        },
+        }
       );
     }
     
@@ -93,7 +93,6 @@ serve(async (req) => {
       
       if (userError) {
         console.error('Error fetching user data:', userError.message);
-        // Continue without email, don't fail the checkout
       } else if (userData?.user?.email) {
         userEmail = userData.user.email;
         console.log('Found user email:', userEmail);
@@ -102,10 +101,8 @@ serve(async (req) => {
       }
     } catch (e) {
       console.error('Error in user fetch operation:', e);
-      // Continue without email, don't fail the checkout
     }
 
-    // Use the hardcoded price ID
     const priceId = 'price_1QwuhW2KAO6RCCuYpy5ZDxxF';
     console.log('Using price ID:', priceId);
     
@@ -144,36 +141,14 @@ serve(async (req) => {
       
       console.log('Session parameters:', JSON.stringify(sessionParams, null, 2));
       
-      // Attempt to create the Stripe session
-      let session;
-      try {
-        session = await stripe.checkout.sessions.create(sessionParams);
-      } catch (stripeError) {
-        console.error('Stripe API error details:', stripeError);
-        return new Response(
-          JSON.stringify({ 
-            error: `Stripe API error: ${stripeError.message || 'Unknown error'}`,
-            details: JSON.stringify(stripeError)
-          }),
-          {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 400,
-          }
-        );
+      const session = await stripe.checkout.sessions.create(sessionParams);
+      
+      if (!session?.url) {
+        console.error('No session URL returned from Stripe');
+        throw new Error('Failed to create checkout session URL');
       }
 
-      if (!session || !session.url) {
-        console.error('No session or URL returned from Stripe');
-        return new Response(
-          JSON.stringify({ error: 'Failed to create a valid checkout session' }),
-          {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 500,
-          }
-        );
-      }
-
-      console.log('Checkout session created:', {
+      console.log('Checkout session created successfully:', {
         sessionId: session.id,
         url: session.url
       });
@@ -188,14 +163,10 @@ serve(async (req) => {
     } catch (stripeError) {
       console.error('Stripe checkout creation error:', stripeError);
       
-      // Provide a more user-friendly error message
-      const errorMessage = stripeError.message || 'Failed to create checkout session';
-      console.error('Error message:', errorMessage);
-      
       return new Response(
         JSON.stringify({ 
-          error: `Stripe error: ${errorMessage}`,
-          details: JSON.stringify(stripeError) 
+          error: stripeError.message || 'Failed to create checkout session',
+          details: JSON.stringify(stripeError)
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -205,12 +176,10 @@ serve(async (req) => {
     }
   } catch (error) {
     console.error('General error in checkout function:', error);
-    const errorMessage = error.message || 'Unknown error occurred';
-    console.error('Error message:', errorMessage);
     
     return new Response(
       JSON.stringify({ 
-        error: errorMessage,
+        error: error.message || 'An unexpected error occurred',
         details: JSON.stringify(error)
       }),
       {
