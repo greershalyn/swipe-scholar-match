@@ -1,8 +1,9 @@
 
 import { useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { updateProfileDirectlyToPremium } from '@/utils/subscriptionUtils';
 
 interface UsePaymentSuccessProps {
   onPaymentSuccess?: () => Promise<void>;
@@ -10,6 +11,7 @@ interface UsePaymentSuccessProps {
 
 export const usePaymentSuccess = ({ onPaymentSuccess }: UsePaymentSuccessProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const processedRef = useRef(false);
   const checkCountRef = useRef(0);
@@ -20,6 +22,7 @@ export const usePaymentSuccess = ({ onPaymentSuccess }: UsePaymentSuccessProps) 
     const queryParams = new URLSearchParams(location.search);
     const successParam = queryParams.get('success');
     const sessionId = queryParams.get('session_id');
+    const isSignup = queryParams.get('signup') === 'true';
     
     // Prevent processing the same payment success multiple times
     if (processedRef.current || isProcessingRef.current) {
@@ -34,44 +37,31 @@ export const usePaymentSuccess = ({ onPaymentSuccess }: UsePaymentSuccessProps) 
       // Set processing flag to prevent concurrent executions
       isProcessingRef.current = true;
       
-      // Immediately force update the user's profile to premium status directly
-      // This provides instant access while we wait for the webhook
-      const updateProfileDirectly = async () => {
-        try {
-          const { data: { session } } = await supabase.auth.getSession();
-          if (!session) {
-            console.error('No active session found when trying to update profile');
-            return;
-          }
-          
-          // Update profile to premium immediately
-          const { error } = await supabase
-            .from('profiles')
-            .update({ subscription_tier: 'premium' })
-            .eq('id', session.user.id);
-            
-          if (error) {
-            console.error('Error updating profile directly:', error);
-          } else {
-            console.log('Profile directly updated to premium after payment success');
-          }
-        } catch (err) {
-          console.error('Error in direct profile update:', err);
-        }
-      };
-      
       // First show toast about received payment
       toast({
         title: "Payment received!",
         description: "Please wait while we update your account status...",
       });
       
-      // Then update profile directly for immediate access
-      updateProfileDirectly();
+      // Immediately force update the user's profile to premium status directly
+      updateProfileDirectlyToPremium().then(success => {
+        if (success) {
+          console.log('Profile directly updated to premium after payment success');
+          
+          // For new signups, redirect to questionnaire
+          if (isSignup) {
+            navigate('/questionnaire', { replace: true });
+          }
+        } else {
+          console.error('Failed to update profile directly');
+        }
+      });
       
       // Clean URL
-      const newUrl = location.pathname;
-      window.history.replaceState({}, document.title, newUrl);
+      if (!isSignup) {
+        const newUrl = location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+      }
       
       // Now call the callback with a delay to allow webhook processing
       if (onPaymentSuccess) {
@@ -135,9 +125,14 @@ export const usePaymentSuccess = ({ onPaymentSuccess }: UsePaymentSuccessProps) 
         variant: "destructive",
       });
       
-      // Clean URL
-      const newUrl = location.pathname;
-      window.history.replaceState({}, document.title, newUrl);
+      // If this was a signup process and the payment was cancelled, redirect to questionnaire
+      if (isSignup) {
+        navigate('/questionnaire', { replace: true });
+      } else {
+        // Clean URL for existing users
+        const newUrl = location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+      }
     }
     
     // Reset the processed ref when the URL changes
@@ -146,5 +141,5 @@ export const usePaymentSuccess = ({ onPaymentSuccess }: UsePaymentSuccessProps) 
       checkCountRef.current = 0;
       isProcessingRef.current = false;
     };
-  }, [location.search, onPaymentSuccess, toast]);
+  }, [location.search, onPaymentSuccess, toast, navigate]);
 };

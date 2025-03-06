@@ -1,7 +1,9 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { updateProfileDirectlyToPremium } from "@/utils/subscriptionUtils";
 
 export const useAuth = () => {
   const [email, setEmail] = useState("");
@@ -13,8 +15,8 @@ export const useAuth = () => {
   const { toast } = useToast();
 
   const domain = window.location.origin;
-  const stripeUrl = `https://buy.stripe.com/test_9AQbLN1LP0gY0bS8ww?return_url=${encodeURIComponent(domain + '/questionnaire')}`;
-
+  const returnUrl = `${domain}/questionnaire?signup=true`;
+  
   const checkProfileCompletion = async (userId: string) => {
     const { data, error } = await supabase
       .from("profiles")
@@ -45,7 +47,7 @@ export const useAuth = () => {
           return;
         }
 
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -71,7 +73,40 @@ export const useAuth = () => {
           });
           
           if (selectedTier === 'premium') {
-            window.location.href = stripeUrl;
+            // Generate a timestamp to track this checkout attempt
+            const timestamp = new Date().toISOString();
+            localStorage.setItem('pending_checkout', timestamp);
+            
+            try {
+              // If user just signed up with premium selected, initiate checkout directly
+              if (data.user) {
+                console.log('Calling create-checkout for new premium user:', data.user.id);
+                const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
+                  body: {
+                    profile_id: data.user.id,
+                    return_url: returnUrl,
+                    timestamp: timestamp,
+                  },
+                });
+                
+                if (checkoutError) {
+                  console.error('Checkout invoke error:', checkoutError);
+                  throw checkoutError;
+                }
+                
+                if (checkoutData?.url) {
+                  console.log('Redirecting to checkout URL:', checkoutData.url);
+                  window.location.href = checkoutData.url;
+                  return; // Exit early as we're redirecting
+                } else {
+                  throw new Error('No checkout URL received');
+                }
+              }
+            } catch (checkoutError: any) {
+              console.error('Error initiating checkout:', checkoutError);
+              // If checkout fails, still navigate to questionnaire
+              navigate('/questionnaire');
+            }
           } else {
             navigate('/questionnaire');
           }
