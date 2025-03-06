@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { toast } from "@/hooks/use-toast";
 import { CheckCircle, XCircle } from 'lucide-react';
 import QuizResultCard from './QuizResultCard';
+import { supabase } from "@/integrations/supabase/client";
 
 export type QuizQuestion = {
   id: string;
@@ -31,6 +32,74 @@ const Quiz = ({ questions: originalQuestions, sectionTitle, onComplete }: QuizPr
   const [score, setScore] = useState(0);
   const [quizCompleted, setQuizCompleted] = useState(false);
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
+  
+  // Extract section and category from the sectionTitle (e.g., "ACT - English Section" => "act", "english")
+  const getQuizSectionAndCategory = () => {
+    if (sectionTitle.toLowerCase().includes('act')) {
+      return { 
+        section: 'act', 
+        category: sectionTitle.replace('ACT - ', '').replace(' Section', '').toLowerCase() 
+      };
+    } else {
+      return { 
+        section: 'sat', 
+        category: sectionTitle.replace('SAT - ', '').replace(' Section', '').toLowerCase() 
+      };
+    }
+  };
+  
+  // Function to request AI-generated questions
+  const generateAIQuestions = async () => {
+    setIsLoadingQuestions(true);
+    
+    try {
+      const { section, category } = getQuizSectionAndCategory();
+      
+      toast({
+        title: "Generating New Questions",
+        description: "We're creating fresh questions just for you...",
+      });
+      
+      const { data, error } = await supabase.functions.invoke('generate-quiz-questions', {
+        body: { section, category }
+      });
+      
+      if (error) {
+        console.error('Error generating questions:', error);
+        toast({
+          title: "Error Generating Questions",
+          description: "We couldn't generate new questions. Using existing ones instead.",
+          variant: "destructive",
+        });
+        selectQuizQuestions();
+      } else if (data && data.questions && data.questions.length > 0) {
+        console.log('AI generated questions:', data.questions);
+        setQuestions(data.questions);
+        toast({
+          title: "Fresh Questions Ready",
+          description: "We've created brand new questions for you!",
+        });
+      } else {
+        console.warn('No questions returned from AI service');
+        toast({
+          title: "Using Backup Questions",
+          description: "We couldn't generate new questions. Using existing ones instead.",
+        });
+        selectQuizQuestions();
+      }
+    } catch (error) {
+      console.error('Error in generateAIQuestions:', error);
+      toast({
+        title: "Error",
+        description: "Something went wrong. Using existing questions instead.",
+        variant: "destructive",
+      });
+      selectQuizQuestions();
+    } finally {
+      setIsLoadingQuestions(false);
+    }
+  };
   
   // Function to select questions for the quiz with preference for unseen ones
   const selectQuizQuestions = () => {
@@ -86,11 +155,12 @@ const Quiz = ({ questions: originalQuestions, sectionTitle, onComplete }: QuizPr
     console.log(`Quiz ${quizKey}: ${unseenQuestions.length} unseen, ${previouslySeen.length} seen, showing ${shuffled.length} questions`);
   };
   
-  // Initialize or shuffle questions with preference for unseen questions
+  // Initialize questions - either from original set or AI-generated
   useEffect(() => {
     selectQuizQuestions();
   }, [originalQuestions, sectionTitle]);
 
+  // Make sure we have the current question
   const currentQuestion = questions[currentQuestionIndex];
 
   const handleAnswerSelect = (value: string) => {
@@ -148,7 +218,7 @@ const Quiz = ({ questions: originalQuestions, sectionTitle, onComplete }: QuizPr
     setQuizCompleted(false);
   };
 
-  const handleNewQuestions = () => {
+  const handleNewQuestions = async () => {
     // Reset the quiz state
     setCurrentQuestionIndex(0);
     setSelectedAnswer(null);
@@ -156,16 +226,22 @@ const Quiz = ({ questions: originalQuestions, sectionTitle, onComplete }: QuizPr
     setScore(0);
     setQuizCompleted(false);
     
-    // This will trigger the selection of new questions
-    setQuestions([]);
-    // Explicitly call selectQuizQuestions to ensure we get new questions
-    selectQuizQuestions();
-    
-    toast({
-      title: "New Questions",
-      description: "Get ready for new questions to test your knowledge!",
-    });
+    // Generate brand new AI questions
+    await generateAIQuestions();
   };
+
+  if (isLoadingQuestions) {
+    return (
+      <Card className="mt-4 bg-white">
+        <CardContent className="pt-6">
+          <div className="flex flex-col items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mb-4"></div>
+            <p className="text-lg font-medium">Generating fresh questions just for you...</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (!currentQuestion) {
     return <div>Loading questions...</div>;
