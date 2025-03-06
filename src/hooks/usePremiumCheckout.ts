@@ -52,17 +52,17 @@ export const usePremiumCheckout = () => {
         });
         
         const { data, error } = response;
-        console.log('Checkout response status:', response.status);
-        console.log('Checkout response data:', data);
+        console.log('Checkout response:', data);
         
         if (error) {
           console.error('Checkout invoke error:', error);
           throw new Error(`Error from checkout service: ${error.message || JSON.stringify(error)}`);
         }
         
-        if (response.status !== 200) {
-          console.error('Non-200 response from checkout function:', response);
-          throw new Error(`Checkout service returned ${response.status}: ${JSON.stringify(data)}`);
+        // Check if data contains an error message from the edge function
+        if (data && 'error' in data) {
+          console.error('Error from checkout function:', data.error);
+          throw new Error(`Checkout service error: ${data.error}`);
         }
         
         if (!data?.url) {
