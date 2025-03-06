@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { AlertCircle, BookOpen, Brain, Lightbulb, Sparkles, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -131,12 +132,19 @@ export const DocumentReviewTool = () => {
           disabled={isAnalyzing || !essayText.trim()}
           className="w-full"
         >
-          {isAnalyzing ? "Analyzing..." : "Analyze Essay"}
+          {isAnalyzing ? (
+            <div className="flex items-center justify-center gap-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+              <span>Analyzing...</span>
+            </div>
+          ) : (
+            "Analyze Essay"
+          )}
         </Button>
       </div>
 
       {reviewResults.length > 0 && (
-        <div className="space-y-4">
+        <div className="space-y-4 mt-6">
           <h3 className="text-lg font-semibold">Teacher's Feedback</h3>
           
           <Tabs value={activeTab} onValueChange={setActiveTab}>

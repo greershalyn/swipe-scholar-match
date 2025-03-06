@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { PencilIcon } from 'lucide-react';
+import { PencilIcon, FileText } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AccountDropdown } from '@/components/AccountDropdown';
 import { useSubscriptionCheck } from '@/hooks/useSubscriptionCheck';
@@ -24,6 +24,7 @@ const EssayAssistant = () => {
   const [suggestions, setSuggestions] = useState<EssaySuggestion[]>([]);
   const [expandedFramework, setExpandedFramework] = useState<ExpandedFramework | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('framework');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -126,19 +127,19 @@ const EssayAssistant = () => {
             <h1 className="text-4xl font-bold text-white">Essay Assistant</h1>
           </div>
 
-          <Tabs defaultValue="framework" className="mb-8">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
             <TabsList className="grid grid-cols-2 w-full max-w-md mx-auto mb-6">
-              <TabsTrigger value="framework" className="flex gap-2">
+              <TabsTrigger value="framework" className="flex gap-2 items-center justify-center">
                 <PencilIcon className="h-4 w-4" />
                 Essay Framework
               </TabsTrigger>
-              <TabsTrigger value="review" className="flex gap-2">
-                <DocumentReviewTool />
+              <TabsTrigger value="review" className="flex gap-2 items-center justify-center">
+                <FileText className="h-4 w-4" />
                 Essay Review
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="framework">
+            <TabsContent value="framework" className="mt-4">
               <EssayEditor
                 step={step}
                 essayTopic={essayTopic}
@@ -155,10 +156,10 @@ const EssayAssistant = () => {
               />
             </TabsContent>
 
-            <TabsContent value="review">
-              <div className="bg-white p-6 rounded-lg shadow-md">
+            <TabsContent value="review" className="mt-4">
+              <Card className="bg-slate-50 p-6 rounded-lg shadow">
                 <DocumentReviewTool />
-              </div>
+              </Card>
             </TabsContent>
           </Tabs>
         </div>

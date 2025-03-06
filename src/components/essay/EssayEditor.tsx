@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { PencilIcon, BookOpen, Lightbulb, Star } from 'lucide-react';
+import { PencilIcon, BookOpen, Lightbulb, Star, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
