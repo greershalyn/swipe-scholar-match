@@ -2,15 +2,16 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { CheckCircle, XCircle, RefreshCw } from 'lucide-react';
 
 type QuizResultCardProps = {
   score: number;
   totalQuestions: number;
   onRestartQuiz: () => void;
+  onNewQuestions: () => void;
 };
 
-const QuizResultCard = ({ score, totalQuestions, onRestartQuiz }: QuizResultCardProps) => {
+const QuizResultCard = ({ score, totalQuestions, onRestartQuiz, onNewQuestions }: QuizResultCardProps) => {
   const percentage = Math.round((score / totalQuestions) * 100);
   
   return (
@@ -33,9 +34,15 @@ const QuizResultCard = ({ score, totalQuestions, onRestartQuiz }: QuizResultCard
             </div>
           )}
           
-          <Button onClick={onRestartQuiz} className="mt-4">
-            Restart Quiz
-          </Button>
+          <div className="flex flex-col md:flex-row gap-4 justify-center mt-4">
+            <Button onClick={onNewQuestions} variant="default" className="flex items-center gap-2">
+              <RefreshCw className="h-4 w-4" />
+              New Questions
+            </Button>
+            <Button onClick={onRestartQuiz} variant="outline">
+              Restart Same Quiz
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

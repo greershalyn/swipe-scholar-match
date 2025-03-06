@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -31,8 +32,8 @@ const Quiz = ({ questions: originalQuestions, sectionTitle, onComplete }: QuizPr
   const [quizCompleted, setQuizCompleted] = useState(false);
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   
-  // Initialize or shuffle questions with preference for unseen questions
-  useEffect(() => {
+  // Function to select questions for the quiz with preference for unseen ones
+  const selectQuizQuestions = () => {
     // Create a unique key for this quiz section to track its seen questions
     const quizKey = `${sectionTitle.toLowerCase().replace(/\s+/g, '-')}`;
     
@@ -83,7 +84,11 @@ const Quiz = ({ questions: originalQuestions, sectionTitle, onComplete }: QuizPr
     
     // Log for debugging
     console.log(`Quiz ${quizKey}: ${unseenQuestions.length} unseen, ${previouslySeen.length} seen, showing ${shuffled.length} questions`);
-    
+  };
+  
+  // Initialize or shuffle questions with preference for unseen questions
+  useEffect(() => {
+    selectQuizQuestions();
   }, [originalQuestions, sectionTitle]);
 
   const currentQuestion = questions[currentQuestionIndex];
@@ -141,11 +146,25 @@ const Quiz = ({ questions: originalQuestions, sectionTitle, onComplete }: QuizPr
     setIsAnswerSubmitted(false);
     setScore(0);
     setQuizCompleted(false);
+  };
+
+  const handleNewQuestions = () => {
+    // Reset the quiz state
+    setCurrentQuestionIndex(0);
+    setSelectedAnswer(null);
+    setIsAnswerSubmitted(false);
+    setScore(0);
+    setQuizCompleted(false);
     
-    // This will trigger the useEffect to get a new set of questions
-    // with preference for unseen questions
-    const quizKey = `${sectionTitle.toLowerCase().replace(/\s+/g, '-')}`;
+    // This will trigger the selection of new questions
     setQuestions([]);
+    // Explicitly call selectQuizQuestions to ensure we get new questions
+    selectQuizQuestions();
+    
+    toast({
+      title: "New Questions",
+      description: "Get ready for new questions to test your knowledge!",
+    });
   };
 
   if (!currentQuestion) {
@@ -159,6 +178,7 @@ const Quiz = ({ questions: originalQuestions, sectionTitle, onComplete }: QuizPr
         score={finalScore}
         totalQuestions={questions.length}
         onRestartQuiz={handleRestartQuiz}
+        onNewQuestions={handleNewQuestions}
       />
     );
   }
