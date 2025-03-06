@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { PencilIcon, FileText } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card } from '@/components/ui/card';
 import { AccountDropdown } from '@/components/AccountDropdown';
 import { useSubscriptionCheck } from '@/hooks/useSubscriptionCheck';
 import { PremiumAccessPrompt } from '@/components/essay/PremiumAccessPrompt';
