@@ -3,7 +3,7 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { motion, PanInfo } from 'framer-motion';
-import { ExternalLink, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { ExternalLink, ThumbsUp, ThumbsDown, AlertTriangle } from 'lucide-react';
 import { Scholarship } from '@/types/scholarship';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -60,10 +60,17 @@ const ScholarshipCard: React.FC<ScholarshipCardProps> = ({ scholarship, onSwipe 
   const isValidUrl = (urlString: string): boolean => {
     try {
       const url = new URL(urlString);
-      // List of trusted scholarship domains
+      
+      // First, check if it's using HTTPS (basic security check)
+      if (url.protocol !== 'https:') {
+        return false;
+      }
+      
+      // Comprehensive list of trusted scholarship domains
       const trustedDomains = [
         '.edu',
         '.gov',
+        '.org',
         'fastweb.com',
         'scholarships.com',
         'unigo.com',
@@ -75,11 +82,40 @@ const ScholarshipCard: React.FC<ScholarshipCardProps> = ({ scholarship, onSwipe 
         'salliemae.com',
         'studentaid.gov',
         'nsf.gov',
-        'nacme.org'
+        'nacme.org',
+        'bigfuture.collegeboard.org',
+        'scholarshipamerica.org',
+        'uncf.org',
+        'thurgoodmarshallfund.net',
+        'hispanicfund.org',
+        'apiasf.org',
+        'hsf.net',
+        'gmsp.org',
+        'jkcf.org'
       ];
 
+      // Check for suspicious patterns that indicate placeholder URLs
+      const suspiciousPatterns = [
+        'example.com',
+        'placeholder',
+        'test',
+        'lorem',
+        'undefined',
+        'null',
+        'unknown'
+      ];
+      
+      const hasSuspiciousPattern = suspiciousPatterns.some(pattern => 
+        url.hostname.includes(pattern) || 
+        url.pathname.includes(pattern)
+      );
+      
+      if (hasSuspiciousPattern) {
+        return false;
+      }
+
       return (
-        url.protocol === 'https:' &&
+        // Either a trusted domain OR not a placeholder domain
         (trustedDomains.some(domain => url.hostname.includes(domain)) ||
           !url.hostname.includes('example.com'))
       );
@@ -89,10 +125,22 @@ const ScholarshipCard: React.FC<ScholarshipCardProps> = ({ scholarship, onSwipe 
   };
 
   const generateSearchUrl = (scholarship: Scholarship): string => {
-    const searchQuery = encodeURIComponent(
-      `${scholarship.title} ${scholarship.provider} scholarship application`
-    );
-    return `https://www.google.com/search?q=${searchQuery}`;
+    // Create a more targeted search query to help users find the application
+    const searchTerms = [
+      scholarship.title,
+      scholarship.provider,
+      'scholarship',
+      'application',
+      'apply',
+      'how to apply',
+      'deadline',
+      scholarship.deadline ? new Date(scholarship.deadline).getFullYear().toString() : ''
+    ].filter(Boolean);
+    
+    const searchQuery = encodeURIComponent(searchTerms.join(' '));
+    
+    // Return a Google search with parameters that prioritize official sites
+    return `https://www.google.com/search?q=${searchQuery}&tbm=lcl`;
   };
 
   const handleUrlClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -106,6 +154,13 @@ const ScholarshipCard: React.FC<ScholarshipCardProps> = ({ scholarship, onSwipe 
         description: "Redirecting you to search results for this scholarship",
         duration: 3000
       });
+    } else if (!isValidUrl(url)) {
+      toast({
+        title: "Warning: Unverified link",
+        description: "This link hasn't been verified. Proceed with caution.",
+        variant: "destructive",
+        duration: 5000
+      });
     }
   };
 
@@ -113,6 +168,10 @@ const ScholarshipCard: React.FC<ScholarshipCardProps> = ({ scholarship, onSwipe 
     console.error('No scholarship data provided to ScholarshipCard');
     return null;
   }
+
+  // Determine if URL is a direct application link or a search fallback
+  const directLinkAvailable = scholarship.url && isValidUrl(scholarship.url) && 
+    !scholarship.url.includes('google.com/search');
 
   return (
     <motion.div
@@ -165,15 +224,29 @@ const ScholarshipCard: React.FC<ScholarshipCardProps> = ({ scholarship, onSwipe 
             </ul>
           </div>
 
-          <a
-            href={getScholarshipUrl()}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center text-sm text-primary hover:text-primary/80 transition-colors"
-            onClick={handleUrlClick}
-          >
-            View Details <ExternalLink className="ml-1 h-4 w-4" />
-          </a>
+          <div className="flex items-center">
+            <a
+              href={getScholarshipUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`inline-flex items-center text-sm ${
+                directLinkAvailable 
+                  ? "text-primary hover:text-primary/80" 
+                  : "text-amber-600 hover:text-amber-700"
+              } transition-colors`}
+              onClick={handleUrlClick}
+            >
+              {directLinkAvailable ? (
+                <>View Application <ExternalLink className="ml-1 h-4 w-4" /></>
+              ) : (
+                <>
+                  <AlertTriangle className="mr-1 h-4 w-4" />
+                  Search for Application
+                  <ExternalLink className="ml-1 h-4 w-4" />
+                </>
+              )}
+            </a>
+          </div>
         </div>
 
         <div className="mt-6 flex justify-center gap-8 text-sm text-muted-foreground">

@@ -31,10 +31,18 @@ export function transformScholarships(scholarshipsData: any) {
       if (!url) return false;
       try {
         const parsedUrl = new URL(url);
-        // Check for common scholarship domains
+        
+        // Check if URL uses HTTPS
+        if (parsedUrl.protocol !== 'https:') {
+          console.warn(`Non-HTTPS URL detected for "${s.title}": ${url}`);
+          return false;
+        }
+        
+        // More extensive list of valid domains for scholarships
         const validDomains = [
           '.edu',
           '.gov',
+          '.org',
           'fastweb.com',
           'scholarships.com',
           'unigo.com',
@@ -46,24 +54,79 @@ export function transformScholarships(scholarshipsData: any) {
           'salliemae.com',
           'studentaid.gov',
           'nsf.gov',
-          'nacme.org'
+          'nacme.org',
+          'bigfuture.collegeboard.org',
+          'scholarshipamerica.org',
+          'thurgoodmarshallfund.net',
+          'uncf.org',
+          'hispanicfund.org',
+          'apiasf.org',
+          'hsf.net',
+          'gmsp.org',
+          'jkcf.org',
+          'scholarshipowl.com'
         ];
-        return validDomains.some(domain => parsedUrl.hostname.endsWith(domain)) ||
-               (parsedUrl.protocol === 'https:' && 
-                !parsedUrl.hostname.includes('example.com') &&
-                !parsedUrl.hostname.includes('placeholder'));
-      } catch {
+        
+        // Check for known scholarship domains
+        const domainValid = validDomains.some(domain => 
+          parsedUrl.hostname.endsWith(domain) || 
+          parsedUrl.hostname.includes(domain)
+        );
+        
+        // Check for suspicious or placeholder URLs
+        const suspiciousPatterns = [
+          'example.com',
+          'placeholder',
+          'test',
+          'lorem',
+          'undefined',
+          'null',
+          'unknown'
+        ];
+        
+        const hasSuspiciousPattern = suspiciousPatterns.some(pattern => 
+          parsedUrl.hostname.includes(pattern) || 
+          parsedUrl.pathname.includes(pattern)
+        );
+        
+        return domainValid && !hasSuspiciousPattern;
+      } catch (error) {
+        console.error(`Invalid URL format for "${s.title}": ${url}`, error);
         return false;
       }
     };
 
-    // Generate a fallback URL for search
+    // Generate a better fallback URL for search
     const getFallbackUrl = (title: string, provider: string): string => {
-      const searchQuery = encodeURIComponent(`${title} ${provider} scholarship application`);
-      return `https://www.google.com/search?q=${searchQuery}`;
+      // Create a more specific search query to help find the application
+      const searchTerms = [
+        title,
+        provider,
+        'scholarship',
+        'application',
+        'apply',
+        'deadline',
+        'eligibility'
+      ].filter(Boolean);
+      
+      const searchQuery = encodeURIComponent(searchTerms.join(' '));
+      // Return a Google search with specific search parameters
+      return `https://www.google.com/search?q=${searchQuery}&tbm=lcl`;
     };
 
-    const validatedUrl = isValidUrl(url) ? url : getFallbackUrl(s.title, s.provider);
+    // Prioritize the most specific URL available
+    let validatedUrl: string;
+    
+    if (isValidUrl(url)) {
+      validatedUrl = url as string;
+      console.log(`Valid direct URL found for "${s.title}": ${validatedUrl}`);
+    } else if (s.provider_url && isValidUrl(s.provider_url)) {
+      validatedUrl = s.provider_url;
+      console.log(`Using provider URL for "${s.title}": ${validatedUrl}`);
+    } else {
+      validatedUrl = getFallbackUrl(s.title, s.provider);
+      console.log(`Generated fallback search URL for "${s.title}": ${validatedUrl}`);
+    }
 
     const transformed = {
       id: crypto.randomUUID(),

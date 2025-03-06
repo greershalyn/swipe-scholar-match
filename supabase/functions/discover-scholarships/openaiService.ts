@@ -19,31 +19,36 @@ export async function generateScholarships(openAiApiKey: string, userProfile: Us
           role: 'system',
           content: `You are an expert scholarship matching system that finds highly relevant, active scholarships 
             for students based on their detailed profiles. Focus on providing diverse yet targeted opportunities 
-            from verified sources.
+            with ONLY verified, working application links from trusted sources.
 
             Guidelines for scholarship selection:
             - Prioritize matches based on the student's specific field of study, demographics, and qualifications
             - Include a mix of both local/state scholarships and national opportunities
-            - Ensure scholarships are from reputable organizations (.edu domains, recognized foundations, accredited institutions)
-            - Verify that sources are well-known scholarship platforms or official institutional websites
-            - Focus on current opportunities with active application periods
-            - Exclude expired scholarships or those with broken/inactive links
+            - ONLY include scholarships with direct application links that you are certain are valid and working
+            - Each URL must lead directly to the scholarship application page, not general information pages
+            - Every URL must be secure (https://) and from recognized scholarship providers
+            - Exclude any scholarship without a verifiable direct application link
+            - Do not generate placeholder or example URLs - only include real, working links
             
-            Acceptable source domains include:
-            1. Educational institutions (.edu)
-            2. Government websites (.gov)
-            3. Major scholarship platforms:
-               - fastweb.com
-               - scholarships.com
-               - unigo.com
-               - cappex.com
-               - chegg.com
-               - collegeboard.org
-            4. Professional/Industry organizations in the student's field
-            5. Recognized non-profit foundations
+            Required URL verification criteria:
+            1. URL must be HTTPS and not contain suspicious patterns (example.com, placeholder, test)
+            2. URL must lead directly to the scholarship application page, not a general homepage 
+            3. URL must be from one of these trusted sources:
+               - Educational institutions (.edu domains)
+               - Government websites (.gov domains)
+               - Official scholarship organizations (.org domains focused on scholarships)
+               - Established scholarship platforms such as:
+                 - fastweb.com, scholarships.com, unigo.com, cappex.com
+                 - chegg.com, collegeboard.org, petersons.com, niche.com
+                 - salliemae.com, studentaid.gov, scholarship-positions.com
+                 - scholarshipamerica.org, thurgoodmarshallfund.net, uncf.org
+                 - hispanicfund.org, apiasf.org, hsf.net
             
-            For each scholarship, provide comprehensive details including specific eligibility criteria 
-            and direct application links. Ensure all information is current and verifiable.`
+            Important: For each scholarship, you MUST verify that:
+            1. The URL directly links to the specific scholarship mentioned
+            2. The page explicitly includes the scholarship name and application details
+            3. The application deadline is current (not in the past)
+            4. The link is not to a third-party search engine or aggregator that requires additional navigation`
         },
         {
           role: 'user',
@@ -62,17 +67,22 @@ export async function generateScholarships(openAiApiKey: string, userProfile: Us
               "source_url": "string (direct URL to official application page)"
             }
 
+            IMPORTANT URL REQUIREMENTS:
+            - Each source_url MUST be a direct, working link to the application page
+            - Only include HTTPS URLs from trusted scholarship domains
+            - Do not provide placeholder URLs or generic search links
+            - Verify each URL leads directly to the specific scholarship application
+            - If you cannot find a direct application link for a scholarship, do not include it
+
             Prioritize scholarships that most closely match the student's:
             1. Field of study/intended major
             2. Geographic location (if specified)
             3. Demographics and background
             4. Academic achievements
-            5. Extracurricular activities and interests
-            
-            Ensure each URL is functional and leads directly to the scholarship information.`
+            5. Extracurricular activities and interests`
         }
       ],
-      temperature: 0.7,
+      temperature: 0.5,
       response_format: { type: "json_object" }
     }),
   });
