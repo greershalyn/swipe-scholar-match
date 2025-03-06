@@ -190,6 +190,10 @@ serve(async (req) => {
           );
         }
 
+        // Check if this is a new user
+        const isNewUser = session.metadata?.is_new_user === 'true';
+        console.log('Is new user from metadata:', isNewUser);
+
         // First update profile to premium - critically important step
         const profileUpdated = await updateProfileToPremium(profileId);
         if (!profileUpdated) {

@@ -23,6 +23,7 @@ export const useSubscriptionCheck = () => {
   const successParam = queryParams.get('success');
   const sessionId = queryParams.get('session_id');
   const timestamp = queryParams.get('timestamp');
+  const isNewUser = localStorage.getItem('new_premium_user') === 'true';
 
   // Check if we just returned from a payment flow
   const isPostPayment = successParam === 'true' && sessionId;
@@ -44,6 +45,7 @@ export const useSubscriptionCheck = () => {
       }
       
       console.log('Checking premium access, force refresh:', isForceRefresh);
+      console.log('Is new user:', isNewUser);
       
       // Don't check too frequently unless it's a manual refresh
       const now = Date.now();
@@ -109,9 +111,14 @@ export const useSubscriptionCheck = () => {
         setHasPremiumAccess(finalPremiumStatus);
         
         // If premium status changed to true after payment, mark as updated
-        if (finalPremiumStatus && isPostPayment) {
+        if (finalPremiumStatus && (isPostPayment || isNewUser)) {
           statusUpdatedRef.current = true;
           setRetryCount(0);
+          
+          // Clear the new user flag if premium is activated
+          if (isNewUser) {
+            localStorage.removeItem('new_premium_user');
+          }
           
           toast({
             title: "Premium access confirmed",
@@ -121,7 +128,7 @@ export const useSubscriptionCheck = () => {
       }
       
       // If we're coming from a payment success but don't have premium yet
-      if (isPostPayment && !finalPremiumStatus && !statusUpdatedRef.current) {
+      if ((isPostPayment || isNewUser) && !finalPremiumStatus && !statusUpdatedRef.current) {
         const newRetryCount = retryCount + 1;
         console.log(`Payment completed but premium not yet active. Retry attempt ${newRetryCount}/10`);
         setRetryCount(newRetryCount);
@@ -176,13 +183,14 @@ export const useSubscriptionCheck = () => {
       setIsCheckingAccess(false);
       checkInProgressRef.current = false;
     }
-  }, [hasPremiumAccess, navigate, retryCount, toast, isPostPayment]);
+  }, [hasPremiumAccess, navigate, retryCount, toast, isPostPayment, isNewUser]);
 
   // Initial check on page load
   useEffect(() => {
     // If we have success and session_id in the URL, this is a return from Stripe
     if (isPostPayment) {
       console.log('Detected return from payment with success=true and session_id');
+      console.log('Is new user:', isNewUser);
       
       // Check if there's a matching pending checkout in localStorage
       const pendingCheckout = localStorage.getItem('pending_checkout');
@@ -221,6 +229,7 @@ export const useSubscriptionCheck = () => {
       const newUrl = window.location.pathname;
       window.history.replaceState({}, document.title, newUrl);
       localStorage.removeItem('pending_checkout');
+      localStorage.removeItem('new_premium_user');
     } else if (!initialCheckDoneRef.current) {
       // Regular check on page load - with slight delay to avoid race conditions with auth
       setTimeout(() => {
@@ -231,7 +240,7 @@ export const useSubscriptionCheck = () => {
 
   // Controlled post-payment check interval with increasing delays
   useEffect(() => {
-    if (isPostPayment && !hasPremiumAccess && !statusUpdatedRef.current && retryCount > 0) {
+    if ((isPostPayment || isNewUser) && !hasPremiumAccess && !statusUpdatedRef.current && retryCount > 0) {
       // Use increasing delays to prevent too frequent refreshes
       const delay = Math.min(3000 + (retryCount * 1000), 10000);
       
@@ -246,7 +255,7 @@ export const useSubscriptionCheck = () => {
       
       return () => clearTimeout(timeoutId);
     }
-  }, [isPostPayment, hasPremiumAccess, retryCount, checkPremiumAccessFn]);
+  }, [isPostPayment, isNewUser, hasPremiumAccess, retryCount, checkPremiumAccessFn]);
 
   // Reset status when navigating away from the component
   useEffect(() => {

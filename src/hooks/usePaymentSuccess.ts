@@ -23,6 +23,7 @@ export const usePaymentSuccess = ({ onPaymentSuccess }: UsePaymentSuccessProps) 
     const successParam = queryParams.get('success');
     const sessionId = queryParams.get('session_id');
     const isSignup = queryParams.get('signup') === 'true';
+    const isNewUser = localStorage.getItem('new_premium_user') === 'true';
     
     // Prevent processing the same payment success multiple times
     if (processedRef.current || isProcessingRef.current) {
@@ -32,6 +33,9 @@ export const usePaymentSuccess = ({ onPaymentSuccess }: UsePaymentSuccessProps) 
     // If returning from successful payment, show message and try to refresh
     if (successParam === 'true' && sessionId) {
       console.log('Payment success detected with session ID:', sessionId);
+      console.log('Is new user:', isNewUser);
+      console.log('Is signup:', isSignup);
+      
       processedRef.current = true;
       
       // Set processing flag to prevent concurrent executions
@@ -48,9 +52,24 @@ export const usePaymentSuccess = ({ onPaymentSuccess }: UsePaymentSuccessProps) 
         if (success) {
           console.log('Profile directly updated to premium after payment success');
           
-          // For new signups, redirect to questionnaire
-          if (isSignup) {
+          // For new signups or new premium users, redirect to questionnaire
+          if (isSignup || isNewUser) {
+            // Clear the new user flag
+            localStorage.removeItem('new_premium_user');
+            
+            // Show success message specifically for new users
+            toast({
+              title: "Premium Access Activated",
+              description: "Your premium subscription is now active. Enjoy all premium features!",
+            });
+            
             navigate('/questionnaire', { replace: true });
+          } else {
+            // For existing users upgrading, just show a confirmation
+            toast({
+              title: "Premium Upgrade Complete",
+              description: "Your account has been upgraded to premium.",
+            });
           }
         } else {
           console.error('Failed to update profile directly');
@@ -58,7 +77,7 @@ export const usePaymentSuccess = ({ onPaymentSuccess }: UsePaymentSuccessProps) 
       });
       
       // Clean URL
-      if (!isSignup) {
+      if (!isSignup && !isNewUser) {
         const newUrl = location.pathname;
         window.history.replaceState({}, document.title, newUrl);
       }
@@ -125,8 +144,11 @@ export const usePaymentSuccess = ({ onPaymentSuccess }: UsePaymentSuccessProps) 
         variant: "destructive",
       });
       
+      // Clear the new user flag if payment was cancelled
+      localStorage.removeItem('new_premium_user');
+      
       // If this was a signup process and the payment was cancelled, redirect to questionnaire
-      if (isSignup) {
+      if (isSignup || isNewUser) {
         navigate('/questionnaire', { replace: true });
       } else {
         // Clean URL for existing users

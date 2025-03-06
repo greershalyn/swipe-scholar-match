@@ -76,6 +76,7 @@ export const useAuth = () => {
             // Generate a timestamp to track this checkout attempt
             const timestamp = new Date().toISOString();
             localStorage.setItem('pending_checkout', timestamp);
+            localStorage.setItem('new_premium_user', 'true'); // Add flag for new premium users
             
             try {
               // If user just signed up with premium selected, initiate checkout directly
@@ -86,6 +87,7 @@ export const useAuth = () => {
                     profile_id: data.user.id,
                     return_url: returnUrl,
                     timestamp: timestamp,
+                    is_new_user: true, // Add flag to indicate this is a new user
                   },
                 });
                 

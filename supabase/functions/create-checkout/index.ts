@@ -59,10 +59,11 @@ serve(async (req) => {
       );
     }
     
-    const { profile_id, return_url, timestamp } = requestData;
+    const { profile_id, return_url, timestamp, is_new_user } = requestData;
     console.log('Profile ID:', profile_id);
     console.log('Return URL:', return_url);
     console.log('Timestamp:', timestamp);
+    console.log('Is new user:', is_new_user);
 
     if (!profile_id) {
       console.error('Missing profile_id in request');
@@ -111,6 +112,14 @@ serve(async (req) => {
     try {
       console.log('Creating Stripe checkout session...');
       
+      // Build success URL with appropriate parameters
+      let successUrl = `${return_url}?success=true&session_id={CHECKOUT_SESSION_ID}&timestamp=${encodeURIComponent(timestamp || '')}`;
+      
+      // Add is_new_user flag to the success URL if this is a new user
+      if (is_new_user) {
+        successUrl += '&new_user=true';
+      }
+      
       // Define checkout session parameters with enhanced metadata
       const sessionParams = {
         mode: 'subscription',
@@ -121,20 +130,22 @@ serve(async (req) => {
             quantity: 1,
           },
         ],
-        success_url: `${return_url}?success=true&session_id={CHECKOUT_SESSION_ID}&timestamp=${encodeURIComponent(timestamp || '')}`,
+        success_url: successUrl,
         cancel_url: `${return_url}?success=false&timestamp=${encodeURIComponent(timestamp || '')}`,
         client_reference_id: profile_id,
         customer_email: userEmail,
         metadata: {
           profile_id: profile_id,
           checkout_timestamp: timestamp || new Date().toISOString(),
-          source: 'swipescholar-webapp'
+          source: 'swipescholar-webapp',
+          is_new_user: is_new_user ? 'true' : 'false'
         },
         subscription_data: {
           metadata: {
             profile_id: profile_id,
             checkout_timestamp: timestamp || new Date().toISOString(),
-            source: 'swipescholar-webapp'
+            source: 'swipescholar-webapp',
+            is_new_user: is_new_user ? 'true' : 'false'
           }
         }
       };
