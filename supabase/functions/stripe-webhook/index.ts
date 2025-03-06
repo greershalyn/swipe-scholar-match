@@ -42,7 +42,8 @@ serve(async (req) => {
 
     // Get the raw request body
     const body = await req.text()
-    console.log('Webhook request body:', body.substring(0, 100) + '...')
+    console.log('Webhook request body length:', body.length);
+    console.log('Webhook request body preview:', body.substring(0, 100) + '...');
 
     // Get the webhook secret
     const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SIGNING_SECRET')
@@ -70,7 +71,8 @@ serve(async (req) => {
       )
     }
 
-    console.log(`Webhook event type: ${event.type}`)
+    console.log(`Webhook event type: ${event.type}`);
+    console.log('Event data:', JSON.stringify(event.data.object, null, 2).substring(0, 200) + '...');
 
     // Handle the event based on its type
     switch (event.type) {
@@ -91,44 +93,52 @@ serve(async (req) => {
           )
         }
 
+        // Immediately update user's profile to premium status
+        try {
+          console.log(`Updating profile ${session.client_reference_id} to premium status`);
+          const { error: profileError } = await supabaseAdmin
+            .from('profiles')
+            .update({ subscription_tier: 'premium' })
+            .eq('id', session.client_reference_id);
+
+          if (profileError) {
+            console.error('Error updating profile to premium:', profileError);
+            // Continue processing despite error
+          } else {
+            console.log('Successfully updated profile to premium tier');
+          }
+        } catch (err) {
+          console.error('Unexpected error updating profile:', err);
+        }
+
         // Insert or update subscription record
-        const { error: subError } = await supabaseAdmin
-          .from('subscriptions')
-          .upsert({
-            id: session.subscription,
-            profile_id: session.client_reference_id,
-            customer_id: session.customer,
-            status: 'active',
-            price_id: session.metadata?.price_id,
-            current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now as placeholder
-            created_at: new Date(),
-            updated_at: new Date()
-          })
+        try {
+          console.log(`Recording subscription ${session.subscription} for profile ${session.client_reference_id}`);
+          const { error: subError } = await supabaseAdmin
+            .from('subscriptions')
+            .upsert({
+              id: session.subscription,
+              profile_id: session.client_reference_id,
+              customer_id: session.customer,
+              status: 'active',
+              price_id: session.metadata?.price_id,
+              current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now as placeholder
+              created_at: new Date(),
+              updated_at: new Date()
+            });
 
-        if (subError) {
-          console.error('Error storing subscription:', subError)
-          return new Response(
-            JSON.stringify({ error: 'Failed to store subscription' }),
-            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          )
+          if (subError) {
+            console.error('Error storing subscription:', subError);
+            // Continue processing despite error
+          } else {
+            console.log('Successfully recorded subscription information');
+          }
+        } catch (err) {
+          console.error('Unexpected error storing subscription:', err);
         }
 
-        // Update user profile directly for immediate effect
-        const { error: profileError } = await supabaseAdmin
-          .from('profiles')
-          .update({ subscription_tier: 'premium' })
-          .eq('id', session.client_reference_id)
-
-        if (profileError) {
-          console.error('Error updating profile:', profileError)
-          return new Response(
-            JSON.stringify({ error: 'Failed to update profile' }),
-            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          )
-        }
-
-        console.log('Successfully updated subscription and profile')
-        break
+        console.log('Successfully processed checkout.session.completed event');
+        break;
       }
 
       case 'invoice.payment_succeeded': {

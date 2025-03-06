@@ -19,6 +19,8 @@ export const usePaymentSuccess = ({ onPaymentSuccess }: UsePaymentSuccessProps) 
     
     // If returning from successful payment, show message and try to refresh
     if (successParam === 'true' && sessionId) {
+      console.log('Payment success detected with session ID:', sessionId);
+      
       toast({
         title: "Payment received!",
         description: "Please wait while we update your account status...",
@@ -30,7 +32,28 @@ export const usePaymentSuccess = ({ onPaymentSuccess }: UsePaymentSuccessProps) 
       
       // Try to refresh subscription status
       if (onPaymentSuccess) {
-        onPaymentSuccess();
+        // Call with slight delay to allow webhook to process
+        setTimeout(() => {
+          console.log('Calling onPaymentSuccess callback');
+          onPaymentSuccess().catch(err => {
+            console.error('Error in payment success callback:', err);
+          });
+          
+          // Set up periodic checks (3 additional times)
+          let checkCount = 0;
+          const checkInterval = setInterval(() => {
+            if (checkCount >= 3) {
+              clearInterval(checkInterval);
+              return;
+            }
+            
+            checkCount++;
+            console.log(`Additional subscription check #${checkCount}`);
+            onPaymentSuccess().catch(err => {
+              console.error('Error in additional payment success check:', err);
+            });
+          }, 3000);
+        }, 1000);
       }
     } else if (successParam === 'false') {
       toast({
