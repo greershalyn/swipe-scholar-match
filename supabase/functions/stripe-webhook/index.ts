@@ -24,9 +24,27 @@ const supabaseAdmin = createClient(
 // Helper function to update a user's profile to premium
 async function updateProfileToPremium(profileId) {
   console.log(`Updating profile ${profileId} to premium status`);
-  const { error } = await supabaseAdmin
+  
+  // First check current status
+  const { data: currentProfile, error: fetchError } = await supabaseAdmin
     .from('profiles')
-    .update({ subscription_tier: 'premium' })
+    .select('subscription_tier')
+    .eq('id', profileId)
+    .single();
+    
+  if (fetchError) {
+    console.error('Error fetching profile:', fetchError);
+  } else {
+    console.log('Current profile subscription tier:', currentProfile?.subscription_tier);
+  }
+  
+  // Now update to premium
+  const { data, error } = await supabaseAdmin
+    .from('profiles')
+    .update({ 
+      subscription_tier: 'premium',
+      updated_at: new Date().toISOString()
+    })
     .eq('id', profileId);
     
   if (error) {
@@ -35,6 +53,20 @@ async function updateProfileToPremium(profileId) {
   } 
   
   console.log('Successfully updated profile to premium tier');
+  
+  // Verify the update was successful
+  const { data: verifyProfile, error: verifyError } = await supabaseAdmin
+    .from('profiles')
+    .select('subscription_tier')
+    .eq('id', profileId)
+    .single();
+    
+  if (verifyError) {
+    console.error('Error verifying profile update:', verifyError);
+  } else {
+    console.log('Verified profile subscription tier:', verifyProfile?.subscription_tier);
+  }
+  
   return true;
 }
 
@@ -43,7 +75,10 @@ async function updateProfileToFree(profileId) {
   console.log(`Updating profile ${profileId} to free status`);
   const { error } = await supabaseAdmin
     .from('profiles')
-    .update({ subscription_tier: 'free' })
+    .update({ 
+      subscription_tier: 'free',
+      updated_at: new Date().toISOString()
+    })
     .eq('id', profileId);
     
   if (error) {
@@ -58,9 +93,15 @@ async function updateProfileToFree(profileId) {
 // Helper function to record or update subscription
 async function updateSubscriptionRecord(subscriptionData) {
   console.log(`Recording subscription info:`, subscriptionData);
-  const { error } = await supabaseAdmin
+  
+  // Clean the subscription data to ensure there are no undefined values
+  const cleanData = Object.fromEntries(
+    Object.entries(subscriptionData).filter(([_, v]) => v !== undefined)
+  );
+  
+  const { data, error } = await supabaseAdmin
     .from('subscriptions')
-    .upsert(subscriptionData);
+    .upsert(cleanData);
     
   if (error) {
     console.error('Error recording subscription:', error);
@@ -74,51 +115,51 @@ async function updateSubscriptionRecord(subscriptionData) {
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
     console.log('Received webhook event');
     
     // Get the signature from the headers
-    const signature = req.headers.get('stripe-signature')
+    const signature = req.headers.get('stripe-signature');
     if (!signature) {
-      console.error('Missing Stripe signature header')
+      console.error('Missing Stripe signature header');
       return new Response(
         JSON.stringify({ error: 'Missing stripe-signature header' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      );
     }
 
     // Get the raw request body
-    const body = await req.text()
+    const body = await req.text();
     console.log('Webhook request body length:', body.length);
     console.log('Webhook request body preview:', body.substring(0, 100) + '...');
 
     // Get the webhook secret
-    const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SIGNING_SECRET')
+    const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SIGNING_SECRET');
     if (!webhookSecret) {
-      console.error('Missing STRIPE_WEBHOOK_SIGNING_SECRET')
+      console.error('Missing STRIPE_WEBHOOK_SIGNING_SECRET');
       return new Response(
         JSON.stringify({ error: 'Webhook secret is not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      );
     }
 
     // Verify and construct the event
-    let event
+    let event;
     try {
       event = stripe.webhooks.constructEvent(
         body,
         signature,
         webhookSecret
-      )
+      );
     } catch (err) {
-      console.error(`Webhook signature verification failed: ${err.message}`)
+      console.error(`Webhook signature verification failed: ${err.message}`);
       return new Response(
         JSON.stringify({ error: `Webhook signature verification failed: ${err.message}` }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      );
     }
 
     console.log(`Webhook event type: ${event.type}`);
@@ -127,25 +168,26 @@ serve(async (req) => {
     // Handle the event based on its type
     switch (event.type) {
       case 'checkout.session.completed': {
-        const session = event.data.object
+        const session = event.data.object;
         console.log('Checkout session completed:', {
           sessionId: session.id,
           customerId: session.customer,
           subscriptionId: session.subscription,
-          clientReferenceId: session.client_reference_id
-        })
+          clientReferenceId: session.client_reference_id,
+          metadata: session.metadata
+        });
 
         // Extract profile ID from clientReferenceId, metadata.profile_id, or subscription metadata
         const profileId = session.client_reference_id || 
-                         session.metadata?.profile_id || 
-                         null;
+                          session.metadata?.profile_id || 
+                          null;
                          
         if (!profileId) {
-          console.error('Missing profile ID in checkout session')
+          console.error('Missing profile ID in checkout session');
           return new Response(
             JSON.stringify({ error: 'Missing profile ID information' }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          )
+          );
         }
 
         // First update profile to premium - critically important step
@@ -163,8 +205,11 @@ serve(async (req) => {
             status: 'active',
             price_id: session.metadata?.price_id,
             current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now as placeholder
+            current_period_start: new Date(),
             created_at: new Date(),
-            updated_at: new Date()
+            updated_at: new Date(),
+            subscription_type: 'premium',
+            amount_cents: 1999 // Default amount
           };
           
           await updateSubscriptionRecord(subscriptionData);
@@ -273,15 +318,15 @@ serve(async (req) => {
     return new Response(JSON.stringify({ received: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
-    })
+    });
   } catch (error) {
-    console.error('Error handling webhook:', error)
+    console.error('Error handling webhook:', error);
     return new Response(
       JSON.stringify({ error: error.message || 'Internal server error' }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
       }
-    )
+    );
   }
-})
+});

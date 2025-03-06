@@ -15,6 +15,7 @@ export const RefreshSubscriptionButton = ({
   const [progress, setProgress] = useState(0);
   const [localRefreshing, setLocalRefreshing] = useState(false);
   const [isClickable, setIsClickable] = useState(true);
+  const [lastUpdateTime, setLastUpdateTime] = useState(0);
   const progressTimerRef = useRef<number | undefined>(undefined);
   const cooldownTimerRef = useRef<number | undefined>(undefined);
   
@@ -34,8 +35,10 @@ export const RefreshSubscriptionButton = ({
   // Sync local state with props in a controlled way
   useEffect(() => {
     if (refreshing && !localRefreshing) {
+      console.log('Refresh started');
       setLocalRefreshing(true);
       setIsClickable(false);
+      setLastUpdateTime(Date.now());
       
       // Start progress animation
       clearTimers();
@@ -54,8 +57,16 @@ export const RefreshSubscriptionButton = ({
       }, intervalTime);
       
     } else if (!refreshing && localRefreshing) {
+      console.log('Refresh completed');
+      // Calculate how long the refresh took
+      const refreshDuration = Date.now() - lastUpdateTime;
+      console.log(`Refresh took ${refreshDuration}ms`);
+      
       // Add a small delay before resetting local state
       clearTimers();
+      
+      // Force progress to 100% to ensure the animation completes
+      setProgress(100);
       
       setTimeout(() => {
         setLocalRefreshing(false);
@@ -64,16 +75,19 @@ export const RefreshSubscriptionButton = ({
         // Add cooldown period to prevent spam clicking
         cooldownTimerRef.current = window.setTimeout(() => {
           setIsClickable(true);
-        }, 1000);
+        }, Math.max(1000, 3000 - refreshDuration)); // Ensure at least 1s cooldown
       }, 300);
     }
     
     // Clean up on unmount
     return clearTimers;
-  }, [refreshing, localRefreshing]);
+  }, [refreshing, localRefreshing, lastUpdateTime]);
   
   const handleClick = () => {
+    // Only allow clicking if not in cooldown and not already refreshing
     if (isClickable && !localRefreshing) {
+      console.log('Manual refresh triggered');
+      setLastUpdateTime(Date.now());
       onClick();
     }
   };

@@ -2,6 +2,7 @@
 import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface UsePaymentSuccessProps {
   onPaymentSuccess?: () => Promise<void>;
@@ -30,21 +31,51 @@ export const usePaymentSuccess = ({ onPaymentSuccess }: UsePaymentSuccessProps) 
       console.log('Payment success detected with session ID:', sessionId);
       processedRef.current = true;
       
+      // Set processing flag to prevent concurrent executions
+      isProcessingRef.current = true;
+      
+      // Immediately force update the user's profile to premium status directly
+      // This provides instant access while we wait for the webhook
+      const updateProfileDirectly = async () => {
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session) {
+            console.error('No active session found when trying to update profile');
+            return;
+          }
+          
+          // Update profile to premium immediately
+          const { error } = await supabase
+            .from('profiles')
+            .update({ subscription_tier: 'premium' })
+            .eq('id', session.user.id);
+            
+          if (error) {
+            console.error('Error updating profile directly:', error);
+          } else {
+            console.log('Profile directly updated to premium after payment success');
+          }
+        } catch (err) {
+          console.error('Error in direct profile update:', err);
+        }
+      };
+      
+      // First show toast about received payment
       toast({
         title: "Payment received!",
         description: "Please wait while we update your account status...",
       });
       
+      // Then update profile directly for immediate access
+      updateProfileDirectly();
+      
       // Clean URL
       const newUrl = location.pathname;
       window.history.replaceState({}, document.title, newUrl);
       
-      // Try to refresh subscription status
+      // Now call the callback with a delay to allow webhook processing
       if (onPaymentSuccess) {
-        // Set processing flag to prevent concurrent executions
-        isProcessingRef.current = true;
-        
-        // Call with slight delay to allow webhook to process
+        // Call with slight delay
         setTimeout(async () => {
           console.log('Calling onPaymentSuccess callback');
           try {
@@ -53,37 +84,47 @@ export const usePaymentSuccess = ({ onPaymentSuccess }: UsePaymentSuccessProps) 
             console.error('Error in payment success callback:', err);
           }
           
-          // Schedule additional checks with exponential backoff
-          const scheduleNextCheck = async () => {
-            checkCountRef.current += 1;
+          // Set up sequential additional checks to ensure subscription is active
+          const runAdditionalChecks = async () => {
+            const maxChecks = 5;
+            let currentCheck = 0;
             
-            if (checkCountRef.current >= 5) {
-              isProcessingRef.current = false;
-              return;
-            }
-            
-            // Calculate exponential backoff delay
-            const delay = Math.pow(2, checkCountRef.current) * 1000;
-            console.log(`Additional subscription check #${checkCountRef.current} scheduled in ${delay}ms`);
-            
-            setTimeout(async () => {
-              console.log(`Executing additional subscription check #${checkCountRef.current}`);
+            const runCheck = async () => {
+              currentCheck++;
+              console.log(`Running subscription check #${currentCheck}/${maxChecks}`);
+              
               try {
                 await onPaymentSuccess();
                 
-                // Schedule next check
-                scheduleNextCheck();
+                // If we haven't reached max checks, schedule next check
+                if (currentCheck < maxChecks) {
+                  // Calculate delay with exponential backoff
+                  const delay = Math.pow(2, currentCheck) * 1000;
+                  console.log(`Next check scheduled in ${delay}ms`);
+                  setTimeout(runCheck, delay);
+                } else {
+                  console.log('Completed all subscription checks');
+                  isProcessingRef.current = false;
+                }
               } catch (err) {
-                console.error('Error in additional payment success check:', err);
+                console.error(`Error in check #${currentCheck}:`, err);
                 
-                // Even if there's an error, try the next check
-                scheduleNextCheck();
+                // Continue with next check despite errors
+                if (currentCheck < maxChecks) {
+                  const delay = Math.pow(2, currentCheck) * 1000;
+                  setTimeout(runCheck, delay);
+                } else {
+                  isProcessingRef.current = false;
+                }
               }
-            }, delay);
+            };
+            
+            // Start the first check
+            runCheck();
           };
           
-          // Start the check sequence
-          scheduleNextCheck();
+          // Begin the sequential check process
+          runAdditionalChecks();
         }, 1500);
       }
     } else if (successParam === 'false') {
@@ -99,7 +140,7 @@ export const usePaymentSuccess = ({ onPaymentSuccess }: UsePaymentSuccessProps) 
       window.history.replaceState({}, document.title, newUrl);
     }
     
-    // Reset the processed ref when the URL changes (for testing purposes)
+    // Reset the processed ref when the URL changes
     return () => {
       processedRef.current = false;
       checkCountRef.current = 0;

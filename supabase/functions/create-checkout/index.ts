@@ -59,9 +59,10 @@ serve(async (req) => {
       );
     }
     
-    const { profile_id, return_url } = requestData;
+    const { profile_id, return_url, timestamp } = requestData;
     console.log('Profile ID:', profile_id);
     console.log('Return URL:', return_url);
+    console.log('Timestamp:', timestamp);
 
     if (!profile_id) {
       console.error('Missing profile_id in request');
@@ -110,7 +111,7 @@ serve(async (req) => {
     try {
       console.log('Creating Stripe checkout session...');
       
-      // Define checkout session parameters
+      // Define checkout session parameters with enhanced metadata
       const sessionParams = {
         mode: 'subscription',
         payment_method_types: ['card'],
@@ -120,16 +121,20 @@ serve(async (req) => {
             quantity: 1,
           },
         ],
-        success_url: `${return_url}?success=true&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${return_url}?success=false`,
+        success_url: `${return_url}?success=true&session_id={CHECKOUT_SESSION_ID}&timestamp=${encodeURIComponent(timestamp || '')}`,
+        cancel_url: `${return_url}?success=false&timestamp=${encodeURIComponent(timestamp || '')}`,
         client_reference_id: profile_id,
         customer_email: userEmail,
         metadata: {
           profile_id: profile_id,
+          checkout_timestamp: timestamp || new Date().toISOString(),
+          source: 'swipescholar-webapp'
         },
         subscription_data: {
           metadata: {
-            profile_id: profile_id
+            profile_id: profile_id,
+            checkout_timestamp: timestamp || new Date().toISOString(),
+            source: 'swipescholar-webapp'
           }
         }
       };

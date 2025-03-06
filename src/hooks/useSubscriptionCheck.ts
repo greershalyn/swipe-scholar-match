@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Profile } from '@/types/profile';
+import { updateProfileDirectlyToPremium, checkPremiumAccess } from '@/utils/subscriptionUtils';
 
 export const useSubscriptionCheck = () => {
   const navigate = useNavigate();
@@ -21,12 +22,13 @@ export const useSubscriptionCheck = () => {
   const queryParams = new URLSearchParams(location.search);
   const successParam = queryParams.get('success');
   const sessionId = queryParams.get('session_id');
+  const timestamp = queryParams.get('timestamp');
 
   // Check if we just returned from a payment flow
   const isPostPayment = successParam === 'true' && sessionId;
 
   // Define the check function
-  const checkPremiumAccess = useCallback(async (isForceRefresh = false) => {
+  const checkPremiumAccessFn = useCallback(async (isForceRefresh = false) => {
     // Prevent concurrent checks
     if (checkInProgressRef.current) {
       console.log('Check already in progress, skipping');
@@ -67,11 +69,15 @@ export const useSubscriptionCheck = () => {
       console.log('Fetching profile for user:', session.user.id);
       
       // Add cache bypass for forced refreshes and post-payment checks
-      const queryOptions = isForceRefresh || isPostPayment 
+      const cacheOptions = isForceRefresh || isPostPayment 
         ? { headers: { 'Cache-Control': 'no-cache' } }
         : undefined;
-        
-      // Fetch the user's profile to check subscription status
+      
+      // First try using the checkPremiumAccess utility
+      const isPremiumFromUtil = await checkPremiumAccess();
+      console.log('Premium access check result from util:', isPremiumFromUtil);
+      
+      // Also fetch the profile directly to be sure
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('subscription_tier')
@@ -94,13 +100,16 @@ export const useSubscriptionCheck = () => {
       console.log('Profile subscription tier:', (profile as Profile)?.subscription_tier);
       console.log('Has premium access:', isPremium);
       
+      // Use either result - if either says premium, consider it premium
+      const finalPremiumStatus = isPremium || isPremiumFromUtil;
+      
       // If premium status has changed, update state
-      if (hasPremiumAccess !== isPremium) {
-        console.log('Updating premium access state:', isPremium);
-        setHasPremiumAccess(isPremium);
+      if (hasPremiumAccess !== finalPremiumStatus) {
+        console.log('Updating premium access state:', finalPremiumStatus);
+        setHasPremiumAccess(finalPremiumStatus);
         
         // If premium status changed to true after payment, mark as updated
-        if (isPremium && isPostPayment) {
+        if (finalPremiumStatus && isPostPayment) {
           statusUpdatedRef.current = true;
           setRetryCount(0);
           
@@ -111,24 +120,39 @@ export const useSubscriptionCheck = () => {
         }
       }
       
-      // Handle post-payment status checks
-      if (isPostPayment && !isPremium && !statusUpdatedRef.current) {
+      // If we're coming from a payment success but don't have premium yet
+      if (isPostPayment && !finalPremiumStatus && !statusUpdatedRef.current) {
         const newRetryCount = retryCount + 1;
         console.log(`Payment completed but premium not yet active. Retry attempt ${newRetryCount}/10`);
         setRetryCount(newRetryCount);
         
-        if (newRetryCount <= 3) {
-          // First few attempts - just wait
+        if (newRetryCount <= 2) {
+          // First attempts - just wait
           toast({
             title: "Updating your account",
             description: "Your payment was successful. Please wait while we update your account...",
           });
-        } else if (newRetryCount === 4) {
+          
+          // Try direct update after first check
+          if (newRetryCount === 1) {
+            console.log('Attempting direct profile update to premium');
+            const updated = await updateProfileDirectlyToPremium();
+            if (updated) {
+              console.log('Direct update successful, refreshing status');
+              // If successful, immediately check again
+              setTimeout(() => checkPremiumAccessFn(true), 500);
+            }
+          }
+        } else if (newRetryCount === 3) {
           // After a few retries, suggest refreshing subscription manually
           toast({
             title: "Payment successful",
             description: "Your payment was received, but your account is still updating. Try clicking the refresh button below.",
           });
+          
+          // Try direct update one more time
+          console.log('Attempting final direct profile update to premium');
+          await updateProfileDirectlyToPremium();
         } else if (newRetryCount >= 10) {
           // After 10 retries, we still don't have premium
           toast({
@@ -158,14 +182,34 @@ export const useSubscriptionCheck = () => {
   useEffect(() => {
     // If we have success and session_id in the URL, this is a return from Stripe
     if (isPostPayment) {
-      // Clean up URL params 
-      const newUrl = window.location.pathname;
-      window.history.replaceState({}, document.title, newUrl);
+      console.log('Detected return from payment with success=true and session_id');
       
-      // Initial check with a small delay to allow webhook to process
-      setTimeout(() => {
-        checkPremiumAccess(true);
-      }, 1000);
+      // Check if there's a matching pending checkout in localStorage
+      const pendingCheckout = localStorage.getItem('pending_checkout');
+      if (pendingCheckout && timestamp) {
+        if (pendingCheckout === timestamp) {
+          console.log('Payment matches pending checkout:', timestamp);
+        } else {
+          console.log('Payment timestamp does not match pending checkout. Expected:', pendingCheckout, 'Got:', timestamp);
+        }
+      }
+      
+      // Try direct update immediately
+      updateProfileDirectlyToPremium().then(updated => {
+        console.log('Direct profile update result:', updated);
+        
+        // Clean up URL params 
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+        
+        // Clear pending checkout
+        localStorage.removeItem('pending_checkout');
+        
+        // Initial check with a small delay to allow webhook to process
+        setTimeout(() => {
+          checkPremiumAccessFn(true);
+        }, 500);
+      });
     } else if (successParam === 'false') {
       toast({
         title: "Payment cancelled",
@@ -173,16 +217,17 @@ export const useSubscriptionCheck = () => {
         variant: "destructive",
       });
       
-      // Clean up URL params
+      // Clean up URL params and local storage
       const newUrl = window.location.pathname;
       window.history.replaceState({}, document.title, newUrl);
+      localStorage.removeItem('pending_checkout');
     } else if (!initialCheckDoneRef.current) {
       // Regular check on page load - with slight delay to avoid race conditions with auth
       setTimeout(() => {
-        checkPremiumAccess();
+        checkPremiumAccessFn();
       }, 500);
     }
-  }, [checkPremiumAccess, location.search, toast]);
+  }, [checkPremiumAccessFn, location.search, toast]);
 
   // Controlled post-payment check interval with increasing delays
   useEffect(() => {
@@ -196,12 +241,12 @@ export const useSubscriptionCheck = () => {
         }
         
         console.log(`Payment completed, polling for subscription status. Attempt ${retryCount + 1}/10 with delay ${delay}ms`);
-        checkPremiumAccess(true);
+        checkPremiumAccessFn(true);
       }, delay);
       
       return () => clearTimeout(timeoutId);
     }
-  }, [isPostPayment, hasPremiumAccess, retryCount, checkPremiumAccess]);
+  }, [isPostPayment, hasPremiumAccess, retryCount, checkPremiumAccessFn]);
 
   // Reset status when navigating away from the component
   useEffect(() => {
@@ -215,6 +260,6 @@ export const useSubscriptionCheck = () => {
   return { 
     hasPremiumAccess, 
     isCheckingAccess, 
-    refreshSubscription: () => checkPremiumAccess(true) 
+    refreshSubscription: () => checkPremiumAccessFn(true) 
   };
 };

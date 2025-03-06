@@ -35,6 +35,9 @@ export const usePremiumCheckout = () => {
 
       console.log('Initiating checkout for user:', user.id);
       
+      // Create a timestamp to help identify this checkout attempt
+      const timestamp = new Date().toISOString();
+      
       const returnUrl = `${domain}${location.pathname}`;
       console.log('Return URL:', returnUrl);
       
@@ -44,6 +47,7 @@ export const usePremiumCheckout = () => {
           body: {
             profile_id: user.id,
             return_url: returnUrl,
+            timestamp: timestamp, // Add timestamp to body
           },
         });
         
@@ -58,6 +62,9 @@ export const usePremiumCheckout = () => {
           console.error('No URL in checkout response:', data);
           throw new Error('No checkout URL received');
         }
+        
+        // Before redirecting, mark local storage to indicate pending checkout
+        localStorage.setItem('pending_checkout', timestamp);
         
         console.log('Redirecting to checkout URL:', data.url);
         window.location.href = data.url;
