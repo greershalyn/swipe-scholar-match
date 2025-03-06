@@ -5,7 +5,7 @@ import { CardTitle, CardDescription } from '@/components/ui/card';
 import { useSubscriptionCheck } from '@/hooks/useSubscriptionCheck';
 
 export const PremiumHeader = () => {
-  const { hasPremiumAccess, isCheckingAccess } = useSubscriptionCheck();
+  const { hasPremiumAccess, isCheckingAccess, refreshSubscription } = useSubscriptionCheck();
 
   return (
     <>

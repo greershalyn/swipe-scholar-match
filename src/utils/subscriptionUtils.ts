@@ -19,12 +19,20 @@ export const updateProfileDirectlyToPremium = async (): Promise<boolean> => {
     
     // First verify if there's an active subscription or pending checkout
     const pendingCheckout = localStorage.getItem('pending_checkout');
-    if (!pendingCheckout) {
-      console.warn('No pending checkout found, refusing to grant premium access');
+    // Get the success param from URL if exists
+    const urlParams = new URLSearchParams(window.location.search);
+    const successParam = urlParams.get('success');
+    const sessionId = urlParams.get('session_id');
+    
+    // Only update to premium if there was a confirmed successful checkout
+    if (!pendingCheckout || successParam !== 'true' || !sessionId) {
+      console.warn('No pending checkout found or no success confirmation, refusing to grant premium access');
       return false;
     }
     
-    // Update profile to premium only if there was a pending checkout
+    console.log('Found valid checkout confirmation with session ID:', sessionId);
+    
+    // Update profile to premium only if there was a pending checkout and successful payment
     const { error: profileError } = await supabase
       .from('profiles')
       .update({ subscription_tier: 'premium' })
@@ -57,6 +65,7 @@ export const updateProfileDirectlyToPremium = async (): Promise<boolean> => {
       amount_cents: 1999,
       current_period_start: new Date().toISOString(),
       current_period_end: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // 1 year from now
+      stripe_session_id: sessionId // Store the Stripe session ID for reference
     };
 
     // Update or insert subscription record
@@ -80,6 +89,9 @@ export const updateProfileDirectlyToPremium = async (): Promise<boolean> => {
         // Continue despite error - the profile update is the most important part
       }
     }
+    
+    // Clear the pending checkout after successful processing
+    localStorage.removeItem('pending_checkout');
     
     return true;
   } catch (err) {

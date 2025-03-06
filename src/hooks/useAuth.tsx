@@ -55,7 +55,8 @@ export const useAuth = () => {
           password,
           options: {
             data: {
-              subscription_tier: selectedTier,
+              // Always set to free initially, upgrade only after payment for premium
+              subscription_tier: 'free',
             },
           },
         });
@@ -105,6 +106,7 @@ export const useAuth = () => {
               if (checkoutData?.url) {
                 console.log('Redirecting to checkout URL:', checkoutData.url);
                 checkoutSuccess = true;
+                // Force a complete page reload to the Stripe checkout URL
                 window.location.href = checkoutData.url;
                 return; // Exit early as we're redirecting
               } else {

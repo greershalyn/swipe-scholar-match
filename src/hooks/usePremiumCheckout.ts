@@ -67,6 +67,7 @@ export const usePremiumCheckout = () => {
         localStorage.setItem('pending_checkout', timestamp);
         
         console.log('Redirecting to checkout URL:', data.url);
+        // Force a complete page reload to the Stripe checkout URL
         window.location.href = data.url;
       } catch (invokeError: any) {
         console.error('Function invoke error:', invokeError);
@@ -82,7 +83,6 @@ export const usePremiumCheckout = () => {
         description: errorMsg,
         variant: "destructive",
       });
-    } finally {
       setLoading(false);
     }
   };
