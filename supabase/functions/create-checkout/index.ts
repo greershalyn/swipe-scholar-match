@@ -113,10 +113,10 @@ serve(async (req) => {
     let priceId = Deno.env.get('STRIPE_PRICE_ID');
 
     if (!priceId) {
-      // Fallback price IDs if environment variable is not set
+      // Updated default price IDs - make sure these are correct in your Stripe account
       priceId = isTestMode
         ? 'price_1QwuhW2KAO6RCCuYpy5ZDxxF' // Test mode default price
-        : 'price_1QyNW02KAO6RCCuYHj2sUkQe'; // Live mode default price
+        : 'price_1OBmO22KAO6RCCuYAYTfJiG0'; // Updated live mode default price
     }
     
     console.log('Using price ID:', priceId, 'in', isTestMode ? 'TEST MODE' : 'LIVE MODE');
