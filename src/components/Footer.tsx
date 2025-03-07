@@ -9,7 +9,7 @@ import {
   AlertDialogCancel,
   AlertDialogFooter,
 } from "@/components/ui/alert-dialog";
-import { X } from "lucide-react";
+import { X, Mail } from "lucide-react";
 
 const Footer = () => {
   const [openDialog, setOpenDialog] = useState<'eula' | 'terms' | 'privacy' | null>(null);
@@ -202,6 +202,16 @@ If you have any questions about this Privacy Policy, please contact us at contac
               alt="Lewte Logo" 
               className="h-6"
             />
+          </a>
+        </div>
+        <div className="flex items-center gap-2 text-gray-400 my-2">
+          <Mail className="h-4 w-4" />
+          <span>Contact Us: </span>
+          <a 
+            href="mailto:contact@lewte.com" 
+            className="hover:text-white transition-colors"
+          >
+            contact@lewte.com
           </a>
         </div>
         <div className="flex gap-4 text-sm text-gray-400">
