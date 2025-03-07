@@ -36,7 +36,7 @@ serve(async (req) => {
         JSON.stringify({ error: 'Stripe is not properly configured.' }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 500,
+          status: 200, // Changed from 500 to 200 to ensure consistent response status
         }
       );
     }
@@ -54,7 +54,7 @@ serve(async (req) => {
         JSON.stringify({ error: 'Invalid request format' }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 400,
+          status: 200, // Changed from 400 to 200
         }
       );
     }
@@ -72,7 +72,7 @@ serve(async (req) => {
         JSON.stringify({ error: 'Profile ID is required' }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 400,
+          status: 200, // Changed from 400 to 200
         }
       );
     }
@@ -83,7 +83,7 @@ serve(async (req) => {
         JSON.stringify({ error: 'Return URL is required' }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 400,
+          status: 200, // Changed from 400 to 200
         }
       );
     }
@@ -169,7 +169,13 @@ serve(async (req) => {
       
       if (!session?.url) {
         console.error('No session URL returned from Stripe');
-        throw new Error('Failed to create checkout session URL');
+        return new Response(
+          JSON.stringify({ error: 'Failed to create checkout session URL' }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200, // Changed from throwing an error to returning a 200 with error info
+          }
+        );
       }
 
       console.log('Checkout session created successfully:', {
@@ -194,7 +200,7 @@ serve(async (req) => {
         }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 400,
+          status: 200, // Changed from 400 to 200
         },
       );
     }
@@ -208,7 +214,7 @@ serve(async (req) => {
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
+        status: 200, // Changed from 500 to 200
       },
     );
   }
