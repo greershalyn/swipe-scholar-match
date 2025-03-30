@@ -7,6 +7,7 @@ import ApplicationChecklist from '@/components/first-gen/ApplicationChecklist';
 import ResourcesTab from '@/components/first-gen/ResourcesTab';
 import SurvivalGuideTab from '@/components/first-gen/SurvivalGuideTab';
 import FamilyConversationsTab from '@/components/first-gen/FamilyConversationsTab';
+import ScholarshipsTab from '@/components/first-gen/ScholarshipsTab';
 
 const FirstGenResources = () => {
   return (
@@ -34,6 +35,9 @@ const FirstGenResources = () => {
               <TabsTrigger value="family-conversations" className="data-[state=active]:bg-white data-[state=active]:text-purple-800">
                 Family Conversations
               </TabsTrigger>
+              <TabsTrigger value="scholarships" className="data-[state=active]:bg-white data-[state=active]:text-purple-800">
+                Scholarships
+              </TabsTrigger>
               <TabsTrigger value="resources" className="data-[state=active]:bg-white data-[state=active]:text-purple-800">
                 Helpful Resources
               </TabsTrigger>
@@ -49,6 +53,10 @@ const FirstGenResources = () => {
             
             <TabsContent value="family-conversations" className="mt-0">
               <FamilyConversationsTab />
+            </TabsContent>
+            
+            <TabsContent value="scholarships" className="mt-0">
+              <ScholarshipsTab />
             </TabsContent>
             
             <TabsContent value="resources" className="mt-0">
