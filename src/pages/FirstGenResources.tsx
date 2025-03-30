@@ -68,10 +68,10 @@ const FirstGenChecklist = () => {
 };
 const ResourcesTab = () => <div className="space-y-4">
     <Card>
-      <CardHeader>
+      <CardHeader className="bg-slate-50">
         <CardTitle>Online Resources for First-Generation Students</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="bg-slate-50">
         <ul className="space-y-2">
           <li className="flex items-start gap-2">
             <BookOpen className="h-5 w-5 text-purple-600 mt-0.5" />
