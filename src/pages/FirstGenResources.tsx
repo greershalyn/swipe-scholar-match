@@ -1,234 +1,16 @@
-import React, { useState } from 'react';
+
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { CheckCircle2, CheckSquare, BookOpen, Lightbulb, MessageCircle } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AccountDropdown } from '@/components/AccountDropdown';
-import { Button } from '@/components/ui/button';
-
-const FirstGenChecklist = () => {
-  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
-  
-  const toggleChecked = (id: string) => {
-    setCheckedItems(prev => ({
-      ...prev,
-      [id]: !prev[id]
-    }));
-  };
-  
-  const checklistItems = [{
-    id: "research",
-    title: "Research Colleges & Programs",
-    items: ["Identify schools that match your interests, location, and affordability.", "Use resources like College Board, Common App, and university websites."]
-  }, {
-    id: "financial",
-    title: "Understand Financial Aid & Scholarships",
-    items: ["Complete the FAFSA and look into state-based aid programs.", "Search for first-gen scholarships on SwipeScholar."]
-  }, {
-    id: "essay",
-    title: "Write a Strong Application Essay",
-    items: ["Share your personal journey and unique perspective.", "Use our AI-powered essay tool to get tailored suggestions."]
-  }, {
-    id: "letters",
-    title: "Ask for Recommendation Letters",
-    items: ["Reach out to teachers, mentors, or employers early."]
-  }, {
-    id: "deadlines",
-    title: "Meet All Deadlines",
-    items: ["Create a timeline for application and scholarship deadlines."]
-  }];
-  
-  return <Card className="mb-8">
-      <CardHeader className="pb-3 bg-slate-50 rounded-t-lg">
-        <CardTitle className="text-2xl">First-Gen College Application Checklist</CardTitle>
-        <CardDescription>
-          A step-by-step guide to navigating the college application process
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="bg-slate-50 rounded-b-lg">
-        <div className="space-y-6">
-          {checklistItems.map(section => <div key={section.id} className="border-l-4 border-primary pl-4 py-1">
-              <h3 className="text-lg font-medium flex items-center gap-2 mb-2">
-                <CheckSquare className={`h-5 w-5 ${checkedItems[section.id] ? 'text-green-500' : 'text-gray-400'}`} />
-                <span className={`cursor-pointer ${checkedItems[section.id] ? 'line-through text-gray-500' : ''}`} onClick={() => toggleChecked(section.id)}>
-                  {section.title}
-                </span>
-              </h3>
-              <ul className="space-y-1 ml-7">
-                {section.items.map((item, idx) => <li key={idx} className="text-sm text-gray-600">{item}</li>)}
-              </ul>
-            </div>)}
-        </div>
-        
-        <div className="mt-8 text-center">
-          <Link to="/essay-assistant">
-            <Button className="bg-purple-600 hover:bg-purple-700">
-              Try Our Essay Assistant
-            </Button>
-          </Link>
-        </div>
-      </CardContent>
-    </Card>;
-};
-
-const ResourcesTab = () => <div className="space-y-4">
-    <Card>
-      <CardHeader className="bg-slate-50 rounded-t-lg">
-        <CardTitle>Online Resources for First-Generation Students</CardTitle>
-      </CardHeader>
-      <CardContent className="bg-slate-50 rounded-b-lg">
-        <ul className="space-y-2">
-          <li className="flex items-start gap-2">
-            <BookOpen className="h-5 w-5 text-purple-600 mt-0.5" />
-            <div>
-              <a href="https://firstgen.naspa.org/" target="_blank" rel="noopener noreferrer" className="font-medium text-purple-600 hover:underline">
-                Center for First-generation Student Success
-              </a>
-              <p className="text-sm text-gray-600">
-                Comprehensive resources and research for first-generation college students
-              </p>
-            </div>
-          </li>
-          <li className="flex items-start gap-2">
-            <BookOpen className="h-5 w-5 text-purple-600 mt-0.5" />
-            <div>
-              <a href="https://www.imfirst.org/" target="_blank" rel="noopener noreferrer" className="font-medium text-purple-600 hover:underline">
-                I'm First
-              </a>
-              <p className="text-sm text-gray-600">
-                Virtual community for first-generation college students
-              </p>
-            </div>
-          </li>
-          <li className="flex items-start gap-2">
-            <BookOpen className="h-5 w-5 text-purple-600 mt-0.5" />
-            <div>
-              <a href="https://www.collegepoint.info/" target="_blank" rel="noopener noreferrer" className="font-medium text-purple-600 hover:underline">
-                CollegePoint
-              </a>
-              <p className="text-sm text-gray-600">
-                Free virtual advising for high-achieving, low and moderate-income students
-              </p>
-            </div>
-          </li>
-        </ul>
-      </CardContent>
-    </Card>
-  </div>;
-
-const SurvivalGuideTab = () => <div className="space-y-4">
-    <Card>
-      <CardHeader className="pb-3 bg-slate-50 rounded-t-lg">
-        <CardTitle className="text-2xl">College Survival Guide for First-Gen Students</CardTitle>
-        <CardDescription>
-          Tips for navigating your first year in college
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="bg-slate-50 rounded-b-lg">
-        <div className="space-y-6">
-          <div className="border-l-4 border-purple-500 pl-4 py-1">
-            <h3 className="text-lg font-medium flex items-center gap-2 mb-2">
-              <Lightbulb className="h-5 w-5 text-purple-600" />
-              <span>Find Your Support System</span>
-            </h3>
-            <ul className="space-y-1 ml-7">
-              <li className="text-sm text-gray-600">Join first-gen student organizations on campus.</li>
-              <li className="text-sm text-gray-600">Connect with faculty mentors and academic advisors.</li>
-            </ul>
-          </div>
-          
-          <div className="border-l-4 border-purple-500 pl-4 py-1">
-            <h3 className="text-lg font-medium flex items-center gap-2 mb-2">
-              <Lightbulb className="h-5 w-5 text-purple-600" />
-              <span>Learn About Campus Resources</span>
-            </h3>
-            <ul className="space-y-1 ml-7">
-              <li className="text-sm text-gray-600">Visit the writing center, tutoring services, and career center.</li>
-              <li className="text-sm text-gray-600">Use student discounts for books, software, and transportation.</li>
-            </ul>
-          </div>
-          
-          <div className="border-l-4 border-purple-500 pl-4 py-1">
-            <h3 className="text-lg font-medium flex items-center gap-2 mb-2">
-              <Lightbulb className="h-5 w-5 text-purple-600" />
-              <span>Budget Wisely</span>
-            </h3>
-            <ul className="space-y-1 ml-7">
-              <li className="text-sm text-gray-600">Track expenses and explore on-campus job opportunities.</li>
-              <li className="text-sm text-gray-600">Apply for emergency grants if needed.</li>
-            </ul>
-          </div>
-          
-          <div className="border-l-4 border-purple-500 pl-4 py-1">
-            <h3 className="text-lg font-medium flex items-center gap-2 mb-2">
-              <Lightbulb className="h-5 w-5 text-purple-600" />
-              <span>Don't Be Afraid to Ask for Help</span>
-            </h3>
-            <ul className="space-y-1 ml-7">
-              <li className="text-sm text-gray-600">Professors and advisors are there to support you—use their office hours!</li>
-            </ul>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  </div>;
-
-const FamilyConversationsTab = () => <div className="space-y-4">
-    <Card>
-      <CardHeader className="pb-3 bg-slate-50 rounded-t-lg">
-        <CardTitle className="text-2xl">How to Talk to Your Family About College</CardTitle>
-        <CardDescription>
-          Many first-gen students face family challenges when deciding to go to college. Here's how to navigate those conversations.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="bg-slate-50 rounded-b-lg">
-        <div className="space-y-6">
-          <div className="border-l-4 border-purple-500 pl-4 py-1">
-            <h3 className="text-lg font-medium flex items-center gap-2 mb-2">
-              <MessageCircle className="h-5 w-5 text-purple-600" />
-              <span>Explain Your Goals</span>
-            </h3>
-            <ul className="space-y-1 ml-7">
-              <li className="text-sm text-gray-600">Share how college can create better opportunities for you and your family.</li>
-            </ul>
-          </div>
-          
-          <div className="border-l-4 border-purple-500 pl-4 py-1">
-            <h3 className="text-lg font-medium flex items-center gap-2 mb-2">
-              <MessageCircle className="h-5 w-5 text-purple-600" />
-              <span>Address Their Concerns</span>
-            </h3>
-            <ul className="space-y-1 ml-7">
-              <li className="text-sm text-gray-600">If cost is a concern, explain financial aid options and scholarship opportunities.</li>
-            </ul>
-          </div>
-          
-          <div className="border-l-4 border-purple-500 pl-4 py-1">
-            <h3 className="text-lg font-medium flex items-center gap-2 mb-2">
-              <MessageCircle className="h-5 w-5 text-purple-600" />
-              <span>Involve Them in the Process</span>
-            </h3>
-            <ul className="space-y-1 ml-7">
-              <li className="text-sm text-gray-600">Take them on college tours (even virtual ones), and show them resources available to support you.</li>
-            </ul>
-          </div>
-          
-          <div className="border-l-4 border-purple-500 pl-4 py-1">
-            <h3 className="text-lg font-medium flex items-center gap-2 mb-2">
-              <MessageCircle className="h-5 w-5 text-purple-600" />
-              <span>Celebrate the Milestones</span>
-            </h3>
-            <ul className="space-y-1 ml-7">
-              <li className="text-sm text-gray-600">Keep them engaged by sharing your achievements and experiences.</li>
-            </ul>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  </div>;
+import ApplicationChecklist from '@/components/first-gen/ApplicationChecklist';
+import ResourcesTab from '@/components/first-gen/ResourcesTab';
+import SurvivalGuideTab from '@/components/first-gen/SurvivalGuideTab';
+import FamilyConversationsTab from '@/components/first-gen/FamilyConversationsTab';
 
 const FirstGenResources = () => {
-  return <div className="min-h-screen bg-gradient-to-b from-[#9b87f5] via-[#D946EF] to-[#FDE1D3]">
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-[#9b87f5] via-[#D946EF] to-[#FDE1D3]">
       <div className="container px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <Link to="/">
@@ -258,7 +40,7 @@ const FirstGenResources = () => {
             </TabsList>
             
             <TabsContent value="checklist" className="mt-0">
-              <FirstGenChecklist />
+              <ApplicationChecklist />
             </TabsContent>
             
             <TabsContent value="survival-guide" className="mt-0">
@@ -275,7 +57,8 @@ const FirstGenResources = () => {
           </Tabs>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
 
 export default FirstGenResources;
