@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -165,7 +166,7 @@ const Index = () => {
             </div>
             <h2 className="text-2xl md:text-3xl font-bold text-primary mb-4 md:mb-6">Join Our Community of Successful Scholars</h2>
             <p className="text-lg md:text-xl text-muted-foreground mb-6 md:mb-8 max-w-2xl mx-auto">
-              Thousands of students have already found their perfect scholarship match with SwipeScholar. Don't miss out on opportunities waiting for you!
+              Tons of students have already found their perfect scholarship match with SwipeScholar. Don't miss out on opportunities waiting for you!
             </p>
             <Button 
               onClick={() => navigate('/auth')} 
