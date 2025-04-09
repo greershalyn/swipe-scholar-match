@@ -5,13 +5,15 @@ import { supabase } from '@/integrations/supabase/client';
 import ScholarshipSwiper from '@/components/ScholarshipSwiper';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { GraduationCap, Rocket, DollarSign, Clock, Sparkles, BookOpen, Users, Trophy, Wallet as WalletIcon, PencilIcon, FileText, Lightbulb } from 'lucide-react';
+import { GraduationCap, Rocket, DollarSign, Clock, Sparkles, BookOpen, Users, Trophy, Wallet as WalletIcon, PencilIcon, FileText, Lightbulb, X } from 'lucide-react';
 import { AccountDropdown } from '@/components/AccountDropdown';
 import Wallet from '@/components/Wallet';
 import { CrawlForm } from '@/components/CrawlForm';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
+import { ExpandedFramework } from '@/types/essay';
+import { ExpandedFrameworkView } from '@/components/essay/ExpandedFrameworkView';
 
 const Index = () => {
   const [user, setUser] = useState(null);
@@ -21,6 +23,43 @@ const Index = () => {
   const isMobile = useIsMobile();
   const [essayStep, setEssayStep] = useState(1);
   const [essayTopic, setEssayTopic] = useState("Describe a challenge you've faced and how it has prepared you for college.");
+  const [showFrameworkPreview, setShowFrameworkPreview] = useState(false);
+
+  // Sample framework to show in preview
+  const sampleFramework: ExpandedFramework = {
+    title: "Turning Obstacles into Growth Opportunities",
+    hook: "During my sophomore year, what began as a struggle with time management transformed into one of my most valuable learning experiences, equipping me with skills I'll carry throughout my college journey.",
+    talkingPoints: [
+      {
+        title: "Identifying the Challenge",
+        points: [
+          "Initially overwhelmed by AP classes and basketball commitments",
+          "Missed several key assignment deadlines in the first semester",
+          "Struggled with prioritizing competing responsibilities",
+          "Felt constantly behind and stressed about academic performance"
+        ]
+      },
+      {
+        title: "Developing a Solution",
+        points: [
+          "Created a detailed planning system with color-coded priorities",
+          "Implemented time-blocking techniques for focused work periods",
+          "Set up accountability check-ins with a study partner",
+          "Communicated challenges with coaches and teachers to find balance"
+        ]
+      },
+      {
+        title: "Lessons and Growth",
+        points: [
+          "Learned to break large projects into manageable daily tasks",
+          "Developed self-discipline and metacognition about my work habits",
+          "Embraced the importance of asking for help when needed",
+          "Discovered my ability to adapt and overcome obstacles independently"
+        ]
+      }
+    ],
+    conclusion: "The organizational and resilience skills I developed through this challenge have become foundational to my academic approach. In college, I know I'll face even more complex demands on my time and attention. Rather than fearing these challenges, I'm confident in my ability to apply these tested strategies to thrive in a university environment, balancing academics, activities, and personal growth."
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -76,6 +115,14 @@ const Index = () => {
     }
   };
 
+  const handleChooseApproach = () => {
+    setShowFrameworkPreview(true);
+  };
+
+  const handleCloseFrameworkPreview = () => {
+    setShowFrameworkPreview(false);
+  };
+
   const renderEssayPreviewStep = () => {
     switch (essayStep) {
       case 1:
@@ -119,7 +166,11 @@ const Index = () => {
               <h4 className="font-medium text-purple-700 mb-2">Growth Mindset Approach</h4>
               <p className="text-sm mb-3">Focus on how this challenge helped you develop resilience and adaptability.</p>
               <div className="mt-2">
-                <Button size="sm" className="bg-purple-500 hover:bg-purple-600 text-white w-full">
+                <Button 
+                  size="sm" 
+                  className="bg-purple-500 hover:bg-purple-600 text-white w-full"
+                  onClick={handleChooseApproach}
+                >
                   Choose This Approach
                 </Button>
               </div>
@@ -239,7 +290,27 @@ const Index = () => {
             </div>
             
             <div className="max-w-4xl mx-auto bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl shadow-lg p-2 border border-purple-200">
-              <div className="bg-white rounded-xl p-6">
+              <div className="bg-white rounded-xl p-6 relative">
+                {showFrameworkPreview && (
+                  <div className="absolute inset-0 bg-white rounded-xl p-6 z-10">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="font-semibold text-purple-700">Your Essay Framework</h3>
+                      <Button variant="ghost" size="sm" onClick={handleCloseFrameworkPreview} className="h-8 w-8 p-0">
+                        <X className="h-5 w-5" />
+                      </Button>
+                    </div>
+                    <ExpandedFrameworkView framework={sampleFramework} />
+                    <div className="mt-6">
+                      <Button 
+                        onClick={() => navigate('/auth')} 
+                        className="bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:from-purple-700 hover:to-pink-600 px-6 py-2 rounded-full"
+                      >
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        Upgrade to Create Full Essays
+                      </Button>
+                    </div>
+                  </div>
+                )}
                 <Tabs defaultValue="framework" className="w-full max-w-2xl mx-auto">
                   <TabsList className="grid grid-cols-2 mb-6">
                     <TabsTrigger value="framework" className="flex gap-2 items-center justify-center">
