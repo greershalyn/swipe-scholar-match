@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Clock, Lock, ArrowRight, Sparkles, X } from 'lucide-react';
+import { Clock, Lock, ArrowRight, Sparkles } from 'lucide-react';
 import { differenceInSeconds } from 'date-fns';
 import {
   Dialog,
@@ -122,14 +121,6 @@ const SwipeLimit: React.FC<SwipeLimitProps> = ({ onUpgrade }) => {
 
       <Dialog open={showPremiumInfo} onOpenChange={setShowPremiumInfo}>
         <DialogContent className="max-w-md bg-white">
-          <button 
-            onClick={handlePremiumInfoClose}
-            className="absolute right-4 top-4 p-1 rounded-full hover:bg-gray-100 transition-colors"
-            aria-label="Close premium benefits popup"
-          >
-            <X className="h-5 w-5 text-gray-500" />
-          </button>
-          
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-xl">
               <Sparkles className="h-5 w-5 text-yellow-500" />
