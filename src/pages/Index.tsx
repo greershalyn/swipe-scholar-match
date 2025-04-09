@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,7 +20,6 @@ const Index = () => {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    // Initialize auth state
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         setUser(session.user);
@@ -32,7 +30,6 @@ const Index = () => {
       }
     });
 
-    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -160,7 +157,6 @@ const Index = () => {
           </>
         )}
 
-        {/* New Premium Preview Section */}
         {!user && (
           <div className="text-center mb-16 bg-white/90 p-8 md:p-12 rounded-3xl shadow-xl animate-fade-in">
             <div className="mb-8">
@@ -173,12 +169,6 @@ const Index = () => {
             </div>
             
             <div className="max-w-4xl mx-auto bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl shadow-lg p-2 border border-purple-200">
-              <img 
-                src="/lovable-uploads/ece8f83b-708e-4da2-9cdf-e618847880aa.png" 
-                alt="Essay Assistant Preview" 
-                className="w-full rounded-lg mb-4"
-              />
-              
               <div className="bg-white rounded-xl p-6">
                 <Tabs defaultValue="framework" className="w-full max-w-2xl mx-auto">
                   <TabsList className="grid grid-cols-2 mb-6">
