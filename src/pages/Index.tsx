@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -121,6 +120,8 @@ const Index = () => {
 
   const handleCloseFrameworkPreview = () => {
     setShowFrameworkPreview(false);
+    // When closing the framework preview, go back to step 3 (Select your essay approach)
+    setEssayStep(3);
   };
 
   const renderEssayPreviewStep = () => {
@@ -301,13 +302,21 @@ const Index = () => {
                     </div>
                     <ExpandedFrameworkView framework={sampleFramework} />
                     <div className="mt-6">
-                      <Button 
-                        onClick={() => navigate('/auth')} 
-                        className="bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:from-purple-700 hover:to-pink-600 px-6 py-2 rounded-full"
-                      >
-                        <Sparkles className="h-4 w-4 mr-2" />
-                        Upgrade to Create Full Essays
-                      </Button>
+                      <div className="flex justify-between items-center">
+                        <Button 
+                          variant="outline"
+                          onClick={handleCloseFrameworkPreview}
+                        >
+                          Previous
+                        </Button>
+                        <Button 
+                          onClick={() => navigate('/auth')} 
+                          className="bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:from-purple-700 hover:to-pink-600 px-6 py-2 rounded-full"
+                        >
+                          <Sparkles className="h-4 w-4 mr-2" />
+                          Upgrade to Create Full Essays
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 )}
