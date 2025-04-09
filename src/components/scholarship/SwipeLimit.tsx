@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Clock, Lock, ArrowRight, Sparkles } from 'lucide-react';
+import { Clock, Lock, ArrowRight, Sparkles, X } from 'lucide-react';
 import { differenceInSeconds } from 'date-fns';
 import {
   AlertDialog,
@@ -11,6 +11,7 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogAction,
+  AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 import { PremiumFeaturesList } from "@/components/premium/PremiumFeaturesList";
 
@@ -112,7 +113,15 @@ const SwipeLimit: React.FC<SwipeLimitProps> = ({ onUpgrade }) => {
       </div>
 
       <AlertDialog open={showPremiumInfo} onOpenChange={setShowPremiumInfo}>
-        <AlertDialogContent className="max-w-md">
+        <AlertDialogContent className="max-w-md relative">
+          <button 
+            onClick={() => setShowPremiumInfo(false)}
+            className="absolute right-4 top-4 p-1 rounded-full hover:bg-gray-100 transition-colors"
+            aria-label="Close premium benefits popup"
+          >
+            <X className="h-5 w-5 text-gray-500" />
+          </button>
+          
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-xl">
               <Sparkles className="h-5 w-5 text-yellow-500" />
@@ -131,6 +140,9 @@ const SwipeLimit: React.FC<SwipeLimitProps> = ({ onUpgrade }) => {
             <AlertDialogAction onClick={onUpgrade}>
               Upgrade to Premium
             </AlertDialogAction>
+            <AlertDialogCancel onClick={() => setShowPremiumInfo(false)}>
+              Maybe Later
+            </AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
