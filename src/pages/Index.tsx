@@ -5,11 +5,13 @@ import { supabase } from '@/integrations/supabase/client';
 import ScholarshipSwiper from '@/components/ScholarshipSwiper';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { GraduationCap, Rocket, DollarSign, Clock, Sparkles, BookOpen, Users, Trophy, Wallet as WalletIcon } from 'lucide-react';
+import { GraduationCap, Rocket, DollarSign, Clock, Sparkles, BookOpen, Users, Trophy, Wallet as WalletIcon, PencilIcon, FileText, LightbulbIcon } from 'lucide-react';
 import { AccountDropdown } from '@/components/AccountDropdown';
 import Wallet from '@/components/Wallet';
 import { CrawlForm } from '@/components/CrawlForm';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent } from '@/components/ui/card';
 
 const Index = () => {
   const [user, setUser] = useState(null);
@@ -156,6 +158,112 @@ const Index = () => {
               <Wallet className="mt-4" />
             </div>
           </>
+        )}
+
+        {/* New Premium Preview Section */}
+        {!user && (
+          <div className="text-center mb-16 bg-white/90 p-8 md:p-12 rounded-3xl shadow-xl animate-fade-in">
+            <div className="mb-8">
+              <h2 className="text-3xl md:text-4xl font-bold text-gradient bg-clip-text text-transparent bg-gradient-to-r from-purple-600 via-pink-500 to-orange-400 mb-4">
+                Unlock Premium Essay Tools
+              </h2>
+              <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+                Your scholarship essays deserve the best. Our AI-powered Essay Assistant helps you craft winning applications.
+              </p>
+            </div>
+            
+            <div className="max-w-4xl mx-auto bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl shadow-lg p-2 border border-purple-200">
+              <img 
+                src="/lovable-uploads/ece8f83b-708e-4da2-9cdf-e618847880aa.png" 
+                alt="Essay Assistant Preview" 
+                className="w-full rounded-lg mb-4"
+              />
+              
+              <div className="bg-white rounded-xl p-6">
+                <Tabs defaultValue="framework" className="w-full max-w-2xl mx-auto">
+                  <TabsList className="grid grid-cols-2 mb-6">
+                    <TabsTrigger value="framework" className="flex gap-2 items-center justify-center">
+                      <PencilIcon className="h-4 w-4" />
+                      Essay Framework
+                    </TabsTrigger>
+                    <TabsTrigger value="review" className="flex gap-2 items-center justify-center">
+                      <FileText className="h-4 w-4" />
+                      Essay Review
+                    </TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="framework">
+                    <Card className="border-0 shadow-sm">
+                      <CardContent className="p-4">
+                        <div className="flex gap-2 items-center mb-4 text-purple-700">
+                          <BookOpen className="h-5 w-5" />
+                          <h3 className="font-semibold">Step 1: Share your essay topic</h3>
+                        </div>
+                        <div className="bg-slate-50 p-4 rounded-md mb-4 text-sm">
+                          "Describe a challenge you've faced and how it has prepared you for college."
+                        </div>
+                        <div className="flex justify-between">
+                          <Button variant="outline" disabled>Previous</Button>
+                          <Button className="bg-purple-500 hover:bg-purple-600">Next Step</Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                  
+                  <TabsContent value="review">
+                    <Card className="border-0 shadow-sm">
+                      <CardContent className="p-4">
+                        <div className="flex gap-2 items-center mb-4 text-purple-700">
+                          <FileText className="h-5 w-5" />
+                          <h3 className="font-semibold">Teacher's Feedback</h3>
+                        </div>
+                        <div className="border-l-4 border-purple-400 pl-3 py-2 mb-3">
+                          <p className="font-medium">Impact: Strengthen your opening</p>
+                          <p className="text-sm text-muted-foreground">Consider starting with a vivid example that immediately draws the reader in.</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                </Tabs>
+                
+                <div className="text-center mt-6">
+                  <Button 
+                    onClick={() => navigate('/auth')} 
+                    className="bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:from-purple-700 hover:to-pink-600 px-6 py-2 rounded-full"
+                  >
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Upgrade to Premium
+                  </Button>
+                </div>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
+              <div className="bg-white/80 p-5 rounded-xl">
+                <div className="flex justify-center mb-3">
+                  <PencilIcon className="h-8 w-8 text-purple-500" />
+                </div>
+                <h3 className="font-semibold text-lg mb-2">Essay Frameworks</h3>
+                <p className="text-sm text-muted-foreground">Build your essay with personalized, AI-generated frameworks tailored to your experiences</p>
+              </div>
+              
+              <div className="bg-white/80 p-5 rounded-xl">
+                <div className="flex justify-center mb-3">
+                  <FileText className="h-8 w-8 text-purple-500" />
+                </div>
+                <h3 className="font-semibold text-lg mb-2">Professional Review</h3>
+                <p className="text-sm text-muted-foreground">Get detailed feedback on your essays with actionable suggestions for improvement</p>
+              </div>
+              
+              <div className="bg-white/80 p-5 rounded-xl">
+                <div className="flex justify-center mb-3">
+                  <Sparkles className="h-8 w-8 text-purple-500" />
+                </div>
+                <h3 className="font-semibold text-lg mb-2">Stand Out</h3>
+                <p className="text-sm text-muted-foreground">Craft compelling essays that make your application shine and increase your chances of winning</p>
+              </div>
+            </div>
+          </div>
         )}
 
         {!user && (
