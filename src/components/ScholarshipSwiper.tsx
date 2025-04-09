@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import ScholarshipCard from './ScholarshipCard';
 import EmptyState from './scholarship/EmptyState';
@@ -5,17 +6,26 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from "@/components/ui/use-toast";
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useScholarships } from '@/hooks/useScholarships';
-import { saveScholarship, recordLeftSwipe } from '@/utils/scholarshipUtils';
+import { saveScholarship, recordLeftSwipe, getDailySwipeCount, updateDailySwipeCount } from '@/utils/scholarshipUtils';
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from 'lucide-react';
 import { Scholarship } from '@/types/scholarship';
-import { Progress } from "@/components/ui/progress"
+import { Progress } from "@/components/ui/progress";
+import { checkPremiumAccess } from '@/utils/subscriptionUtils';
+import { SubscriptionDialog } from '@/components/subscription/SubscriptionDialog';
+import SwipeLimit from './scholarship/SwipeLimit';
+
+const FREE_DAILY_SWIPE_LIMIT = 8;
 
 const ScholarshipSwiper = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState<'left' | 'right' | null>(null);
   const [refreshTimestamp, setRefreshTimestamp] = useState(Date.now());
   const [progress, setProgress] = useState(0);
+  const [dailySwipeCount, setDailySwipeCount] = useState(0);
+  const [hasPremium, setHasPremium] = useState(false);
+  const [dailyLimitReached, setDailyLimitReached] = useState(false);
+  const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
   const queryClient = useQueryClient();
 
   const { 
@@ -27,6 +37,32 @@ const ScholarshipSwiper = () => {
     isFetchingNextPage, 
     refetch 
   } = useScholarships(refreshTimestamp);
+
+  // Check user's premium status and daily swipe count on load
+  useEffect(() => {
+    const checkUserStatus = async () => {
+      try {
+        // Check premium status
+        const isPremium = await checkPremiumAccess();
+        setHasPremium(isPremium);
+        
+        // If not premium, check daily swipe count
+        if (!isPremium) {
+          const swipeCount = await getDailySwipeCount();
+          setDailySwipeCount(swipeCount);
+          
+          // Check if limit is reached
+          if (swipeCount >= FREE_DAILY_SWIPE_LIMIT) {
+            setDailyLimitReached(true);
+          }
+        }
+      } catch (error) {
+        console.error('Error checking user status:', error);
+      }
+    };
+    
+    checkUserStatus();
+  }, []);
 
   // Simulate loading progress
   useEffect(() => {
@@ -66,9 +102,12 @@ const ScholarshipSwiper = () => {
       hasNextPage,
       isFetchingNextPage,
       refreshTimestamp,
-      scholarshipIds: allScholarships.map(s => s.id)
+      scholarshipIds: allScholarships.map(s => s.id),
+      dailySwipeCount,
+      hasPremium,
+      dailyLimitReached
     });
-  }, [allScholarships, currentIndex, isLoading, error, hasNextPage, isFetchingNextPage, refreshTimestamp]);
+  }, [allScholarships, currentIndex, isLoading, error, hasNextPage, isFetchingNextPage, refreshTimestamp, dailySwipeCount, hasPremium, dailyLimitReached]);
 
   const saveMutation = useMutation({
     mutationFn: saveScholarship,
@@ -106,6 +145,31 @@ const ScholarshipSwiper = () => {
   });
 
   const handleSwipe = async (direction: 'left' | 'right') => {
+    // For free tier users, check if they've reached their daily limit
+    if (!hasPremium) {
+      // Only increment the count if we haven't reached the limit yet
+      if (dailySwipeCount >= FREE_DAILY_SWIPE_LIMIT) {
+        setDailyLimitReached(true);
+        setShowSubscriptionDialog(true);
+        return;
+      }
+      
+      // Increment daily swipe count for free users
+      const newCount = dailySwipeCount + 1;
+      setDailySwipeCount(newCount);
+      
+      // Update the stored count
+      await updateDailySwipeCount(newCount);
+      
+      // Check if this swipe hits the limit
+      if (newCount >= FREE_DAILY_SWIPE_LIMIT) {
+        // We'll let this swipe go through, then show the limit message
+        setTimeout(() => {
+          setDailyLimitReached(true);
+        }, 500);
+      }
+    }
+
     setDirection(direction);
     
     const currentScholarship = allScholarships[currentIndex];
@@ -148,6 +212,16 @@ const ScholarshipSwiper = () => {
       description: "Searching for scholarship opportunities...",
     });
   };
+  
+  // Function to prompt upgrade when limit is reached
+  const handleUpgradePrompt = () => {
+    setShowSubscriptionDialog(true);
+  };
+  
+  // Callback when subscription dialog is closed
+  const handleSubscriptionDialogClose = () => {
+    setShowSubscriptionDialog(false);
+  };
 
   if (isLoading && !allScholarships.length) {
     return (
@@ -176,6 +250,13 @@ const ScholarshipSwiper = () => {
         title="No Scholarships Available"
         description="Check back later for new scholarship opportunities."
       />
+    );
+  }
+
+  // Show daily limit reached message for free users
+  if (dailyLimitReached && !hasPremium) {
+    return (
+      <SwipeLimit onUpgrade={handleUpgradePrompt} />
     );
   }
 
@@ -209,6 +290,19 @@ const ScholarshipSwiper = () => {
       {isFetchingNextPage && (
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+        </div>
+      )}
+      
+      {/* Subscription dialog */}
+      <SubscriptionDialog 
+        isOpen={showSubscriptionDialog}
+        onClose={handleSubscriptionDialogClose}
+      />
+      
+      {/* Daily swipe counter for free users */}
+      {!hasPremium && !dailyLimitReached && (
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white/80 px-3 py-1 rounded-full text-xs font-medium">
+          {dailySwipeCount}/{FREE_DAILY_SWIPE_LIMIT} swipes today
         </div>
       )}
     </div>

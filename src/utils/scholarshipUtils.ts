@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Scholarship } from '../types/scholarship';
 import { saveScholarshipToDb, recordScholarshipSwipe } from './scholarship/dbOperations';
@@ -132,4 +131,47 @@ export const saveScholarship = async (scholarshipId: string) => {
 
 export const recordLeftSwipe = async (scholarshipId: string) => {
   return recordScholarshipSwipe(scholarshipId, false);
+};
+
+// Local storage keys
+const DAILY_SWIPE_COUNT_KEY = 'scholarship_daily_swipe_count';
+const DAILY_SWIPE_DATE_KEY = 'scholarship_daily_swipe_date';
+
+/**
+ * Get the current daily swipe count for the user
+ * Resets count if it's a new day
+ */
+export const getDailySwipeCount = async (): Promise<number> => {
+  try {
+    // Check if we need to reset based on date
+    const today = new Date().toISOString().split('T')[0];
+    const lastSwipeDate = localStorage.getItem(DAILY_SWIPE_DATE_KEY);
+    
+    // If it's a new day or no record exists, reset the counter
+    if (!lastSwipeDate || lastSwipeDate !== today) {
+      localStorage.setItem(DAILY_SWIPE_COUNT_KEY, '0');
+      localStorage.setItem(DAILY_SWIPE_DATE_KEY, today);
+      return 0;
+    }
+    
+    // Otherwise return the current count
+    const count = localStorage.getItem(DAILY_SWIPE_COUNT_KEY);
+    return count ? parseInt(count, 10) : 0;
+  } catch (error) {
+    console.error('Error getting daily swipe count:', error);
+    return 0; // Default to 0 if there's an error
+  }
+};
+
+/**
+ * Update the daily swipe count for the user
+ */
+export const updateDailySwipeCount = async (count: number): Promise<void> => {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    localStorage.setItem(DAILY_SWIPE_COUNT_KEY, count.toString());
+    localStorage.setItem(DAILY_SWIPE_DATE_KEY, today);
+  } catch (error) {
+    console.error('Error updating daily swipe count:', error);
+  }
 };
