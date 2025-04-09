@@ -1,10 +1,11 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import ScholarshipSwiper from '@/components/ScholarshipSwiper';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { GraduationCap, Rocket, DollarSign, Clock, Sparkles, BookOpen, Users, Trophy, Wallet as WalletIcon, PencilIcon, FileText, LightbulbIcon } from 'lucide-react';
+import { GraduationCap, Rocket, DollarSign, Clock, Sparkles, BookOpen, Users, Trophy, Wallet as WalletIcon, PencilIcon, FileText, Lightbulb } from 'lucide-react';
 import { AccountDropdown } from '@/components/AccountDropdown';
 import Wallet from '@/components/Wallet';
 import { CrawlForm } from '@/components/CrawlForm';
@@ -18,6 +19,8 @@ const Index = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const [essayStep, setEssayStep] = useState(1);
+  const [essayTopic, setEssayTopic] = useState("Describe a challenge you've faced and how it has prepared you for college.");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -58,6 +61,73 @@ const Index = () => {
         description: "There was a problem signing out.",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleEssayNextStep = () => {
+    if (essayStep < 3) {
+      setEssayStep(essayStep + 1);
+    }
+  };
+
+  const handleEssayPrevStep = () => {
+    if (essayStep > 1) {
+      setEssayStep(essayStep - 1);
+    }
+  };
+
+  const renderEssayPreviewStep = () => {
+    switch (essayStep) {
+      case 1:
+        return (
+          <div className="p-4">
+            <div className="flex gap-2 items-center mb-4 text-purple-700">
+              <BookOpen className="h-5 w-5" />
+              <h3 className="font-semibold">Step 1: Share your essay topic</h3>
+            </div>
+            <div className="bg-slate-50 p-4 rounded-md mb-4 text-sm">
+              "{essayTopic}"
+            </div>
+          </div>
+        );
+      case 2:
+        return (
+          <div className="p-4">
+            <div className="flex gap-2 items-center mb-4 text-purple-700">
+              <Lightbulb className="h-5 w-5" />
+              <h3 className="font-semibold">Step 2: Share your personal insight</h3>
+            </div>
+            <div className="bg-slate-50 p-4 rounded-md mb-4 text-sm">
+              <p className="font-medium mb-2">Tell us about a specific challenge you faced and what you learned from it.</p>
+              <p className="italic text-gray-600">
+                "During my sophomore year, I struggled with time management while juggling AP classes and basketball. 
+                After missing several deadlines, I developed a detailed planning system that helped me prioritize 
+                tasks and allocate time efficiently. This experience taught me resilience and the importance of 
+                organization skills that will be crucial for college."
+              </p>
+            </div>
+          </div>
+        );
+      case 3:
+        return (
+          <div className="p-4">
+            <div className="flex gap-2 items-center mb-4 text-purple-700">
+              <FileText className="h-5 w-5" />
+              <h3 className="font-semibold">Step 3: Select your essay approach</h3>
+            </div>
+            <div className="bg-slate-50 p-4 rounded-md mb-4">
+              <h4 className="font-medium text-purple-700 mb-2">Growth Mindset Approach</h4>
+              <p className="text-sm mb-3">Focus on how this challenge helped you develop resilience and adaptability.</p>
+              <div className="mt-2">
+                <Button size="sm" className="bg-purple-500 hover:bg-purple-600 text-white w-full">
+                  Choose This Approach
+                </Button>
+              </div>
+            </div>
+          </div>
+        );
+      default:
+        return null;
     }
   };
 
@@ -185,16 +255,22 @@ const Index = () => {
                   <TabsContent value="framework">
                     <Card className="border-0 shadow-sm">
                       <CardContent className="p-4">
-                        <div className="flex gap-2 items-center mb-4 text-purple-700">
-                          <BookOpen className="h-5 w-5" />
-                          <h3 className="font-semibold">Step 1: Share your essay topic</h3>
-                        </div>
-                        <div className="bg-slate-50 p-4 rounded-md mb-4 text-sm">
-                          "Describe a challenge you've faced and how it has prepared you for college."
-                        </div>
-                        <div className="flex justify-between">
-                          <Button variant="outline" disabled>Previous</Button>
-                          <Button className="bg-purple-500 hover:bg-purple-600">Next Step</Button>
+                        {renderEssayPreviewStep()}
+                        <div className="flex justify-between mt-4">
+                          <Button 
+                            variant="outline" 
+                            onClick={handleEssayPrevStep} 
+                            disabled={essayStep === 1}
+                          >
+                            Previous
+                          </Button>
+                          <Button 
+                            className="bg-purple-500 hover:bg-purple-600"
+                            onClick={handleEssayNextStep}
+                            disabled={essayStep === 3}
+                          >
+                            Next Step
+                          </Button>
                         </div>
                       </CardContent>
                     </Card>
