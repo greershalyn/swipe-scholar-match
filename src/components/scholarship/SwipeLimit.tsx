@@ -4,15 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Clock, Lock, ArrowRight, Sparkles, X } from 'lucide-react';
 import { differenceInSeconds } from 'date-fns';
 import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogAction,
-  AlertDialogCancel,
-} from "@/components/ui/alert-dialog";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { PremiumFeaturesList } from "@/components/premium/PremiumFeaturesList";
 
 interface SwipeLimitProps {
@@ -68,6 +66,16 @@ const SwipeLimit: React.FC<SwipeLimitProps> = ({ onUpgrade }) => {
     return () => clearInterval(interval);
   }, []);
 
+  const handlePremiumInfoOpen = () => {
+    console.log('Opening premium info dialog');
+    setShowPremiumInfo(true);
+  };
+
+  const handlePremiumInfoClose = () => {
+    console.log('Closing premium info dialog');
+    setShowPremiumInfo(false);
+  };
+
   return (
     <>
       <div className="flex flex-col items-center justify-center h-[600px] p-6 bg-white/90 rounded-xl shadow-lg border border-purple-100">
@@ -103,7 +111,7 @@ const SwipeLimit: React.FC<SwipeLimitProps> = ({ onUpgrade }) => {
             <Button 
               variant="link" 
               className="text-sm text-gray-500"
-              onClick={() => setShowPremiumInfo(true)}
+              onClick={handlePremiumInfoOpen}
             >
               Learn more about Premium benefits
               <ArrowRight className="h-3 w-3 ml-1" />
@@ -112,40 +120,46 @@ const SwipeLimit: React.FC<SwipeLimitProps> = ({ onUpgrade }) => {
         </div>
       </div>
 
-      <AlertDialog open={showPremiumInfo} onOpenChange={setShowPremiumInfo}>
-        <AlertDialogContent className="max-w-md relative bg-white">
+      <Dialog open={showPremiumInfo} onOpenChange={setShowPremiumInfo}>
+        <DialogContent className="max-w-md bg-white">
           <button 
-            onClick={() => setShowPremiumInfo(false)}
+            onClick={handlePremiumInfoClose}
             className="absolute right-4 top-4 p-1 rounded-full hover:bg-gray-100 transition-colors"
             aria-label="Close premium benefits popup"
           >
             <X className="h-5 w-5 text-gray-500" />
           </button>
           
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 text-xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
               <Sparkles className="h-5 w-5 text-yellow-500" />
               Premium Benefits
-            </AlertDialogTitle>
-            <AlertDialogDescription>
+            </DialogTitle>
+            <DialogDescription>
               Get access to premium features to maximize your scholarship opportunities
-            </AlertDialogDescription>
-          </AlertDialogHeader>
+            </DialogDescription>
+          </DialogHeader>
           
           <div className="py-4">
             <PremiumFeaturesList />
           </div>
           
-          <AlertDialogFooter className="gap-2">
-            <AlertDialogAction onClick={onUpgrade} className="bg-purple-600 hover:bg-purple-700">
+          <DialogFooter className="gap-2 mt-4">
+            <Button 
+              onClick={onUpgrade}
+              className="bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600"
+            >
               Upgrade to Premium
-            </AlertDialogAction>
-            <AlertDialogCancel onClick={() => setShowPremiumInfo(false)}>
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={handlePremiumInfoClose}
+            >
               Maybe Later
-            </AlertDialogCancel>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
