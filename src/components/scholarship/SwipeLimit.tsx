@@ -11,39 +11,35 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { PremiumFeaturesList } from "@/components/premium/PremiumFeaturesList";
+import { usePremiumCheckout } from '@/hooks/usePremiumCheckout';
 
 interface SwipeLimitProps {
-  onUpgrade: () => void;
+  onUpgrade?: () => void;
 }
 
 const SwipeLimit: React.FC<SwipeLimitProps> = ({ onUpgrade }) => {
   const [timeRemaining, setTimeRemaining] = useState<string>("");
   const [showPremiumInfo, setShowPremiumInfo] = useState(false);
+  const { initiateCheckout, loading } = usePremiumCheckout();
   
   useEffect(() => {
-    // Get the timestamp when the limit was reached
     const limitReachedTime = localStorage.getItem('scholarship_limit_reached_time');
     
-    // If no timestamp found, set default
     if (!limitReachedTime) {
       return;
     }
     
     const resetTime = new Date(parseInt(limitReachedTime) + 24 * 60 * 60 * 1000);
     
-    // Update the countdown every second
     const updateCountdown = () => {
       const now = new Date();
       const diff = differenceInSeconds(resetTime, now);
       
       if (diff <= 0) {
         setTimeRemaining("now");
-        // Clear the interval when time is up
         clearInterval(interval);
-        // Reset the limit when time is up
         localStorage.removeItem('scholarship_daily_swipe_count');
         localStorage.removeItem('scholarship_limit_reached_time');
-        // Force page reload to apply the reset
         window.location.reload();
         return;
       }
@@ -55,13 +51,10 @@ const SwipeLimit: React.FC<SwipeLimitProps> = ({ onUpgrade }) => {
       setTimeRemaining(`${hours}h ${minutes}m ${seconds}s`);
     };
     
-    // Initial update
     updateCountdown();
     
-    // Set up interval for countdown
     const interval = setInterval(updateCountdown, 1000);
     
-    // Clean up interval
     return () => clearInterval(interval);
   }, []);
 
@@ -73,6 +66,19 @@ const SwipeLimit: React.FC<SwipeLimitProps> = ({ onUpgrade }) => {
   const handlePremiumInfoClose = () => {
     console.log('Closing premium info dialog');
     setShowPremiumInfo(false);
+  };
+
+  const handleUpgradeClick = async () => {
+    console.log('Upgrade button clicked');
+    try {
+      if (onUpgrade) {
+        onUpgrade();
+      }
+      
+      await initiateCheckout();
+    } catch (error) {
+      console.error('Error initiating checkout:', error);
+    }
   };
 
   return (
@@ -99,11 +105,12 @@ const SwipeLimit: React.FC<SwipeLimitProps> = ({ onUpgrade }) => {
 
         <div className="space-y-3 w-full max-w-xs">
           <Button 
-            onClick={onUpgrade}
+            onClick={handleUpgradeClick}
             className="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600"
+            disabled={loading}
           >
             <Sparkles className="h-4 w-4 mr-2" />
-            Upgrade to Premium
+            {loading ? 'Processing...' : 'Upgrade to Premium'}
           </Button>
           
           <div className="text-center">
@@ -137,10 +144,11 @@ const SwipeLimit: React.FC<SwipeLimitProps> = ({ onUpgrade }) => {
           
           <DialogFooter className="gap-2 mt-4">
             <Button 
-              onClick={onUpgrade}
+              onClick={handleUpgradeClick}
+              disabled={loading}
               className="bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600"
             >
-              Upgrade to Premium
+              {loading ? 'Processing...' : 'Upgrade to Premium'}
             </Button>
             <Button 
               variant="outline"
