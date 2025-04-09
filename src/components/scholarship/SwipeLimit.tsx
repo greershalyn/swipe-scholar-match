@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Clock, Lock, ArrowRight, Sparkles } from 'lucide-react';
@@ -95,7 +96,7 @@ const SwipeLimit: React.FC<SwipeLimitProps> = ({ onUpgrade }) => {
         </h2>
         
         <p className="text-center text-gray-600 mb-6 max-w-md">
-          You've used all 8 of your daily scholarship swipes. Upgrade to premium for unlimited swiping or wait for your swipes to reset.
+          You've used all 10 of your daily scholarship swipes. Upgrade to premium for unlimited swiping or wait for your swipes to reset.
         </p>
         
         <div className="flex items-center justify-center mb-8 text-sm text-gray-500">
