@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Scholarship } from '../types/scholarship';
 import { saveScholarshipToDb, recordScholarshipSwipe } from './scholarship/dbOperations';
@@ -135,26 +136,31 @@ export const recordLeftSwipe = async (scholarshipId: string) => {
 
 // Local storage keys
 const DAILY_SWIPE_COUNT_KEY = 'scholarship_daily_swipe_count';
-const DAILY_SWIPE_DATE_KEY = 'scholarship_daily_swipe_date';
+const LIMIT_REACHED_TIME_KEY = 'scholarship_limit_reached_time';
 
 /**
  * Get the current daily swipe count for the user
- * Resets count if it's a new day
+ * Resets count after 24 hours since limit was reached
  */
 export const getDailySwipeCount = async (): Promise<number> => {
   try {
-    // Check if we need to reset based on date
-    const today = new Date().toISOString().split('T')[0];
-    const lastSwipeDate = localStorage.getItem(DAILY_SWIPE_DATE_KEY);
+    // Check if the limit was previously reached
+    const limitReachedTime = localStorage.getItem(LIMIT_REACHED_TIME_KEY);
     
-    // If it's a new day or no record exists, reset the counter
-    if (!lastSwipeDate || lastSwipeDate !== today) {
-      localStorage.setItem(DAILY_SWIPE_COUNT_KEY, '0');
-      localStorage.setItem(DAILY_SWIPE_DATE_KEY, today);
-      return 0;
+    if (limitReachedTime) {
+      const limitTime = parseInt(limitReachedTime);
+      const now = Date.now();
+      
+      // If 24 hours have passed since the limit was reached
+      if (now - limitTime >= 24 * 60 * 60 * 1000) {
+        // Reset the counter
+        localStorage.removeItem(DAILY_SWIPE_COUNT_KEY);
+        localStorage.removeItem(LIMIT_REACHED_TIME_KEY);
+        return 0;
+      }
     }
     
-    // Otherwise return the current count
+    // Return the current count
     const count = localStorage.getItem(DAILY_SWIPE_COUNT_KEY);
     return count ? parseInt(count, 10) : 0;
   } catch (error) {
@@ -165,12 +171,16 @@ export const getDailySwipeCount = async (): Promise<number> => {
 
 /**
  * Update the daily swipe count for the user
+ * If limit is reached, also store the timestamp
  */
-export const updateDailySwipeCount = async (count: number): Promise<void> => {
+export const updateDailySwipeCount = async (count: number, limitReached: boolean = false): Promise<void> => {
   try {
-    const today = new Date().toISOString().split('T')[0];
     localStorage.setItem(DAILY_SWIPE_COUNT_KEY, count.toString());
-    localStorage.setItem(DAILY_SWIPE_DATE_KEY, today);
+    
+    // If the limit was just reached, store the current timestamp
+    if (limitReached) {
+      localStorage.setItem(LIMIT_REACHED_TIME_KEY, Date.now().toString());
+    }
   } catch (error) {
     console.error('Error updating daily swipe count:', error);
   }
