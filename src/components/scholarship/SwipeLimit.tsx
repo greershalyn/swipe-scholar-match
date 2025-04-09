@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Clock, Lock, ArrowRight, Sparkles } from 'lucide-react';
-import { formatDistance, differenceInSeconds } from 'date-fns';
+import { differenceInSeconds } from 'date-fns';
 
 interface SwipeLimitProps {
   onUpgrade: () => void;
@@ -14,7 +14,13 @@ const SwipeLimit: React.FC<SwipeLimitProps> = ({ onUpgrade }) => {
   useEffect(() => {
     // Get the timestamp when the limit was reached
     const limitReachedTime = localStorage.getItem('scholarship_limit_reached_time');
-    const resetTime = limitReachedTime ? new Date(parseInt(limitReachedTime) + 24 * 60 * 60 * 1000) : new Date();
+    
+    // If no timestamp found, set default
+    if (!limitReachedTime) {
+      return;
+    }
+    
+    const resetTime = new Date(parseInt(limitReachedTime) + 24 * 60 * 60 * 1000);
     
     // Update the countdown every second
     const updateCountdown = () => {
