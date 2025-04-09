@@ -113,7 +113,7 @@ const SwipeLimit: React.FC<SwipeLimitProps> = ({ onUpgrade }) => {
       </div>
 
       <AlertDialog open={showPremiumInfo} onOpenChange={setShowPremiumInfo}>
-        <AlertDialogContent className="max-w-md relative">
+        <AlertDialogContent className="max-w-md relative bg-white">
           <button 
             onClick={() => setShowPremiumInfo(false)}
             className="absolute right-4 top-4 p-1 rounded-full hover:bg-gray-100 transition-colors"
@@ -136,8 +136,8 @@ const SwipeLimit: React.FC<SwipeLimitProps> = ({ onUpgrade }) => {
             <PremiumFeaturesList />
           </div>
           
-          <AlertDialogFooter>
-            <AlertDialogAction onClick={onUpgrade}>
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogAction onClick={onUpgrade} className="bg-purple-600 hover:bg-purple-700">
               Upgrade to Premium
             </AlertDialogAction>
             <AlertDialogCancel onClick={() => setShowPremiumInfo(false)}>
