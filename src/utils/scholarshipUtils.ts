@@ -185,3 +185,16 @@ export const updateDailySwipeCount = async (count: number, limitReached: boolean
     console.error('Error updating daily swipe count:', error);
   }
 };
+
+/**
+ * Check if the user has reached their daily swipe limit
+ */
+export const hasReachedDailySwipeLimit = async (freeLimit: number): Promise<boolean> => {
+  try {
+    const swipeCount = await getDailySwipeCount();
+    return swipeCount >= freeLimit;
+  } catch (error) {
+    console.error('Error checking daily swipe limit:', error);
+    return false; // Default to not reached if there's an error
+  }
+};

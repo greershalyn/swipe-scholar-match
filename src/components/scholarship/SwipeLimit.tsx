@@ -25,6 +25,11 @@ const SwipeLimit: React.FC<SwipeLimitProps> = ({ onUpgrade }) => {
         setTimeRemaining("now");
         // Clear the interval when time is up
         clearInterval(interval);
+        // Reset the limit when time is up
+        localStorage.removeItem('scholarship_daily_swipe_count');
+        localStorage.removeItem('scholarship_limit_reached_time');
+        // Force page reload to apply the reset
+        window.location.reload();
         return;
       }
       

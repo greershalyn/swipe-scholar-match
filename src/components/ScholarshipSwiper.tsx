@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import ScholarshipCard from './ScholarshipCard';
 import EmptyState from './scholarship/EmptyState';
@@ -5,7 +6,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from "@/components/ui/use-toast";
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useScholarships } from '@/hooks/useScholarships';
-import { saveScholarship, recordLeftSwipe, getDailySwipeCount, updateDailySwipeCount } from '@/utils/scholarshipUtils';
+import { 
+  saveScholarship, 
+  recordLeftSwipe, 
+  getDailySwipeCount, 
+  updateDailySwipeCount, 
+  hasReachedDailySwipeLimit 
+} from '@/utils/scholarshipUtils';
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from 'lucide-react';
 import { Scholarship } from '@/types/scholarship';
@@ -37,8 +44,9 @@ const ScholarshipSwiper = () => {
     refetch 
   } = useScholarships(refreshTimestamp);
 
+  // Initialize user status and check swipe limit on component mount
   useEffect(() => {
-    const checkUserStatus = async () => {
+    const initializeStatus = async () => {
       try {
         const isPremium = await checkPremiumAccess();
         setHasPremium(isPremium);
@@ -47,18 +55,18 @@ const ScholarshipSwiper = () => {
           const swipeCount = await getDailySwipeCount();
           setDailySwipeCount(swipeCount);
           
-          if (swipeCount >= FREE_DAILY_SWIPE_LIMIT) {
-            setDailyLimitReached(true);
-          }
+          const limitReached = await hasReachedDailySwipeLimit(FREE_DAILY_SWIPE_LIMIT);
+          setDailyLimitReached(limitReached);
         }
       } catch (error) {
-        console.error('Error checking user status:', error);
+        console.error('Error initializing user status:', error);
       }
     };
     
-    checkUserStatus();
+    initializeStatus();
   }, []);
 
+  // Handle loading progress animation
   useEffect(() => {
     if (isLoading) {
       const timer = setInterval(() => {
@@ -77,6 +85,7 @@ const ScholarshipSwiper = () => {
 
   const allScholarships = data?.pages.flatMap(page => page.scholarships) ?? [];
 
+  // Fetch more scholarships when needed
   useEffect(() => {
     if (allScholarships.length - currentIndex <= 4 && !isFetchingNextPage && hasNextPage) {
       console.log('Fetching next page of scholarships...');
@@ -84,6 +93,7 @@ const ScholarshipSwiper = () => {
     }
   }, [currentIndex, allScholarships.length, fetchNextPage, hasNextPage, isFetchingNextPage]);
 
+  // Log state for debugging
   useEffect(() => {
     console.log('ScholarshipSwiper state:', {
       scholarshipsLength: allScholarships.length,
@@ -100,6 +110,7 @@ const ScholarshipSwiper = () => {
     });
   }, [allScholarships, currentIndex, isLoading, error, hasNextPage, isFetchingNextPage, refreshTimestamp, dailySwipeCount, hasPremium, dailyLimitReached]);
 
+  // Mutations for saving and recording left swipes
   const saveMutation = useMutation({
     mutationFn: saveScholarship,
     onSuccess: () => {
@@ -135,20 +146,26 @@ const ScholarshipSwiper = () => {
     },
   });
 
+  // Handle swipe actions
   const handleSwipe = async (direction: 'left' | 'right') => {
+    // If not a premium user, check and update swipe count
     if (!hasPremium) {
-      if (dailySwipeCount >= FREE_DAILY_SWIPE_LIMIT) {
+      // Check if already at limit first to prevent extra swipes
+      if (dailyLimitReached || dailySwipeCount >= FREE_DAILY_SWIPE_LIMIT) {
         setDailyLimitReached(true);
         setShowSubscriptionDialog(true);
         return;
       }
       
+      // Increment swipe count
       const newCount = dailySwipeCount + 1;
       setDailySwipeCount(newCount);
       
+      // Check if limit just reached with this swipe
       const limitJustReached = newCount >= FREE_DAILY_SWIPE_LIMIT;
       await updateDailySwipeCount(newCount, limitJustReached);
       
+      // If limit just reached, set flag after a short delay (to allow the swipe animation)
       if (limitJustReached) {
         setTimeout(() => {
           setDailyLimitReached(true);
@@ -204,6 +221,7 @@ const ScholarshipSwiper = () => {
     setShowSubscriptionDialog(false);
   };
 
+  // Loading state
   if (isLoading && !allScholarships.length) {
     return (
       <div className="flex flex-col items-center justify-center h-[600px] space-y-4">
@@ -215,6 +233,7 @@ const ScholarshipSwiper = () => {
     );
   }
 
+  // Error state
   if (error) {
     console.error('Scholarship loading error:', error);
     return (
@@ -225,6 +244,7 @@ const ScholarshipSwiper = () => {
     );
   }
 
+  // Empty state
   if (!allScholarships.length) {
     return (
       <EmptyState 
@@ -234,12 +254,14 @@ const ScholarshipSwiper = () => {
     );
   }
 
+  // Limit reached state
   if (dailyLimitReached && !hasPremium) {
     return (
       <SwipeLimit onUpgrade={handleUpgradePrompt} />
     );
   }
 
+  // End of scholarships state
   if (currentIndex >= allScholarships.length) {
     return (
       <div className="flex items-center justify-center h-[600px]">
@@ -256,6 +278,7 @@ const ScholarshipSwiper = () => {
     );
   }
 
+  // Default view - scholarship card
   return (
     <div className="relative h-[600px] w-full max-w-md mx-auto">
       <AnimatePresence mode="wait">
