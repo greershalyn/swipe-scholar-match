@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { ExpandedFramework } from '@/types/essay';
 import { ExpandedFrameworkView } from '@/components/essay/ExpandedFrameworkView';
+import { SquigglyBackground } from '@/components/SquigglyBackground';
 
 const Index = () => {
   const [user, setUser] = useState(null);
@@ -24,7 +25,6 @@ const Index = () => {
   const [essayTopic, setEssayTopic] = useState("Describe a challenge you've faced and how it has prepared you for college.");
   const [showFrameworkPreview, setShowFrameworkPreview] = useState(false);
 
-  // Sample framework to show in preview
   const sampleFramework: ExpandedFramework = {
     title: "Turning Obstacles into Growth Opportunities",
     hook: "During my sophomore year, what began as a struggle with time management transformed into one of my most valuable learning experiences, equipping me with skills I'll carry throughout my college journey.",
@@ -120,7 +120,6 @@ const Index = () => {
 
   const handleCloseFrameworkPreview = () => {
     setShowFrameworkPreview(false);
-    // When closing the framework preview, go back to step 3 (Select your essay approach)
     setEssayStep(3);
   };
 
@@ -184,8 +183,9 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen min-w-screen bg-gradient-to-b from-[#9b87f5] via-[#D946EF] to-[#FDE1D3] overflow-x-hidden">
-      <div className={`container px-4 ${isMobile ? 'py-4' : 'py-8'}`}>
+    <div className="min-h-screen min-w-screen bg-gradient-to-b from-[#9b87f5] via-[#D946EF] to-[#FDE1D3] overflow-x-hidden relative">
+      <SquigglyBackground />
+      <div className={`container px-4 ${isMobile ? 'py-4' : 'py-8'} relative z-10`}>
         <div className="flex justify-end mb-6 pt-safe">
           {user ? (
             <AccountDropdown />
