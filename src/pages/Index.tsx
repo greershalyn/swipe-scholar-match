@@ -220,7 +220,7 @@ const Index = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8 mb-16">
           <div className="bg-white/95 p-6 md:p-8 rounded-2xl shadow-xl hover:scale-105 transition-transform group">
             <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-primary rounded-2xl mb-4 md:mb-6 mx-auto group-hover:rotate-12 transition-transform">
-              Rocket className="text-white w-6 h-6 md:w-8 md:h-8" />
+              <Rocket className="text-white w-6 h-6 md:w-8 md:h-8" />
             </div>
             <h3 className="text-lg md:text-xl font-bold text-primary mb-3 md:mb-4 text-center">Quick & Easy</h3>
             <p className="text-sm md:text-base text-muted-foreground text-center leading-relaxed">Swipe right on scholarships that match your profile - as simple as using your favorite social app!</p>
