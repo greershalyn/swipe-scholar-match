@@ -10,7 +10,8 @@ export const SquigglyBackground: React.FC = () => {
         backgroundSize: "500px",
         backgroundRepeat: "repeat",
         mixBlendMode: "soft-light",
-        bottom: "64px",
+        bottom: "0",
+        height: "100%"
       }}
       aria-hidden="true"
     />
