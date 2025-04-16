@@ -16,4 +16,3 @@ export const SquigglyBackground: React.FC = () => {
     />
   );
 };
-
