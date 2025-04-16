@@ -10,6 +10,7 @@ export const SquigglyBackground: React.FC = () => {
         backgroundSize: "500px",
         backgroundRepeat: "repeat",
         mixBlendMode: "soft-light",
+        bottom: "64px", // Add space at the bottom to prevent overlap with footer
       }}
       aria-hidden="true"
     />

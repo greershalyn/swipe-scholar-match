@@ -18,8 +18,8 @@ const Footer = () => {
   };
 
   return (
-    <footer className="w-full py-4 mt-auto bg-gray-800 shadow-lg">
-      <div className="container flex flex-col items-center justify-center gap-2">
+    <footer className="relative w-full py-6 mt-auto bg-gray-800 shadow-lg z-20">
+      <div className="container flex flex-col items-center justify-center gap-3">
         <PoweredBySection />
         <ContactInfo />
         <LegalLinks onOpenDialog={handleOpenDialog} />
