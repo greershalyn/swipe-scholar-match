@@ -287,6 +287,9 @@ const Index = () => {
               </h2>
               <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
                 Your scholarship essays deserve the best. Our AI-powered Essay Assistant helps you craft winning applications.
+                <span className="block text-primary font-bold mt-2 text-xl">
+                  Just $10/month - Cancel Anytime!
+                </span>
               </p>
             </div>
             
