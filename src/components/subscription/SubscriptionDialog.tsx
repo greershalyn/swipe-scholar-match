@@ -2,7 +2,7 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Crown, Lock } from 'lucide-react';
+import { Crown, Lock, BookOpen, Search, Star } from 'lucide-react';
 
 interface SubscriptionDialogProps {
   isOpen: boolean;
@@ -34,16 +34,20 @@ export const SubscriptionDialog = ({ isOpen, onClose }: SubscriptionDialogProps)
             </h3>
             <ul className="space-y-2 text-sm">
               <li className="flex items-start gap-2">
-                ✓ AI-powered Essay Assistant to craft compelling scholarship essays
+                <Star className="h-4 w-4 text-yellow-500 flex-shrink-0 mt-0.5" />
+                <span>AI-powered Essay Assistant with personalized frameworks</span>
               </li>
               <li className="flex items-start gap-2">
-                ✓ Advanced essay frameworks and suggestions
+                <Search className="h-4 w-4 text-yellow-500 flex-shrink-0 mt-0.5" />
+                <span>Unlimited scholarship swiping with no daily limits</span>
               </li>
               <li className="flex items-start gap-2">
-                ✓ Personalized writing feedback
+                <BookOpen className="h-4 w-4 text-yellow-500 flex-shrink-0 mt-0.5" />
+                <span>Comprehensive SAT & ACT test prep materials</span>
               </li>
               <li className="flex items-start gap-2">
-                ✓ Priority support
+                <Lock className="h-4 w-4 text-yellow-500 flex-shrink-0 mt-0.5" />
+                <span>Priority support</span>
               </li>
             </ul>
           </div>

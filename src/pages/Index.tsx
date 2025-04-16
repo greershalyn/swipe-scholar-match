@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import ScholarshipSwiper from '@/components/ScholarshipSwiper';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { GraduationCap, Rocket, DollarSign, Clock, Sparkles, BookOpen, Users, Trophy, Wallet as WalletIcon, PencilIcon, FileText, Lightbulb, X } from 'lucide-react';
+import { GraduationCap, Rocket, DollarSign, Clock, Sparkles, BookOpen, Users, Trophy, Wallet as WalletIcon, PencilIcon, FileText, Lightbulb, X, Search, Zap } from 'lucide-react';
 import { AccountDropdown } from '@/components/AccountDropdown';
 import Wallet from '@/components/Wallet';
 import { CrawlForm } from '@/components/CrawlForm';
@@ -220,7 +220,7 @@ const Index = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8 mb-16">
           <div className="bg-white/95 p-6 md:p-8 rounded-2xl shadow-xl hover:scale-105 transition-transform group">
             <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-primary rounded-2xl mb-4 md:mb-6 mx-auto group-hover:rotate-12 transition-transform">
-              <Rocket className="text-white w-6 h-6 md:w-8 md:h-8" />
+              Rocket className="text-white w-6 h-6 md:w-8 md:h-8" />
             </div>
             <h3 className="text-lg md:text-xl font-bold text-primary mb-3 md:mb-4 text-center">Quick & Easy</h3>
             <p className="text-sm md:text-base text-muted-foreground text-center leading-relaxed">Swipe right on scholarships that match your profile - as simple as using your favorite social app!</p>
@@ -398,18 +398,18 @@ const Index = () => {
               
               <div className="bg-white/80 p-5 rounded-xl">
                 <div className="flex justify-center mb-3">
-                  <FileText className="h-8 w-8 text-purple-500" />
+                  <Search className="h-8 w-8 text-purple-500" />
                 </div>
-                <h3 className="font-semibold text-lg mb-2">Professional Review</h3>
-                <p className="text-sm text-muted-foreground">Get detailed feedback on your essays with actionable suggestions for improvement</p>
+                <h3 className="font-semibold text-lg mb-2">Unlimited Scholarships</h3>
+                <p className="text-sm text-muted-foreground">Browse and apply to as many scholarships as you want with no daily limits</p>
               </div>
               
               <div className="bg-white/80 p-5 rounded-xl">
                 <div className="flex justify-center mb-3">
-                  <Sparkles className="h-8 w-8 text-purple-500" />
+                  <BookOpen className="h-8 w-8 text-purple-500" />
                 </div>
-                <h3 className="font-semibold text-lg mb-2">Stand Out</h3>
-                <p className="text-sm text-muted-foreground">Craft compelling essays that make your application shine and increase your chances of winning</p>
+                <h3 className="font-semibold text-lg mb-2">Test Prep</h3>
+                <p className="text-sm text-muted-foreground">Access comprehensive SAT & ACT practice materials and personalized study strategies</p>
               </div>
             </div>
           </div>
