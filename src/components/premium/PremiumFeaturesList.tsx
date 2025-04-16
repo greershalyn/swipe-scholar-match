@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Star, Lightbulb, FileCheck, BookOpen, GraduationCap } from 'lucide-react';
+import { Star, Lightbulb, FileCheck, BookOpen, GraduationCap, Search, Zap } from 'lucide-react';
 
 export const PremiumFeaturesList = () => {
   return (
@@ -23,6 +23,20 @@ export const PremiumFeaturesList = () => {
             <li className="flex items-center gap-2">
               <FileCheck className="h-4 w-4 text-yellow-500" />
               Professional writing feedback
+            </li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 className="font-medium mb-2">Scholarship Search:</h3>
+          <ul className="space-y-2">
+            <li className="flex items-center gap-2">
+              <Search className="h-4 w-4 text-yellow-500" />
+              Unlimited scholarship swiping
+            </li>
+            <li className="flex items-center gap-2">
+              <Zap className="h-4 w-4 text-yellow-500" />
+              No daily swipe limits
             </li>
           </ul>
         </div>
