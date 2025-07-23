@@ -8,7 +8,7 @@ import { AccountDropdown } from '@/components/AccountDropdown';
 
 const FinancialEducation = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#9b87f5] via-[#D946EF] to-[#FDE1D3]">
+    <div className="min-h-screen bg-background">
       <div className="container px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <Link to="/">
@@ -22,13 +22,13 @@ const FinancialEducation = () => {
         </div>
 
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold text-white mb-8 flex items-center gap-3">
+          <h1 className="text-4xl font-bold text-foreground mb-8 flex items-center gap-3">
             <Book className="h-8 w-8" />
             Financial Education Resources
           </h1>
 
           <div className="grid gap-6 mb-8">
-            <Card className="bg-white/95">
+            <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <GraduationCap className="h-5 w-5 text-primary" />
@@ -52,7 +52,7 @@ const FinancialEducation = () => {
                 <Button variant="outline" className="w-full justify-between" asChild>
                   <a href="https://consumer.ftc.gov/articles/how-avoid-scholarship-and-financial-aid-scams" target="_blank" rel="noopener noreferrer">
                     <div className="flex items-center gap-2">
-                      <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                      <AlertTriangle className="h-4 w-4 text-destructive" />
                       <span>Federal Trade Commission - How to Avoid Scholarship Scams</span>
                     </div>
                     <ExternalLink className="h-4 w-4" />
@@ -61,7 +61,7 @@ const FinancialEducation = () => {
               </CardContent>
             </Card>
 
-            <Card className="bg-white/95">
+            <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <PiggyBank className="h-5 w-5 text-primary" />
@@ -71,7 +71,7 @@ const FinancialEducation = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-4">
-                  <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="bg-muted p-4 rounded-lg">
                     <h3 className="font-semibold mb-2 flex items-center gap-2">
                       <DollarSign className="h-4 w-4 text-primary" />
                       Take Control
@@ -79,7 +79,7 @@ const FinancialEducation = () => {
                     <p>You are responsible for your finances. Create a realistic budget and stick to it.</p>
                   </div>
                   
-                  <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="bg-muted p-4 rounded-lg">
                     <h3 className="font-semibold mb-2 flex items-center gap-2">
                       <ShieldCheck className="h-4 w-4 text-primary" />
                       Watch Your Spending
@@ -87,17 +87,17 @@ const FinancialEducation = () => {
                     <p>Control your money by pacing spending and cutting unnecessary expenses to make it last throughout the semester.</p>
                   </div>
                   
-                  <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="bg-muted p-4 rounded-lg">
                     <h3 className="font-semibold mb-2">Credit Wisdom</h3>
                     <p>Use credit responsibly - your college credit management can affect your post-graduation life.</p>
                   </div>
                   
-                  <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="bg-muted p-4 rounded-lg">
                     <h3 className="font-semibold mb-2">Smart Banking</h3>
                     <p>Take advantage of student banking services like online banking, balance alerts, and identity theft protection.</p>
                   </div>
                   
-                  <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="bg-muted p-4 rounded-lg">
                     <h3 className="font-semibold mb-2">Save Money</h3>
                     <ul className="list-disc list-inside space-y-2">
                       <li>Look for scholarships and student discounts</li>
