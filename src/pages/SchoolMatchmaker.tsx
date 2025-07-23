@@ -1,5 +1,5 @@
+
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { AccountDropdown } from "@/components/AccountDropdown";
+import { PremiumPageLayout } from "@/components/premium/PremiumPageLayout";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Loader2, GraduationCap, MapPin, DollarSign } from "lucide-react";
 
@@ -86,20 +86,8 @@ export default function SchoolMatchmaker() {
   };
 
   return (
-    <div className="bg-background">
-      <div className={`container px-4 ${isMobile ? 'py-4' : 'py-8'}`}>
-        <div className={`flex justify-between items-center ${isMobile ? 'mb-4' : 'mb-8'}`}>
-          <Link to="/">
-            <img 
-              src="/lovable-uploads/24f07198-1e4c-4eea-8e07-259aa77d1711.png"
-              alt="SwipeScholar Logo"
-              className={`${isMobile ? 'h-24' : 'h-40'} w-auto invert`}
-            />
-          </Link>
-          <AccountDropdown />
-        </div>
-        
-        <div className="max-w-6xl mx-auto">
+    <PremiumPageLayout>
+      <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
           <h1 className={`${isMobile ? 'text-2xl' : 'text-4xl'} font-bold text-primary mb-4`}>School Matchmaker</h1>
           <p className={`${isMobile ? 'text-lg' : 'text-xl'} text-muted-foreground max-w-2xl mx-auto`}>
@@ -238,8 +226,7 @@ export default function SchoolMatchmaker() {
             </div>
           )}
         </div>
-        </div>
       </div>
-    </div>
+    </PremiumPageLayout>
   );
 }
