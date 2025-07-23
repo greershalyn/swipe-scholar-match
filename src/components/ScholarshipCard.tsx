@@ -249,14 +249,18 @@ const ScholarshipCard: React.FC<ScholarshipCardProps> = ({ scholarship, onSwipe 
           </div>
         </div>
 
-        <div className="mt-6 flex justify-center gap-8 text-sm text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <ThumbsDown className="w-6 h-6 text-red-500" />
-            <span>Skip</span>
+        <div className="mt-6 flex justify-center gap-8">
+          <div className="flex flex-col items-center gap-2">
+            <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform cursor-pointer">
+              <ThumbsDown className="w-6 h-6 text-primary-foreground" />
+            </div>
+            <span className="text-sm text-muted-foreground">Skip</span>
           </div>
-          <div className="flex items-center gap-2">
-            <span>Apply</span>
-            <ThumbsUp className="w-6 h-6 text-green-500" />
+          <div className="flex flex-col items-center gap-2">
+            <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform cursor-pointer">
+              <ThumbsUp className="w-6 h-6 text-primary-foreground" />
+            </div>
+            <span className="text-sm text-muted-foreground">Apply</span>
           </div>
         </div>
       </Card>
