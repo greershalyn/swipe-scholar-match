@@ -55,18 +55,31 @@ serve(async (req) => {
     Preferred States: ${statesString}
     Additional Interests: ${interests || 'None specified'}
     
-    For each school, provide:
-    1. School name
-    2. Location (City, State)
-    3. Specific program name that matches their major
-    4. Estimated annual cost (tuition + fees)
-    5. Brief description highlighting why it's a good match
-    6. National or program ranking if available
-    7. Admission rate percentage
-    
     Focus on schools that are realistic matches based on the budget and have strong programs in the specified field. Include a mix of public and private institutions if appropriate for the budget range.
     
-    Return the results as a JSON object with a "schools" array containing the school information.`;
+    Return the results as a JSON object with a "schools" array. Each school object must have exactly these fields:
+    - "name": The school name (required)
+    - "location": City, State format (required)
+    - "program": Specific program name that matches their major (required)
+    - "estimatedCost": Annual tuition + fees with dollar amounts (e.g. "$25,000 - $30,000") (required)
+    - "description": Brief description highlighting why it's a good match (required)
+    - "ranking": National or program ranking if available (required)
+    - "admissionRate": Admission rate percentage (required)
+    
+    Example format:
+    {
+      "schools": [
+        {
+          "name": "University of California, Berkeley",
+          "location": "Berkeley, California",
+          "program": "Computer Science",
+          "estimatedCost": "$14,226 in-state, $44,007 out-of-state",
+          "description": "Top-ranked public university with excellent CS program",
+          "ranking": "#1 Public University (US News)",
+          "admissionRate": "17%"
+        }
+      ]
+    }`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
