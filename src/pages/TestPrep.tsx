@@ -50,14 +50,14 @@ const TestPrep = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#9b87f5] via-[#D946EF] to-[#FDE1D3]">
+    <div className="min-h-screen bg-background">
       <div className="container px-4 py-8">
         <TestPrepHeader />
 
         <div className="max-w-3xl mx-auto">
           <div className="flex items-center gap-3 mb-8">
-            <GraduationCap className="h-8 w-8 text-white" />
-            <h1 className="text-4xl font-bold text-white">Test Prep</h1>
+            <GraduationCap className="h-8 w-8 text-primary" />
+            <h1 className="text-4xl font-bold text-foreground">Test Prep</h1>
           </div>
 
           <Tabs defaultValue="act" className="mb-8">

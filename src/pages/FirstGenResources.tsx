@@ -11,7 +11,7 @@ import ScholarshipsTab from '@/components/first-gen/ScholarshipsTab';
 
 const FirstGenResources = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#9b87f5] via-[#D946EF] to-[#FDE1D3]">
+    <div className="min-h-screen bg-background">
       <div className="container px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <Link to="/">
@@ -21,24 +21,24 @@ const FirstGenResources = () => {
         </div>
 
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold text-white mb-2">First-Generation Student Resources</h1>
-          <p className="text-white text-lg mb-8">Tools and resources to help you navigate your college journey</p>
+          <h1 className="text-4xl font-bold text-foreground mb-2">First-Generation Student Resources</h1>
+          <p className="text-muted-foreground text-lg mb-8">Tools and resources to help you navigate your college journey</p>
 
           <Tabs defaultValue="checklist" className="mb-8">
-            <TabsList className="bg-white/20 text-white w-full justify-start mb-6 rounded-lg overflow-hidden">
-              <TabsTrigger value="checklist" className="data-[state=active]:bg-white data-[state=active]:text-purple-800">
+            <TabsList className="bg-secondary border border-border w-full justify-start mb-6 rounded-lg overflow-hidden">
+              <TabsTrigger value="checklist" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 Application Checklist
               </TabsTrigger>
-              <TabsTrigger value="survival-guide" className="data-[state=active]:bg-white data-[state=active]:text-purple-800">
+              <TabsTrigger value="survival-guide" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 Survival Guide
               </TabsTrigger>
-              <TabsTrigger value="family-conversations" className="data-[state=active]:bg-white data-[state=active]:text-purple-800">
+              <TabsTrigger value="family-conversations" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 Family Conversations
               </TabsTrigger>
-              <TabsTrigger value="scholarships" className="data-[state=active]:bg-white data-[state=active]:text-purple-800">
+              <TabsTrigger value="scholarships" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 Scholarships
               </TabsTrigger>
-              <TabsTrigger value="resources" className="data-[state=active]:bg-white data-[state=active]:text-purple-800">
+              <TabsTrigger value="resources" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 Helpful Resources
               </TabsTrigger>
             </TabsList>
