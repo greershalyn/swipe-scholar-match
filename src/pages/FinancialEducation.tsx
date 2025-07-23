@@ -18,7 +18,7 @@ const FinancialEducation = () => {
             <img 
               src="/lovable-uploads/24f07198-1e4c-4eea-8e07-259aa77d1711.png"
               alt="SwipeScholar Logo"
-              className={`${isMobile ? 'h-16' : 'h-24'} w-auto invert`}
+              className={`${isMobile ? 'h-20' : 'h-32'} w-auto invert`}
             />
           </Link>
           <AccountDropdown />
