@@ -200,7 +200,7 @@ const Index = () => {
           <div className="flex justify-center mb-6">
             <GraduationCap className="w-16 h-16 md:w-20 md:h-20 text-primary animate-bounce" />
           </div>
-          <h1 className={`${isMobile ? 'text-5xl' : 'text-7xl'} font-bold text-foreground mb-6 drop-shadow-lg`}>
+          <h1 className={`${isMobile ? 'text-5xl' : 'text-7xl'} font-bold text-primary mb-6 drop-shadow-lg`}>
             SwipeScholar
           </h1>
           <p className="text-lg md:text-2xl text-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
