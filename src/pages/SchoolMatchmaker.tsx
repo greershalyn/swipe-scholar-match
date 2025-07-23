@@ -193,7 +193,6 @@ export default function SchoolMatchmaker() {
                       </div>
                       <div className="text-right">
                         <div className="flex items-center gap-1 text-lg font-semibold text-primary">
-                          <DollarSign className="h-4 w-4" />
                           {school.estimatedCost}
                         </div>
                         <p className="text-sm text-muted-foreground">per year</p>
