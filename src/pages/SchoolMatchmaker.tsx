@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { AccountDropdown } from "@/components/AccountDropdown";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Loader2, GraduationCap, MapPin, DollarSign } from "lucide-react";
 
 interface SchoolMatch {
@@ -39,6 +42,7 @@ export default function SchoolMatchmaker() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<SchoolMatch[]>([]);
+  const isMobile = useIsMobile();
   const { toast } = useToast();
 
   const handleStateToggle = (state: string) => {
@@ -83,7 +87,19 @@ export default function SchoolMatchmaker() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
+      <div className={`container px-4 ${isMobile ? 'py-4' : 'py-8'}`}>
+        <div className={`flex justify-between items-center ${isMobile ? 'mb-4' : 'mb-8'}`}>
+          <Link to="/">
+            <img 
+              src="/lovable-uploads/24f07198-1e4c-4eea-8e07-259aa77d1711.png"
+              alt="SwipeScholar Logo"
+              className={`${isMobile ? 'h-24' : 'h-40'} w-auto invert`}
+            />
+          </Link>
+          <AccountDropdown />
+        </div>
+        
+        <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-4">School Matchmaker</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -221,6 +237,7 @@ export default function SchoolMatchmaker() {
               ))}
             </div>
           )}
+        </div>
         </div>
       </div>
     </div>

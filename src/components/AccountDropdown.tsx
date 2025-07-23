@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { User, Wallet, BookOpen, Pencil, GraduationCap, Users } from "lucide-react";
+import { User, Wallet, BookOpen, Pencil, GraduationCap, Users, School } from "lucide-react";
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   DropdownMenu,
@@ -55,6 +55,10 @@ export const AccountDropdown = () => {
           <DropdownMenuItem onClick={() => navigate("/first-gen-resources")} className="flex items-center">
             <Users className="mr-2 h-4 w-4" />
             <span>First-Gen Resources</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate("/school-matchmaker")} className="flex items-center">
+            <School className="mr-2 h-4 w-4" />
+            <span>School Matchmaker</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleLogout}>
