@@ -11,7 +11,7 @@ const TestPrepHeader = () => {
         <img 
           src="/lovable-uploads/24f07198-1e4c-4eea-8e07-259aa77d1711.png"
           alt="SwipeScholar Logo"
-          className="h-24 w-auto"
+          className="h-24 w-auto invert"
         />
       </Link>
       <AccountDropdown />
