@@ -12,7 +12,7 @@ export const PremiumPageLayout = ({ children }: PremiumPageLayoutProps) => {
   const isMobile = useIsMobile();
   
   return (
-    <div className="bg-background">
+    <div className="min-h-screen bg-background">
       <div className={`container px-4 ${isMobile ? 'py-4' : 'py-8'}`}>
         <div className={`flex justify-between items-center ${isMobile ? 'mb-4' : 'mb-8'}`}>
           <Link to="/">
