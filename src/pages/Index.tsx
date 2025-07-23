@@ -217,6 +217,7 @@ const Index = () => {
           )}
         </div>
 
+        {!user && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-8 mb-16">
             <div className="bg-card/95 p-6 md:p-8 rounded-2xl shadow-card-modern hover:scale-105 transition-transform group">
               <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-primary rounded-2xl mb-4 md:mb-6 mx-auto group-hover:rotate-12 transition-transform">
@@ -261,6 +262,7 @@ const Index = () => {
               <p className="text-sm md:text-base text-muted-foreground text-center leading-relaxed">Find perfect schools that match your interests, budget, and location preferences</p>
             </div>
           </div>
+        )}
 
         {user && (
           <>
