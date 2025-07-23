@@ -13,6 +13,7 @@ import FinancialEducation from "./pages/FinancialEducation";
 import EssayAssistant from "./pages/EssayAssistant";
 import TestPrep from "./pages/TestPrep";
 import FirstGenResources from "./pages/FirstGenResources";
+import SchoolMatchmaker from "./pages/SchoolMatchmaker";
 import Footer from "./components/Footer";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
               <Route path="/essay-assistant" element={<EssayAssistant />} />
               <Route path="/test-prep" element={<TestPrep />} />
               <Route path="/first-gen-resources" element={<FirstGenResources />} />
+              <Route path="/school-matchmaker" element={<SchoolMatchmaker />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>

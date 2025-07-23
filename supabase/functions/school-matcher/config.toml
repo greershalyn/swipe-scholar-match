@@ -1,0 +1,4 @@
+project_id = "cewxnkpihtujqbwbzjcv"
+
+[functions.school-matcher]
+verify_jwt = false

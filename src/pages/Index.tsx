@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import ScholarshipSwiper from '@/components/ScholarshipSwiper';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { GraduationCap, Rocket, DollarSign, Clock, Sparkles, BookOpen, Users, Trophy, Wallet as WalletIcon, PencilIcon, FileText, Lightbulb, X, Search, Zap } from 'lucide-react';
+import { GraduationCap, Rocket, DollarSign, Clock, Sparkles, BookOpen, Users, Trophy, Wallet as WalletIcon, PencilIcon, FileText, Lightbulb, X, Search, Zap, School } from 'lucide-react';
 import { AccountDropdown } from '@/components/AccountDropdown';
 import Wallet from '@/components/Wallet';
 import { CrawlForm } from '@/components/CrawlForm';
@@ -217,7 +217,7 @@ const Index = () => {
           )}
         </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8 mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-8 mb-16">
             <div className="bg-card/95 p-6 md:p-8 rounded-2xl shadow-card-modern hover:scale-105 transition-transform group">
               <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-primary rounded-2xl mb-4 md:mb-6 mx-auto group-hover:rotate-12 transition-transform">
                 <Rocket className="text-primary-foreground w-6 h-6 md:w-8 md:h-8" />
@@ -248,6 +248,17 @@ const Index = () => {
               </div>
               <h3 className="text-lg md:text-xl font-bold text-accent mb-3 md:mb-4 text-center">Save Time</h3>
               <p className="text-sm md:text-base text-muted-foreground text-center leading-relaxed">Apply to multiple scholarships efficiently with your single profile</p>
+            </div>
+
+            <div 
+              className="bg-card/95 p-6 md:p-8 rounded-2xl shadow-card-modern hover:scale-105 transition-transform group cursor-pointer"
+              onClick={() => navigate('/school-matchmaker')}
+            >
+              <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-primary rounded-2xl mb-4 md:mb-6 mx-auto group-hover:rotate-12 transition-transform">
+                <School className="text-primary-foreground w-6 h-6 md:w-8 md:h-8" />
+              </div>
+              <h3 className="text-lg md:text-xl font-bold text-primary mb-3 md:mb-4 text-center">School Matchmaker</h3>
+              <p className="text-sm md:text-base text-muted-foreground text-center leading-relaxed">Find perfect schools that match your interests, budget, and location preferences</p>
             </div>
           </div>
 
