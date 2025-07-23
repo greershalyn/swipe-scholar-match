@@ -183,7 +183,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen min-w-screen bg-gradient-primary overflow-x-hidden relative">
+    <div className="min-h-screen min-w-screen bg-background overflow-x-hidden relative">
       <SquigglyBackground />
       <div className={`container px-4 ${isMobile ? 'py-4' : 'py-8'} relative z-10`}>
         <div className="flex justify-end mb-6 pt-safe">
@@ -198,12 +198,12 @@ const Index = () => {
 
         <div className={`text-center mb-16 animate-fade-in ${isMobile ? 'px-2' : ''}`}>
           <div className="flex justify-center mb-6">
-            <GraduationCap className="w-16 h-16 md:w-20 md:h-20 text-primary-foreground animate-bounce" />
+            <GraduationCap className="w-16 h-16 md:w-20 md:h-20 text-primary animate-bounce" />
           </div>
-          <h1 className={`${isMobile ? 'text-5xl' : 'text-7xl'} font-bold text-primary-foreground mb-6 drop-shadow-lg`}>
+          <h1 className={`${isMobile ? 'text-5xl' : 'text-7xl'} font-bold text-foreground mb-6 drop-shadow-lg`}>
             SwipeScholar
           </h1>
-          <p className="text-lg md:text-2xl text-primary-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-2xl text-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
             Find Your Perfect Scholarship Match with a Simple Swipe! Join students across the country who are securing their funding through SwipeScholar.
           </p>
           {!user && (
@@ -256,7 +256,7 @@ const Index = () => {
             <div className={`max-w-md mx-auto mb-24 ${isMobile ? 'px-2' : ''}`}>
               <ScholarshipSwiper />
               <div className="-mt-12 text-center mb-8">
-                <p className="text-lg text-primary-foreground font-medium">
+                <p className="text-lg text-foreground font-medium">
                   Swipe right to save to wallet, left to skip
                 </p>
               </div>
@@ -264,7 +264,7 @@ const Index = () => {
             
             {isAdmin && (
               <div className="max-w-2xl mx-auto mb-12">
-                <h2 className="text-2xl font-semibold text-primary-foreground mb-6">Add New Scholarship</h2>
+                <h2 className="text-2xl font-semibold text-foreground mb-6">Add New Scholarship</h2>
                 <CrawlForm />
               </div>
             )}
