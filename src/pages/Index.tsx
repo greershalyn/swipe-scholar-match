@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { ExpandedFramework } from '@/types/essay';
 import { ExpandedFrameworkView } from '@/components/essay/ExpandedFrameworkView';
-import { SquigglyBackground } from '@/components/SquigglyBackground';
+
 
 const Index = () => {
   const [user, setUser] = useState(null);
@@ -184,7 +184,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen min-w-screen bg-background overflow-x-hidden relative">
-      <SquigglyBackground />
       <div className={`container px-4 ${isMobile ? 'py-4' : 'py-8'} relative z-10`}>
         <div className="flex justify-end mb-6 pt-safe">
           {user ? (
