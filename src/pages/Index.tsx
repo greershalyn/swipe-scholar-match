@@ -209,7 +209,7 @@ const Index = () => {
           {!user && (
             <Button 
               onClick={() => navigate('/auth')} 
-              className={`bg-purple-600 text-white hover:bg-purple-700 ${isMobile ? 'px-6 py-4 text-lg' : 'px-8 py-6 text-xl'} rounded-full shadow-glow hover:scale-105 transition-transform animate-pulse`}
+              className={`bg-primary text-primary-foreground hover:bg-primary/90 ${isMobile ? 'px-6 py-4 text-lg' : 'px-8 py-6 text-xl'} rounded-full shadow-glow hover:scale-105 transition-transform animate-pulse`}
             >
               <Sparkles className="mr-2 h-5 w-5 md:h-6 md:w-6" />
               Start Your Journey Today
