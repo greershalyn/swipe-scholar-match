@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { PencilIcon, FileText } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { AccountDropdown } from '@/components/AccountDropdown';
@@ -18,6 +19,7 @@ type StepType = 1 | 2 | 3 | 4;
 const EssayAssistant = () => {
   const { hasPremiumAccess, isCheckingAccess, refreshSubscription } = useSubscriptionCheck();
   const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
+  const isMobile = useIsMobile();
   const [step, setStep] = useState<StepType>(1);
   const [essayTopic, setEssayTopic] = useState('');
   const [selectedPrompt, setSelectedPrompt] = useState('');
@@ -110,26 +112,26 @@ const EssayAssistant = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
+      <div className={`container px-4 ${isMobile ? 'py-4' : 'py-8'}`}>
+        <div className={`flex justify-between items-center ${isMobile ? 'mb-4' : 'mb-8'}`}>
           <Link to="/">
             <img 
               src="/lovable-uploads/24f07198-1e4c-4eea-8e07-259aa77d1711.png"
               alt="SwipeScholar Logo"
-              className="h-24 w-auto invert"
+              className={`${isMobile ? 'h-16' : 'h-24'} w-auto invert`}
             />
           </Link>
           <AccountDropdown />
         </div>
 
         <div className="max-w-3xl mx-auto">
-          <div className="flex items-center gap-3 mb-8">
-            <PencilIcon className="h-8 w-8 text-primary" />
-            <h1 className="text-4xl font-bold text-foreground">Essay Assistant</h1>
+          <div className={`flex items-center gap-3 ${isMobile ? 'mb-4' : 'mb-8'}`}>
+            <PencilIcon className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} text-primary`} />
+            <h1 className={`${isMobile ? 'text-2xl' : 'text-4xl'} font-bold text-foreground`}>Essay Assistant</h1>
           </div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
-            <TabsList className="grid grid-cols-2 w-full max-w-md mx-auto mb-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className={`${isMobile ? 'mb-4' : 'mb-8'}`}>
+            <TabsList className={`grid grid-cols-2 w-full ${isMobile ? 'max-w-full' : 'max-w-md'} mx-auto ${isMobile ? 'mb-4' : 'mb-6'}`}>
               <TabsTrigger value="framework" className="flex gap-2 items-center justify-center">
                 <PencilIcon className="h-4 w-4" />
                 Essay Framework

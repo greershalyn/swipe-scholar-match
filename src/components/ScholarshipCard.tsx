@@ -6,6 +6,7 @@ import { motion, PanInfo } from 'framer-motion';
 import { ExternalLink, ThumbsUp, ThumbsDown, AlertTriangle } from 'lucide-react';
 import { Scholarship } from '@/types/scholarship';
 import { useToast } from '@/components/ui/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ScholarshipCardProps {
   scholarship: Scholarship;
@@ -14,6 +15,7 @@ interface ScholarshipCardProps {
 
 const ScholarshipCard: React.FC<ScholarshipCardProps> = ({ scholarship, onSwipe }) => {
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   const handleDragEnd = (event: any, info: PanInfo) => {
     const threshold = 100;
@@ -185,21 +187,21 @@ const ScholarshipCard: React.FC<ScholarshipCardProps> = ({ scholarship, onSwipe 
       exit={{ scale: 0.95, opacity: 0 }}
       transition={{ duration: 0.2 }}
     >
-      <Card className="p-6 backdrop-blur-sm bg-white/90 border border-border shadow-lg hover:shadow-xl transition-shadow">
-        <div className="flex justify-between items-start mb-4">
-          <div>
+      <Card className={`${isMobile ? 'p-4' : 'p-6'} backdrop-blur-sm bg-white/90 border border-border shadow-lg hover:shadow-xl transition-shadow`}>
+        <div className={`flex ${isMobile ? 'flex-col gap-3' : 'justify-between items-start'} ${isMobile ? 'mb-3' : 'mb-4'}`}>
+          <div className="flex-1">
             <Badge variant="outline" className="mb-2 bg-primary/10 text-primary">
               ${scholarship.amount?.toLocaleString() ?? 'Amount not specified'}
             </Badge>
-            <h2 className="text-2xl font-semibold text-accent mb-1">{scholarship.title || 'Untitled Scholarship'}</h2>
-            <p className="text-sm text-muted-foreground">
+            <h2 className={`${isMobile ? 'text-lg' : 'text-2xl'} font-semibold text-accent mb-1 leading-tight`}>{scholarship.title || 'Untitled Scholarship'}</h2>
+            <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground`}>
               Deadline: {formatDeadline(scholarship.deadline)}
             </p>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground mt-1`}>
               Provider: {scholarship.provider || 'Provider not specified'}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className={`flex items-center gap-2 ${isMobile ? 'self-start' : ''}`}>
             {scholarship.match_score && (
               <Badge variant="secondary" className="bg-secondary text-accent">
                 {scholarship.match_score}% Match
@@ -208,18 +210,21 @@ const ScholarshipCard: React.FC<ScholarshipCardProps> = ({ scholarship, onSwipe 
           </div>
         </div>
         
-        <div className="space-y-4">
-          <p className="text-accent/80">{scholarship.description || 'No description available'}</p>
+        <div className={`${isMobile ? 'space-y-3' : 'space-y-4'}`}>
+          <p className={`text-accent/80 ${isMobile ? 'text-sm leading-relaxed' : ''}`}>{scholarship.description || 'No description available'}</p>
           
           <div>
-            <h3 className="font-medium mb-2 text-accent">Requirements:</h3>
-            <ul className="list-disc list-inside space-y-1 text-sm text-accent/70">
+            <h3 className={`font-medium ${isMobile ? 'mb-1 text-sm' : 'mb-2'} text-accent`}>Requirements:</h3>
+            <ul className={`list-disc list-inside ${isMobile ? 'space-y-0.5 text-xs' : 'space-y-1 text-sm'} text-accent/70`}>
               {Array.isArray(scholarship.requirements) && scholarship.requirements.length > 0 ? (
-                scholarship.requirements.map((req, index) => (
-                  <li key={index}>{req}</li>
+                scholarship.requirements.slice(0, isMobile ? 3 : undefined).map((req, index) => (
+                  <li key={index} className={isMobile ? 'leading-snug' : ''}>{req}</li>
                 ))
               ) : (
                 <li>No specific requirements listed</li>
+              )}
+              {isMobile && Array.isArray(scholarship.requirements) && scholarship.requirements.length > 3 && (
+                <li className="text-muted-foreground italic">...and {scholarship.requirements.length - 3} more</li>
               )}
             </ul>
           </div>
@@ -229,7 +234,7 @@ const ScholarshipCard: React.FC<ScholarshipCardProps> = ({ scholarship, onSwipe 
               href={getScholarshipUrl()}
               target="_blank"
               rel="noopener noreferrer"
-              className={`inline-flex items-center text-sm ${
+              className={`inline-flex items-center ${isMobile ? 'text-xs' : 'text-sm'} ${
                 directLinkAvailable 
                   ? "text-primary hover:text-primary/80" 
                   : "text-amber-600 hover:text-amber-700"
@@ -237,30 +242,30 @@ const ScholarshipCard: React.FC<ScholarshipCardProps> = ({ scholarship, onSwipe 
               onClick={handleUrlClick}
             >
               {directLinkAvailable ? (
-                <>View Application <ExternalLink className="ml-1 h-4 w-4" /></>
+                <>View Application <ExternalLink className={`ml-1 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} /></>
               ) : (
                 <>
-                  <AlertTriangle className="mr-1 h-4 w-4" />
+                  <AlertTriangle className={`mr-1 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
                   Search for Application
-                  <ExternalLink className="ml-1 h-4 w-4" />
+                  <ExternalLink className={`ml-1 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
                 </>
               )}
             </a>
           </div>
         </div>
 
-        <div className="mt-6 flex justify-center gap-8">
+        <div className={`${isMobile ? 'mt-4' : 'mt-6'} flex justify-center ${isMobile ? 'gap-6' : 'gap-8'}`}>
           <div className="flex flex-col items-center gap-2">
-            <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform cursor-pointer">
-              <ThumbsDown className="w-6 h-6 text-primary-foreground" />
+            <div className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} bg-primary rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform cursor-pointer`}>
+              <ThumbsDown className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'} text-primary-foreground`} />
             </div>
-            <span className="text-sm text-muted-foreground">Skip</span>
+            <span className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground`}>Skip</span>
           </div>
           <div className="flex flex-col items-center gap-2">
-            <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform cursor-pointer">
-              <ThumbsUp className="w-6 h-6 text-primary-foreground" />
+            <div className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} bg-primary rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform cursor-pointer`}>
+              <ThumbsUp className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'} text-primary-foreground`} />
             </div>
-            <span className="text-sm text-muted-foreground">Apply</span>
+            <span className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground`}>Save</span>
           </div>
         </div>
       </Card>

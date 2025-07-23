@@ -2,29 +2,32 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ExternalLink, Book, DollarSign, GraduationCap, ShieldCheck, PiggyBank, AlertTriangle } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AccountDropdown } from '@/components/AccountDropdown';
 
 const FinancialEducation = () => {
+  const isMobile = useIsMobile();
+  
   return (
     <div className="min-h-screen bg-background">
-      <div className="container px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
+      <div className={`container px-4 ${isMobile ? 'py-4' : 'py-8'}`}>
+        <div className={`flex justify-between items-center ${isMobile ? 'mb-4' : 'mb-8'}`}>
           <Link to="/">
             <img 
               src="/lovable-uploads/24f07198-1e4c-4eea-8e07-259aa77d1711.png"
               alt="SwipeScholar Logo"
-              className="h-24 w-auto invert"
+              className={`${isMobile ? 'h-16' : 'h-24'} w-auto invert`}
             />
           </Link>
           <AccountDropdown />
         </div>
 
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold text-foreground mb-8 flex items-center gap-3">
-            <Book className="h-8 w-8" />
-            Financial Education Resources
+          <h1 className={`${isMobile ? 'text-2xl' : 'text-4xl'} font-bold text-foreground ${isMobile ? 'mb-4' : 'mb-8'} flex items-center gap-3`}>
+            <Book className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'}`} />
+            {isMobile ? 'Financial Education' : 'Financial Education Resources'}
           </h1>
 
           <div className="grid gap-6 mb-8">
@@ -37,25 +40,25 @@ const FinancialEducation = () => {
                 <CardDescription>Access trusted government resources for financial aid and college planning</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Button variant="outline" className="w-full justify-between" asChild>
+                <Button variant="outline" className={`w-full ${isMobile ? 'justify-start' : 'justify-between'} ${isMobile ? 'text-sm' : ''}`} asChild>
                   <a href="https://www.consumerfinance.gov/paying-for-college/" target="_blank" rel="noopener noreferrer">
-                    Consumer Financial Protection Bureau - Paying for College
-                    <ExternalLink className="h-4 w-4" />
+                    <span className={isMobile ? 'truncate' : ''}>Consumer Financial Protection Bureau - Paying for College</span>
+                    <ExternalLink className="h-4 w-4 ml-auto flex-shrink-0" />
                   </a>
                 </Button>
-                <Button variant="outline" className="w-full justify-between" asChild>
+                <Button variant="outline" className={`w-full ${isMobile ? 'justify-start' : 'justify-between'} ${isMobile ? 'text-sm' : ''}`} asChild>
                   <a href="https://studentaid.gov/understand-aid/types/grants" target="_blank" rel="noopener noreferrer">
-                    Federal Student Aid - Grants Guide
-                    <ExternalLink className="h-4 w-4" />
+                    <span className={isMobile ? 'truncate' : ''}>Federal Student Aid - Grants Guide</span>
+                    <ExternalLink className="h-4 w-4 ml-auto flex-shrink-0" />
                   </a>
                 </Button>
-                <Button variant="outline" className="w-full justify-between" asChild>
+                <Button variant="outline" className={`w-full ${isMobile ? 'justify-start' : 'justify-between'} ${isMobile ? 'text-sm' : ''}`} asChild>
                   <a href="https://consumer.ftc.gov/articles/how-avoid-scholarship-and-financial-aid-scams" target="_blank" rel="noopener noreferrer">
-                    <div className="flex items-center gap-2">
-                      <AlertTriangle className="h-4 w-4 text-destructive" />
-                      <span>Federal Trade Commission - How to Avoid Scholarship Scams</span>
+                    <div className="flex items-center gap-2 truncate">
+                      <AlertTriangle className="h-4 w-4 text-destructive flex-shrink-0" />
+                      <span className={isMobile ? 'truncate' : ''}>Federal Trade Commission - How to Avoid Scholarship Scams</span>
                     </div>
-                    <ExternalLink className="h-4 w-4" />
+                    <ExternalLink className="h-4 w-4 ml-auto flex-shrink-0" />
                   </a>
                 </Button>
               </CardContent>

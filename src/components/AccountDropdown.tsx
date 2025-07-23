@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { User, Wallet, BookOpen, Pencil, GraduationCap, Users } from "lucide-react";
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,16 +20,17 @@ export const AccountDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showDeactivateDialog, setShowDeactivateDialog] = useState(false);
   const { handleLogout } = useAccountActions();
+  const isMobile = useIsMobile();
 
   return (
     <>
       <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="icon" className="bg-white hover:bg-gray-100">
-            <User className="h-5 w-5" />
+          <Button variant="outline" size={isMobile ? "sm" : "icon"} className="bg-white hover:bg-gray-100">
+            <User className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56 bg-white" align="end">
+        <DropdownMenuContent className={`${isMobile ? 'w-48' : 'w-56'} bg-white z-50`} align="end">
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => navigate("/questionnaire")}>

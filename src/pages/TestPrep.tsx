@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FileSpreadsheet, BookOpen, GraduationCap } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useSubscriptionCheck } from '@/hooks/useSubscriptionCheck';
 import { PremiumAccessPrompt } from '@/components/essay/PremiumAccessPrompt';
 import { useToast } from '@/hooks/use-toast';
@@ -17,6 +18,7 @@ const TestPrep = () => {
   const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
   const [activeQuizzes, setActiveQuizzes] = useState<Record<string, boolean>>({});
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   if (isCheckingAccess) {
     return <LoadingState />;
@@ -51,17 +53,17 @@ const TestPrep = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container px-4 py-8">
+      <div className={`container px-4 ${isMobile ? 'py-4' : 'py-8'}`}>
         <TestPrepHeader />
 
         <div className="max-w-3xl mx-auto">
-          <div className="flex items-center gap-3 mb-8">
-            <GraduationCap className="h-8 w-8 text-primary" />
-            <h1 className="text-4xl font-bold text-foreground">Test Prep</h1>
+          <div className={`flex items-center gap-3 ${isMobile ? 'mb-4' : 'mb-8'}`}>
+            <GraduationCap className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} text-primary`} />
+            <h1 className={`${isMobile ? 'text-2xl' : 'text-4xl'} font-bold text-foreground`}>Test Prep</h1>
           </div>
 
-          <Tabs defaultValue="act" className="mb-8">
-            <TabsList className="grid grid-cols-2 w-[400px] mb-6">
+          <Tabs defaultValue="act" className={`${isMobile ? 'mb-4' : 'mb-8'}`}>
+            <TabsList className={`grid grid-cols-2 ${isMobile ? 'w-full' : 'w-[400px]'} ${isMobile ? 'mb-4' : 'mb-6'}`}>
               <TabsTrigger value="act" className="flex gap-2">
                 <FileSpreadsheet className="h-4 w-4" />
                 ACT Prep

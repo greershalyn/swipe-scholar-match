@@ -8,6 +8,7 @@ import { ExternalLink, Wallet as WalletIcon, X } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { ScrollArea, ScrollBar } from './ui/scroll-area';
 import { useToast } from './ui/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SavedScholarship {
   id: string;
@@ -29,6 +30,7 @@ interface WalletProps {
 const Wallet: React.FC<WalletProps> = ({ className }) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const isMobile = useIsMobile();
 
   const { data: savedScholarships, isLoading } = useQuery({
     queryKey: ['saved-scholarships'],
@@ -106,7 +108,7 @@ const Wallet: React.FC<WalletProps> = ({ className }) => {
 
   if (!savedScholarships?.length) {
     return (
-      <div className="text-center text-muted-foreground p-4">
+      <div className={`text-center text-muted-foreground ${isMobile ? 'p-2 text-sm' : 'p-4'}`}>
         No saved scholarships yet. Swipe right on scholarships to save them here!
       </div>
     );
@@ -130,32 +132,32 @@ const Wallet: React.FC<WalletProps> = ({ className }) => {
   return (
     <div className={className}>
       <ScrollArea className="w-full">
-        <div className="flex gap-4 pb-4" style={{ minWidth: 'min-content' }}>
+        <div className={`flex ${isMobile ? 'gap-3 pb-3' : 'gap-4 pb-4'}`} style={{ minWidth: 'min-content' }}>
           {savedScholarships.map((saved) => {
             const deadline = formatDeadline(saved.scholarship.deadline);
             return (
-              <Card key={saved.id} className="p-6 hover:shadow-lg transition-shadow duration-200 bg-white/95 relative" style={{ width: '320px', flexShrink: 0 }}>
+              <Card key={saved.id} className={`${isMobile ? 'p-4' : 'p-6'} hover:shadow-lg transition-shadow duration-200 bg-white/95 relative`} style={{ width: isMobile ? '280px' : '320px', flexShrink: 0 }}>
                 <Button
                   variant="ghost"
-                  size="icon"
-                  className="absolute top-2 right-2 hover:bg-destructive hover:text-white rounded-full"
+                  size={isMobile ? "sm" : "icon"}
+                  className={`absolute ${isMobile ? 'top-1 right-1' : 'top-2 right-2'} hover:bg-destructive hover:text-white rounded-full`}
                   onClick={() => handleRemoveScholarship(saved.scholarship.id)}
                 >
-                  <X className="h-4 w-4" />
+                  <X className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
                 </Button>
                 <div className="flex flex-col h-full">
                   <div className="flex-1">
-                    <h3 className="font-semibold text-lg text-accent mb-2 line-clamp-2">
+                    <h3 className={`font-semibold ${isMobile ? 'text-base' : 'text-lg'} text-accent ${isMobile ? 'mb-1' : 'mb-2'} line-clamp-2`}>
                       {saved.scholarship.title}
                     </h3>
-                    <p className="text-sm text-muted-foreground mb-3">
+                    <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground ${isMobile ? 'mb-2' : 'mb-3'}`}>
                       Provider: {saved.scholarship.provider}
                     </p>
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      <Badge variant="outline" className="bg-primary/10 text-primary font-medium">
+                    <div className={`flex flex-wrap ${isMobile ? 'gap-1 mb-3' : 'gap-2 mb-4'}`}>
+                      <Badge variant="outline" className={`bg-primary/10 text-primary font-medium ${isMobile ? 'text-xs' : ''}`}>
                         ${saved.scholarship.amount.toLocaleString()}
                       </Badge>
-                      <Badge variant="outline" className={`font-medium ${
+                      <Badge variant="outline" className={`font-medium ${isMobile ? 'text-xs' : ''} ${
                         deadline.daysLeft <= 7 
                           ? 'bg-destructive/10 text-destructive' 
                           : deadline.daysLeft <= 30 
@@ -168,10 +170,11 @@ const Wallet: React.FC<WalletProps> = ({ className }) => {
                   </div>
                   <Button
                     variant="outline"
-                    className="w-full flex items-center justify-center gap-2 mt-2 hover:bg-accent hover:text-white transition-colors"
+                    size={isMobile ? "sm" : "default"}
+                    className={`w-full flex items-center justify-center gap-2 ${isMobile ? 'mt-1 text-xs' : 'mt-2'} hover:bg-accent hover:text-white transition-colors`}
                     onClick={() => window.open(saved.scholarship.url, '_blank')}
                   >
-                    Apply Now <ExternalLink className="h-4 w-4" />
+                    Apply Now <ExternalLink className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
                   </Button>
                 </div>
               </Card>
