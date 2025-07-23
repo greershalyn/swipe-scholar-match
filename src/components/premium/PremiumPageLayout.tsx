@@ -9,7 +9,7 @@ interface PremiumPageLayoutProps {
 
 export const PremiumPageLayout = ({ children }: PremiumPageLayoutProps) => {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#9b87f5] via-[#D946EF] to-[#FDE1D3]">
+    <div className="min-h-screen bg-background">
       <div className="container px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <Link to="/">
