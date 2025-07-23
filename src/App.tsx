@@ -22,8 +22,8 @@ const App = () => (
   <TooltipProvider>
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
-        <div className="min-h-screen flex flex-col">
-          <div className="flex-grow">
+        <div className="flex flex-col">
+          <div>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
