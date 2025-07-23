@@ -86,8 +86,8 @@ export default function SchoolMatchmaker() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className={`container px-4 ${isMobile ? 'py-4' : 'py-8'}`}>
+    <div className="min-h-screen bg-background flex flex-col">
+      <div className={`container px-4 ${isMobile ? 'py-4' : 'py-8'} flex-1`}>
         <div className={`flex justify-between items-center ${isMobile ? 'mb-4' : 'mb-8'}`}>
           <Link to="/">
             <img 
@@ -101,13 +101,13 @@ export default function SchoolMatchmaker() {
         
         <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-primary mb-4">School Matchmaker</h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <h1 className={`${isMobile ? 'text-2xl' : 'text-4xl'} font-bold text-primary mb-4`}>School Matchmaker</h1>
+          <p className={`${isMobile ? 'text-lg' : 'text-xl'} text-muted-foreground max-w-2xl mx-auto`}>
             Find the perfect schools and programs that match your interests, budget, and location preferences
           </p>
         </div>
 
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto pb-8">
           <Card className="mb-8">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
