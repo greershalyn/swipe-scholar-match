@@ -101,7 +101,7 @@ export default function SchoolMatchmaker() {
         
         <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-4">School Matchmaker</h1>
+          <h1 className="text-4xl font-bold text-primary mb-4">School Matchmaker</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Find the perfect schools and programs that match your interests, budget, and location preferences
           </p>
