@@ -197,11 +197,9 @@ const Index = () => {
         </div>
 
         <div className={`text-center mb-16 animate-fade-in ${isMobile ? 'px-2' : ''}`}>
-          {!user && (
-            <div className="flex justify-center mb-6">
-              <GraduationCap className="w-16 h-16 md:w-20 md:h-20 text-primary animate-bounce" />
-            </div>
-          )}
+          <div className="flex justify-center mb-6">
+            <GraduationCap className="w-16 h-16 md:w-20 md:h-20 text-primary animate-bounce" />
+          </div>
           <h1 className={`${isMobile ? 'text-5xl' : 'text-7xl'} font-bold text-primary mb-6 drop-shadow-lg`}>
             SwipeScholar
           </h1>
