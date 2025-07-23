@@ -86,8 +86,8 @@ export default function SchoolMatchmaker() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <div className={`container px-4 ${isMobile ? 'py-4' : 'py-8'} flex-1`}>
+    <div className="bg-background">
+      <div className={`container px-4 ${isMobile ? 'py-4' : 'py-8'}`}>
         <div className={`flex justify-between items-center ${isMobile ? 'mb-4' : 'mb-8'}`}>
           <Link to="/">
             <img 
@@ -107,7 +107,7 @@ export default function SchoolMatchmaker() {
           </p>
         </div>
 
-        <div className="max-w-4xl mx-auto pb-8">
+        <div className={`max-w-4xl mx-auto ${isMobile ? 'pb-4' : 'pb-8'}`}>
           <Card className="mb-8">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
