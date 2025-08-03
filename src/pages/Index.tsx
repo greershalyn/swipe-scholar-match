@@ -257,7 +257,18 @@ const Index = () => {
           <p className="text-lg md:text-2xl text-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
             Find Your Perfect Scholarship Match with a Simple Swipe! Join students across the country who are securing their funding through SwipeScholar.
           </p>
-          {!user && (
+        {/* TEST: Direct visible image to check if file loads */}
+        <div className="flex justify-center mb-8">
+          <img 
+            src="/lovable-uploads/f5f92d18-9536-46ff-8d97-1a799437f06a.png" 
+            alt="Test compass" 
+            className="w-96 h-96 opacity-50"
+            onError={(e) => console.error('Image failed to load:', e)}
+            onLoad={() => console.log('Image loaded successfully')}
+          />
+        </div>
+
+        {!user && (
             <Button 
               onClick={() => navigate('/auth')} 
               className={`bg-primary text-primary-foreground hover:bg-primary/90 ${isMobile ? 'px-6 py-4 text-lg' : 'px-8 py-6 text-xl'} rounded-full shadow-glow hover:scale-105 transition-transform animate-pulse`}
