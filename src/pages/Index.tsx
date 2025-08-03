@@ -267,8 +267,8 @@ const Index = () => {
         </div>
 
         {!user && (
-          <div className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-6 mb-16 px-2">{/* Fixed responsive grid */}
-            <div className="bg-card/95 p-6 md:p-8 rounded-2xl shadow-card-modern hover:scale-105 transition-transform group relative z-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-16 max-w-6xl mx-auto">
+            <div className="bg-card p-6 md:p-8 rounded-2xl shadow-card-modern hover:scale-105 transition-transform group">
               <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-primary rounded-2xl mb-4 md:mb-6 mx-auto group-hover:rotate-12 transition-transform">
                 <Rocket className="text-primary-foreground w-6 h-6 md:w-8 md:h-8" />
               </div>
@@ -276,7 +276,7 @@ const Index = () => {
               <p className="text-sm md:text-base text-muted-foreground text-center leading-relaxed">Swipe right on scholarships that match your profile - as simple as using your favorite social app!</p>
             </div>
 
-            <div className="bg-card/95 p-6 md:p-8 rounded-2xl shadow-card-modern hover:scale-105 transition-transform group relative z-10">
+            <div className="bg-card p-6 md:p-8 rounded-2xl shadow-card-modern hover:scale-105 transition-transform group">
               <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-accent rounded-2xl mb-4 md:mb-6 mx-auto group-hover:rotate-12 transition-transform">
                 <BookOpen className="text-accent-foreground w-6 h-6 md:w-8 md:h-8" />
               </div>
@@ -284,7 +284,7 @@ const Index = () => {
               <p className="text-sm md:text-base text-muted-foreground text-center leading-relaxed">Get scholarships tailored to your unique academic profile and interests</p>
             </div>
 
-            <div className="bg-card/95 p-6 md:p-8 rounded-2xl shadow-card-modern hover:scale-105 transition-transform group relative z-10">
+            <div className="bg-card p-6 md:p-8 rounded-2xl shadow-card-modern hover:scale-105 transition-transform group">
               <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-primary rounded-2xl mb-4 md:mb-6 mx-auto group-hover:rotate-12 transition-transform">
                 <DollarSign className="text-primary-foreground w-6 h-6 md:w-8 md:h-8" />
               </div>
@@ -292,7 +292,7 @@ const Index = () => {
               <p className="text-sm md:text-base text-muted-foreground text-center leading-relaxed">Access thousands of dollars in scholarship opportunities just waiting for you</p>
             </div>
 
-            <div className="bg-card/95 p-6 md:p-8 rounded-2xl shadow-card-modern hover:scale-105 transition-transform group relative z-10">
+            <div className="bg-card p-6 md:p-8 rounded-2xl shadow-card-modern hover:scale-105 transition-transform group">
               <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-accent rounded-2xl mb-4 md:mb-6 mx-auto group-hover:rotate-12 transition-transform">
                 <Clock className="text-accent-foreground w-6 h-6 md:w-8 md:h-8" />
               </div>
@@ -301,7 +301,7 @@ const Index = () => {
             </div>
 
             <div 
-              className="bg-card/95 p-6 md:p-8 rounded-2xl shadow-card-modern hover:scale-105 transition-transform group cursor-pointer relative z-10"
+              className="bg-card p-6 md:p-8 rounded-2xl shadow-card-modern hover:scale-105 transition-transform group cursor-pointer md:col-span-2 xl:col-span-1"
               onClick={() => navigate('/school-matchmaker')}
             >
               <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-primary rounded-2xl mb-4 md:mb-6 mx-auto group-hover:rotate-12 transition-transform">
