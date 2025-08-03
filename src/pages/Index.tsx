@@ -193,7 +193,7 @@ const Index = () => {
             backgroundImage: `url(/lovable-uploads/f5f92d18-9536-46ff-8d97-1a799437f06a.png)`,
             backgroundRepeat: 'no-repeat',
             backgroundPosition: 'center top',
-            backgroundSize: '1200px',
+            backgroundSize: isMobile ? '600px' : '1200px',
             opacity: 0.3
           }}
         />
