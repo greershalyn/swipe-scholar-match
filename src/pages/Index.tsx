@@ -235,30 +235,30 @@ const Index = () => {
 
   // Landing page layout for non-logged-in users
   return (
-    <div className="min-h-screen min-w-screen bg-background overflow-x-hidden relative">
-      <div className={`container px-4 ${isMobile ? 'py-4' : 'py-8'} relative z-10`}>
+    <div className="min-h-screen bg-background overflow-x-hidden">
+      <div className="w-full px-4 py-4 md:py-8">
         {!user && (
-          <div className="flex justify-end mb-6 pt-safe">
+          <div className="flex justify-end mb-6 pt-safe max-w-7xl mx-auto">
             <Button onClick={() => navigate('/auth')} variant="outline" className="bg-card hover:bg-muted shadow-card-modern">
               Log In
             </Button>
           </div>
         )}
 
-        <div className={`text-center mb-16 animate-fade-in ${isMobile ? 'px-2' : ''}`}>
+        <div className="text-center mb-12 md:mb-16 animate-fade-in max-w-4xl mx-auto px-2">
           <div className="flex justify-center mb-6">
             <GraduationCap className="w-16 h-16 md:w-20 md:h-20 text-primary animate-bounce" />
           </div>
-          <h1 className={`${isMobile ? 'text-5xl' : 'text-7xl'} font-bold text-primary mb-6 drop-shadow-lg`}>
+          <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold text-primary mb-6 drop-shadow-lg">
             SwipeScholar
           </h1>
-          <p className="text-lg md:text-2xl text-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base md:text-lg lg:text-2xl text-foreground mb-8 leading-relaxed">
             Find Your Perfect Scholarship Match with a Simple Swipe! Join students across the country who are securing their funding through SwipeScholar.
           </p>
           {!user && (
             <Button 
               onClick={() => navigate('/auth')} 
-              className={`bg-primary text-primary-foreground hover:bg-primary/90 ${isMobile ? 'px-6 py-4 text-lg' : 'px-8 py-6 text-xl'} rounded-full shadow-glow hover:scale-105 transition-transform animate-pulse`}
+              className="bg-primary text-primary-foreground hover:bg-primary/90 px-6 py-4 md:px-8 md:py-6 text-lg md:text-xl rounded-full shadow-glow hover:scale-105 transition-transform animate-pulse"
             >
               <Sparkles className="mr-2 h-5 w-5 md:h-6 md:w-6" />
               Start Your Journey Today
@@ -267,48 +267,50 @@ const Index = () => {
         </div>
 
         {!user && (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-16 max-w-6xl mx-auto">
-            <div className="bg-card p-6 md:p-8 rounded-2xl shadow-card-modern hover:scale-105 transition-transform group">
-              <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-primary rounded-2xl mb-4 md:mb-6 mx-auto group-hover:rotate-12 transition-transform">
-                <Rocket className="text-primary-foreground w-6 h-6 md:w-8 md:h-8" />
+          <div className="px-2 max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-16">
+              <div className="bg-card p-6 md:p-8 rounded-2xl shadow-card-modern hover:scale-105 transition-transform group">
+                <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-primary rounded-2xl mb-4 md:mb-6 mx-auto group-hover:rotate-12 transition-transform">
+                  <Rocket className="text-primary-foreground w-6 h-6 md:w-8 md:h-8" />
+                </div>
+                <h3 className="text-lg md:text-xl font-bold text-primary mb-3 md:mb-4 text-center">Quick & Easy</h3>
+                <p className="text-sm md:text-base text-muted-foreground text-center leading-relaxed">Swipe right on scholarships that match your profile - as simple as using your favorite social app!</p>
               </div>
-              <h3 className="text-lg md:text-xl font-bold text-primary mb-3 md:mb-4 text-center">Quick & Easy</h3>
-              <p className="text-sm md:text-base text-muted-foreground text-center leading-relaxed">Swipe right on scholarships that match your profile - as simple as using your favorite social app!</p>
-            </div>
 
-            <div className="bg-card p-6 md:p-8 rounded-2xl shadow-card-modern hover:scale-105 transition-transform group">
-              <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-accent rounded-2xl mb-4 md:mb-6 mx-auto group-hover:rotate-12 transition-transform">
-                <BookOpen className="text-accent-foreground w-6 h-6 md:w-8 md:h-8" />
+              <div className="bg-card p-6 md:p-8 rounded-2xl shadow-card-modern hover:scale-105 transition-transform group">
+                <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-accent rounded-2xl mb-4 md:mb-6 mx-auto group-hover:rotate-12 transition-transform">
+                  <BookOpen className="text-accent-foreground w-6 h-6 md:w-8 md:h-8" />
+                </div>
+                <h3 className="text-lg md:text-xl font-bold text-accent mb-3 md:mb-4 text-center">Personalized Matches</h3>
+                <p className="text-sm md:text-base text-muted-foreground text-center leading-relaxed">Get scholarships tailored to your unique academic profile and interests</p>
               </div>
-              <h3 className="text-lg md:text-xl font-bold text-accent mb-3 md:mb-4 text-center">Personalized Matches</h3>
-              <p className="text-sm md:text-base text-muted-foreground text-center leading-relaxed">Get scholarships tailored to your unique academic profile and interests</p>
-            </div>
 
-            <div className="bg-card p-6 md:p-8 rounded-2xl shadow-card-modern hover:scale-105 transition-transform group">
-              <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-primary rounded-2xl mb-4 md:mb-6 mx-auto group-hover:rotate-12 transition-transform">
-                <DollarSign className="text-primary-foreground w-6 h-6 md:w-8 md:h-8" />
+              <div className="bg-card p-6 md:p-8 rounded-2xl shadow-card-modern hover:scale-105 transition-transform group">
+                <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-primary rounded-2xl mb-4 md:mb-6 mx-auto group-hover:rotate-12 transition-transform">
+                  <DollarSign className="text-primary-foreground w-6 h-6 md:w-8 md:h-8" />
+                </div>
+                <h3 className="text-lg md:text-xl font-bold text-primary mb-3 md:mb-4 text-center">Save Money</h3>
+                <p className="text-sm md:text-base text-muted-foreground text-center leading-relaxed">Access thousands of dollars in scholarship opportunities just waiting for you</p>
               </div>
-              <h3 className="text-lg md:text-xl font-bold text-primary mb-3 md:mb-4 text-center">Save Money</h3>
-              <p className="text-sm md:text-base text-muted-foreground text-center leading-relaxed">Access thousands of dollars in scholarship opportunities just waiting for you</p>
-            </div>
 
-            <div className="bg-card p-6 md:p-8 rounded-2xl shadow-card-modern hover:scale-105 transition-transform group">
-              <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-accent rounded-2xl mb-4 md:mb-6 mx-auto group-hover:rotate-12 transition-transform">
-                <Clock className="text-accent-foreground w-6 h-6 md:w-8 md:h-8" />
+              <div className="bg-card p-6 md:p-8 rounded-2xl shadow-card-modern hover:scale-105 transition-transform group">
+                <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-accent rounded-2xl mb-4 md:mb-6 mx-auto group-hover:rotate-12 transition-transform">
+                  <Clock className="text-accent-foreground w-6 h-6 md:w-8 md:h-8" />
+                </div>
+                <h3 className="text-lg md:text-xl font-bold text-accent mb-3 md:mb-4 text-center">Save Time</h3>
+                <p className="text-sm md:text-base text-muted-foreground text-center leading-relaxed">Apply to multiple scholarships efficiently with your single profile</p>
               </div>
-              <h3 className="text-lg md:text-xl font-bold text-accent mb-3 md:mb-4 text-center">Save Time</h3>
-              <p className="text-sm md:text-base text-muted-foreground text-center leading-relaxed">Apply to multiple scholarships efficiently with your single profile</p>
-            </div>
 
-            <div 
-              className="bg-card p-6 md:p-8 rounded-2xl shadow-card-modern hover:scale-105 transition-transform group cursor-pointer md:col-span-2 xl:col-span-1"
-              onClick={() => navigate('/school-matchmaker')}
-            >
-              <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-primary rounded-2xl mb-4 md:mb-6 mx-auto group-hover:rotate-12 transition-transform">
-                <School className="text-primary-foreground w-6 h-6 md:w-8 md:h-8" />
+              <div 
+                className="bg-card p-6 md:p-8 rounded-2xl shadow-card-modern hover:scale-105 transition-transform group cursor-pointer md:col-span-2 lg:col-span-1"
+                onClick={() => navigate('/school-matchmaker')}
+              >
+                <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-primary rounded-2xl mb-4 md:mb-6 mx-auto group-hover:rotate-12 transition-transform">
+                  <School className="text-primary-foreground w-6 h-6 md:w-8 md:h-8" />
+                </div>
+                <h3 className="text-lg md:text-xl font-bold text-primary mb-3 md:mb-4 text-center">School Matchmaker</h3>
+                <p className="text-sm md:text-base text-muted-foreground text-center leading-relaxed">Find perfect schools that match your interests, budget, and location preferences</p>
               </div>
-              <h3 className="text-lg md:text-xl font-bold text-primary mb-3 md:mb-4 text-center">School Matchmaker</h3>
-              <p className="text-sm md:text-base text-muted-foreground text-center leading-relaxed">Find perfect schools that match your interests, budget, and location preferences</p>
             </div>
           </div>
         )}
