@@ -5,7 +5,7 @@ import ScholarshipSwiper from '@/components/ScholarshipSwiper';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { GraduationCap, Rocket, DollarSign, Clock, Sparkles, BookOpen, Users, Trophy, Wallet as WalletIcon, PencilIcon, FileText, Lightbulb, X, Search, Zap, School } from 'lucide-react';
-import { AccountDropdown } from '@/components/AccountDropdown';
+
 import Wallet from '@/components/Wallet';
 import { CrawlForm } from '@/components/CrawlForm';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -226,12 +226,6 @@ const Index = () => {
   return (
     <div className="min-h-screen min-w-screen bg-background overflow-x-hidden relative">
       <div className={`container px-4 ${isMobile ? 'py-4' : 'py-8'} relative z-10`}>
-        {user && (
-          <div className="flex justify-end mb-6 pt-safe">
-            <AccountDropdown />
-          </div>
-        )}
-        
         {!user && (
           <div className="flex justify-end mb-6 pt-safe">
             <Button onClick={() => navigate('/auth')} variant="outline" className="bg-card hover:bg-muted shadow-card-modern">

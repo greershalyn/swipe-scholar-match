@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { NavLink, useLocation } from "react-router-dom"
+import { NavLink, useLocation, useNavigate } from "react-router-dom"
 import { 
   GraduationCap, 
   WalletIcon, 
@@ -8,8 +8,13 @@ import {
   Users, 
   Calculator,
   PencilIcon,
-  School
+  School,
+  User,
+  LogOut,
+  Trash2
 } from "lucide-react"
+import { DeactivateAccountDialog } from "@/components/account/DeactivateAccountDialog"
+import { useAccountActions } from "@/hooks/useAccountActions"
 
 import {
   Sidebar,
@@ -76,8 +81,11 @@ const resourcesItems = [
 export function DashboardSidebar() {
   const { state } = useSidebar()
   const location = useLocation()
+  const navigate = useNavigate()
   const currentPath = location.pathname
   const collapsed = state === "collapsed"
+  const [showDeactivateDialog, setShowDeactivateDialog] = useState(false)
+  const { handleLogout } = useAccountActions()
 
   const isActive = (path: string) => {
     if (path === "/" && currentPath === "/") return true
@@ -164,7 +172,70 @@ export function DashboardSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Account</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  onClick={() => navigate('/questionnaire')}
+                  className="hover:bg-accent/50"
+                >
+                  <User className="h-4 w-4" />
+                  {!collapsed && (
+                    <div className="flex flex-col">
+                      <span className="font-medium">Update Profile</span>
+                      <span className="text-xs text-muted-foreground">
+                        Edit your information
+                      </span>
+                    </div>
+                  )}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  onClick={handleLogout}
+                  className="hover:bg-accent/50"
+                >
+                  <LogOut className="h-4 w-4" />
+                  {!collapsed && (
+                    <div className="flex flex-col">
+                      <span className="font-medium">Log Out</span>
+                      <span className="text-xs text-muted-foreground">
+                        Sign out of your account
+                      </span>
+                    </div>
+                  )}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  onClick={() => setShowDeactivateDialog(true)}
+                  className="hover:bg-red-50 text-red-600 hover:text-red-700"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  {!collapsed && (
+                    <div className="flex flex-col">
+                      <span className="font-medium">Deactivate Account</span>
+                      <span className="text-xs text-muted-foreground">
+                        Permanently delete account
+                      </span>
+                    </div>
+                  )}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
+      
+      <DeactivateAccountDialog 
+        open={showDeactivateDialog} 
+        onOpenChange={setShowDeactivateDialog} 
+      />
     </Sidebar>
   )
 }
