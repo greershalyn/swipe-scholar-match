@@ -5,7 +5,7 @@ import { ExternalLink, Book, DollarSign, GraduationCap, ShieldCheck, PiggyBank, 
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AccountDropdown } from '@/components/AccountDropdown';
+
 
 const FinancialEducation = () => {
   const isMobile = useIsMobile();
@@ -21,7 +21,7 @@ const FinancialEducation = () => {
               className={`${isMobile ? 'h-24' : 'h-40'} w-auto invert`}
             />
           </Link>
-          <AccountDropdown />
+          
         </div>
 
         <div className={`max-w-4xl mx-auto ${isMobile ? 'px-2' : ''}`}>

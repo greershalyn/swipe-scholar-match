@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { AccountDropdown } from '@/components/AccountDropdown';
+
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface PremiumPageLayoutProps {
@@ -18,7 +18,7 @@ export const PremiumPageLayout = ({ children }: PremiumPageLayoutProps) => {
           <Link to="/">
             <img src="/lovable-uploads/24f07198-1e4c-4eea-8e07-259aa77d1711.png" alt="SwipeScholar Logo" className={`${isMobile ? 'h-24' : 'h-40'} w-auto invert`} />
           </Link>
-          <AccountDropdown />
+          
         </div>
         {children}
       </div>

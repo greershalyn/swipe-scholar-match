@@ -5,7 +5,7 @@ import { PencilIcon, FileText } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
-import { AccountDropdown } from '@/components/AccountDropdown';
+
 import { useSubscriptionCheck } from '@/hooks/useSubscriptionCheck';
 import { PremiumAccessPrompt } from '@/components/essay/PremiumAccessPrompt';
 import { EssayEditor } from '@/components/essay/EssayEditor';
@@ -121,7 +121,7 @@ const EssayAssistant = () => {
               className={`${isMobile ? 'h-24' : 'h-40'} w-auto invert`}
             />
           </Link>
-          <AccountDropdown />
+          
         </div>
 
         <div className="max-w-3xl mx-auto">

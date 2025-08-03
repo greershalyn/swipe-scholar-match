@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { GraduationCap } from 'lucide-react';
-import { AccountDropdown } from '@/components/AccountDropdown';
+
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const TestPrepHeader = () => {
@@ -17,7 +17,7 @@ const TestPrepHeader = () => {
           className={`${isMobile ? 'h-24' : 'h-40'} w-auto invert`}
         />
       </Link>
-      <AccountDropdown />
+      
     </div>
   );
 };
