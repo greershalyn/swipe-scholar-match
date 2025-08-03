@@ -7,6 +7,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 const TestPrepHeader = () => {
   const isMobile = useIsMobile();
+  // Account management is now handled via the dashboard sidebar
   
   return (
     <div className={`flex justify-between items-center ${isMobile ? 'mb-4' : 'mb-8'}`}>
