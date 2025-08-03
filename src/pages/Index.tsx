@@ -185,36 +185,72 @@ const Index = () => {
   if (user) {
     // Dashboard layout for logged-in users
     return (
-      <div className="p-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-primary mb-2">Welcome back!</h1>
-            <p className="text-muted-foreground">Find your perfect scholarship match</p>
-          </div>
-          
-          <div className="max-w-md mx-auto mb-12">
-            <ScholarshipSwiper />
-            <div className="-mt-12 text-center mb-8">
-              <p className="text-lg text-foreground font-medium">
-                Swipe right to save to wallet, left to skip
+      <div className="p-4 lg:p-6 max-w-5xl mx-auto">
+        <div className="mb-6">
+          <h1 className="text-2xl lg:text-3xl font-bold text-primary mb-2">Welcome back!</h1>
+          <p className="text-muted-foreground">Find your perfect scholarship match</p>
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Scholarship Swiping Section */}
+          <div className="flex flex-col items-center">
+            <div className="w-full max-w-sm">
+              <ScholarshipSwiper />
+            </div>
+            <div className="text-center mt-4">
+              <p className="text-base text-foreground font-medium">
+                Swipe right to save, left to skip
               </p>
             </div>
           </div>
           
-          {isAdmin && (
-            <div className="max-w-2xl mx-auto mb-12">
-              <h2 className="text-2xl font-semibold text-foreground mb-6">Add New Scholarship</h2>
+          {/* Quick Stats or Actions */}
+          <div className="bg-card/95 rounded-xl p-6 shadow-card-modern">
+            <h3 className="text-lg font-semibold text-primary mb-4">Quick Actions</h3>
+            <div className="space-y-3">
+              <Button 
+                onClick={() => navigate('/essay-assistant')} 
+                className="w-full justify-start" 
+                variant="outline"
+              >
+                <PencilIcon className="h-4 w-4 mr-2" />
+                Write Essay
+              </Button>
+              <Button 
+                onClick={() => navigate('/test-prep')} 
+                className="w-full justify-start" 
+                variant="outline"
+              >
+                <BookOpen className="h-4 w-4 mr-2" />
+                Practice Tests
+              </Button>
+              <Button 
+                onClick={() => navigate('/school-matchmaker')} 
+                className="w-full justify-start" 
+                variant="outline"
+              >
+                <School className="h-4 w-4 mr-2" />
+                Find Schools
+              </Button>
+            </div>
+          </div>
+        </div>
+          
+        {isAdmin && (
+          <div className="mb-8">
+            <div className="bg-card/95 rounded-xl p-6 shadow-card-modern">
+              <h2 className="text-xl font-semibold text-foreground mb-4">Admin: Add New Scholarship</h2>
               <CrawlForm />
             </div>
-          )}
-
-          <div className="max-w-7xl mx-auto bg-card/95 rounded-xl p-6 md:p-8 shadow-card-modern">
-            <h2 className="text-2xl font-semibold text-accent mb-6 flex items-center gap-2">
-              <WalletIcon className="h-6 w-6" />
-              Your Scholarship Wallet
-            </h2>
-            <Wallet className="mt-4" />
           </div>
+        )}
+
+        <div className="bg-card/95 rounded-xl p-6 shadow-card-modern">
+          <h2 className="text-xl font-semibold text-accent mb-4 flex items-center gap-2">
+            <WalletIcon className="h-5 w-5" />
+            Your Scholarship Wallet
+          </h2>
+          <Wallet className="mt-4" />
         </div>
       </div>
     );
