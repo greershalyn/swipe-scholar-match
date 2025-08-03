@@ -225,22 +225,20 @@ const Index = () => {
   // Landing page layout for non-logged-in users
   return (
     <div className="min-h-screen min-w-screen bg-background overflow-x-hidden relative">
-      {/* HUGE Compass background - spans entire page width */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
-        <img 
-          src="/lovable-uploads/f5f92d18-9536-46ff-8d97-1a799437f06a.png" 
-          alt="Compass background" 
-          className="opacity-50"
-          style={{ 
-            width: '120vw', 
-            height: 'auto',
-            minWidth: '1200px',
-            transform: 'translateY(100px)'
-          }}
-        />
-      </div>
+      {/* MASSIVE Compass background - positioned to be definitely visible */}
+      <div 
+        className="fixed inset-0 w-screen h-screen pointer-events-none z-0"
+        style={{
+          backgroundImage: `url(/lovable-uploads/f5f92d18-9536-46ff-8d97-1a799437f06a.png)`,
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'center center',
+          backgroundSize: 'cover',
+          opacity: 0.3,
+          transform: 'scale(1.5)'
+        }}
+      />
       
-      <div className={`container px-4 ${isMobile ? 'py-4' : 'py-8'} relative z-10`}>
+      <div className={`container px-4 ${isMobile ? 'py-4' : 'py-8'} relative z-20`}>
         {!user && (
           <div className="flex justify-end mb-6 pt-safe">
             <Button onClick={() => navigate('/auth')} variant="outline" className="bg-card hover:bg-muted shadow-card-modern">
