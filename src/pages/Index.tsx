@@ -191,47 +191,13 @@ const Index = () => {
           <p className="text-muted-foreground">Find your perfect scholarship match</p>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Scholarship Swiping Section */}
-          <div className="flex flex-col items-center">
-            <div className="w-full max-w-sm">
-              <ScholarshipSwiper />
-            </div>
+        <div className="flex justify-center mb-8">
+          <div className="w-full max-w-sm">
+            <ScholarshipSwiper />
             <div className="text-center mt-4">
               <p className="text-base text-foreground font-medium">
                 Swipe right to save, left to skip
               </p>
-            </div>
-          </div>
-          
-          {/* Quick Stats or Actions */}
-          <div className="bg-card/95 rounded-xl p-6 shadow-card-modern">
-            <h3 className="text-lg font-semibold text-primary mb-4">Quick Actions</h3>
-            <div className="space-y-3">
-              <Button 
-                onClick={() => navigate('/essay-assistant')} 
-                className="w-full justify-start" 
-                variant="outline"
-              >
-                <PencilIcon className="h-4 w-4 mr-2" />
-                Write Essay
-              </Button>
-              <Button 
-                onClick={() => navigate('/test-prep')} 
-                className="w-full justify-start" 
-                variant="outline"
-              >
-                <BookOpen className="h-4 w-4 mr-2" />
-                Practice Tests
-              </Button>
-              <Button 
-                onClick={() => navigate('/school-matchmaker')} 
-                className="w-full justify-start" 
-                variant="outline"
-              >
-                <School className="h-4 w-4 mr-2" />
-                Find Schools
-              </Button>
             </div>
           </div>
         </div>
