@@ -2,8 +2,10 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Questionnaire from "./pages/Questionnaire";
@@ -15,15 +17,64 @@ import TestPrep from "./pages/TestPrep";
 import FirstGenResources from "./pages/FirstGenResources";
 import SchoolMatchmaker from "./pages/SchoolMatchmaker";
 import Footer from "./components/Footer";
+import { DashboardSidebar } from "./components/DashboardSidebar";
+import { supabase } from "./integrations/supabase/client";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <TooltipProvider>
-    <BrowserRouter>
-      <QueryClientProvider client={queryClient}>
-        <div className="flex flex-col">
-          <div>
+const AppContent = () => {
+  const [user, setUser] = useState(null);
+  const location = useLocation();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user || null);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+  
+  // Don't show sidebar on auth pages
+  const hideLayoutPages = ['/auth', '/questionnaire'];
+  const shouldShowSidebar = user && !hideLayoutPages.includes(location.pathname);
+
+  if (!shouldShowSidebar) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <div className="flex-1">
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/questionnaire" element={<Questionnaire />} />
+            <Route path="/wallet" element={<WalletPage />} />
+            <Route path="/financial-education" element={<FinancialEducation />} />
+            <Route path="/essay-assistant" element={<EssayAssistant />} />
+            <Route path="/test-prep" element={<TestPrep />} />
+            <Route path="/first-gen-resources" element={<FirstGenResources />} />
+            <Route path="/school-matchmaker" element={<SchoolMatchmaker />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full">
+        <DashboardSidebar />
+        <div className="flex-1 flex flex-col">
+          <header className="h-14 flex items-center border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <SidebarTrigger className="ml-4" />
+          </header>
+          <main className="flex-1 overflow-auto">
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
@@ -36,11 +87,21 @@ const App = () => (
               <Route path="/school-matchmaker" element={<SchoolMatchmaker />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </div>
+          </main>
           <Footer />
-          <Toaster />
-          <Sonner />
         </div>
+      </div>
+    </SidebarProvider>
+  );
+};
+
+const App = () => (
+  <TooltipProvider>
+    <BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <AppContent />
+        <Toaster />
+        <Sonner />
       </QueryClientProvider>
     </BrowserRouter>
   </TooltipProvider>

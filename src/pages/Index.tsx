@@ -182,18 +182,61 @@ const Index = () => {
     }
   };
 
+  if (user) {
+    // Dashboard layout for logged-in users
+    return (
+      <div className="p-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-primary mb-2">Welcome back!</h1>
+            <p className="text-muted-foreground">Find your perfect scholarship match</p>
+          </div>
+          
+          <div className="max-w-md mx-auto mb-12">
+            <ScholarshipSwiper />
+            <div className="-mt-12 text-center mb-8">
+              <p className="text-lg text-foreground font-medium">
+                Swipe right to save to wallet, left to skip
+              </p>
+            </div>
+          </div>
+          
+          {isAdmin && (
+            <div className="max-w-2xl mx-auto mb-12">
+              <h2 className="text-2xl font-semibold text-foreground mb-6">Add New Scholarship</h2>
+              <CrawlForm />
+            </div>
+          )}
+
+          <div className="max-w-7xl mx-auto bg-card/95 rounded-xl p-6 md:p-8 shadow-card-modern">
+            <h2 className="text-2xl font-semibold text-accent mb-6 flex items-center gap-2">
+              <WalletIcon className="h-6 w-6" />
+              Your Scholarship Wallet
+            </h2>
+            <Wallet className="mt-4" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Landing page layout for non-logged-in users
   return (
     <div className="min-h-screen min-w-screen bg-background overflow-x-hidden relative">
       <div className={`container px-4 ${isMobile ? 'py-4' : 'py-8'} relative z-10`}>
-        <div className="flex justify-end mb-6 pt-safe">
-          {user ? (
+        {user && (
+          <div className="flex justify-end mb-6 pt-safe">
             <AccountDropdown />
-          ) : (
+          </div>
+        )}
+        
+        {!user && (
+          <div className="flex justify-end mb-6 pt-safe">
             <Button onClick={() => navigate('/auth')} variant="outline" className="bg-card hover:bg-muted shadow-card-modern">
               Log In
             </Button>
-          )}
-        </div>
+          </div>
+        )}
 
         <div className={`text-center mb-16 animate-fade-in ${isMobile ? 'px-2' : ''}`}>
           <div className="flex justify-center mb-6">
@@ -263,33 +306,6 @@ const Index = () => {
           </div>
         )}
 
-        {user && (
-          <>
-            <div className={`max-w-md mx-auto mb-24 ${isMobile ? 'px-2' : ''}`}>
-              <ScholarshipSwiper />
-              <div className="-mt-12 text-center mb-8">
-                <p className="text-lg text-foreground font-medium">
-                  Swipe right to save to wallet, left to skip
-                </p>
-              </div>
-            </div>
-            
-            {isAdmin && (
-              <div className="max-w-2xl mx-auto mb-12">
-                <h2 className="text-2xl font-semibold text-foreground mb-6">Add New Scholarship</h2>
-                <CrawlForm />
-              </div>
-            )}
-
-            <div className="max-w-7xl mx-auto bg-card/95 rounded-xl p-6 md:p-8 shadow-card-modern">
-              <h2 className="text-2xl font-semibold text-accent mb-6 flex items-center gap-2">
-                <WalletIcon className="h-6 w-6" />
-                Your Scholarship Wallet
-              </h2>
-              <Wallet className="mt-4" />
-            </div>
-          </>
-        )}
 
         {!user && (
           <div className="text-center mb-16 bg-card/90 p-8 md:p-12 rounded-3xl shadow-card-modern animate-fade-in">
