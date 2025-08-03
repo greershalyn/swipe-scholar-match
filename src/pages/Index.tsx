@@ -267,7 +267,7 @@ const Index = () => {
         </div>
 
         {!user && (
-          <div className="relative grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-8 mb-16">
+          <div className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-6 mb-16 px-2">{/* Fixed responsive grid */}
             <div className="bg-card/95 p-6 md:p-8 rounded-2xl shadow-card-modern hover:scale-105 transition-transform group relative z-10">
               <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-primary rounded-2xl mb-4 md:mb-6 mx-auto group-hover:rotate-12 transition-transform">
                 <Rocket className="text-primary-foreground w-6 h-6 md:w-8 md:h-8" />
