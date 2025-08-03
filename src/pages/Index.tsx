@@ -225,6 +225,21 @@ const Index = () => {
   // Landing page layout for non-logged-in users
   return (
     <div className="min-h-screen min-w-screen bg-background overflow-x-hidden relative">
+      {/* HUGE Compass background - spans entire page width */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
+        <img 
+          src="/lovable-uploads/f5f92d18-9536-46ff-8d97-1a799437f06a.png" 
+          alt="Compass background" 
+          className="opacity-50"
+          style={{ 
+            width: '120vw', 
+            height: 'auto',
+            minWidth: '1200px',
+            transform: 'translateY(100px)'
+          }}
+        />
+      </div>
+      
       <div className={`container px-4 ${isMobile ? 'py-4' : 'py-8'} relative z-10`}>
         {!user && (
           <div className="flex justify-end mb-6 pt-safe">
@@ -257,15 +272,6 @@ const Index = () => {
 
         {!user && (
           <div className="relative grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-8 mb-16">
-            {/* Background compass image - using img element for visibility */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden">
-              <img 
-                src="/lovable-uploads/f5f92d18-9536-46ff-8d97-1a799437f06a.png" 
-                alt="Compass background" 
-                className="w-full h-full object-cover opacity-50 scale-[2]"
-                style={{ maxWidth: 'none', maxHeight: 'none' }}
-              />
-            </div>
             <div className="bg-card/95 p-6 md:p-8 rounded-2xl shadow-card-modern hover:scale-105 transition-transform group relative z-10">
               <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-primary rounded-2xl mb-4 md:mb-6 mx-auto group-hover:rotate-12 transition-transform">
                 <Rocket className="text-primary-foreground w-6 h-6 md:w-8 md:h-8" />
