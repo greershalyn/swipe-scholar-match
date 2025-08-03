@@ -233,24 +233,24 @@ const Index = () => {
 
   // Landing page layout for non-logged-in users
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
-      <div className="w-full px-4 py-4 md:py-8">
+    <div className="min-h-screen bg-background">
+      <div className="w-full max-w-7xl mx-auto px-4 py-4 md:py-8">
         {!user && (
-          <div className="flex justify-end mb-6 pt-safe max-w-7xl mx-auto">
+          <div className="flex justify-end mb-6">
             <Button onClick={() => navigate('/auth')} variant="outline" className="bg-card hover:bg-muted shadow-card-modern">
               Log In
             </Button>
           </div>
         )}
 
-        <div className="text-center mb-12 md:mb-16 animate-fade-in max-w-4xl mx-auto px-2">
+        <div className="text-center mb-12 md:mb-16 animate-fade-in">
           <div className="flex justify-center mb-6">
             <GraduationCap className="w-16 h-16 md:w-20 md:h-20 text-primary animate-bounce" />
           </div>
           <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold text-primary mb-6 drop-shadow-lg">
             SwipeScholar
           </h1>
-          <p className="text-base md:text-lg lg:text-2xl text-foreground mb-8 leading-relaxed">
+          <p className="text-base md:text-lg lg:text-2xl text-foreground mb-8 leading-relaxed max-w-4xl mx-auto">
             Find Your Perfect Scholarship Match with a Simple Swipe! Join students across the country who are securing their funding through SwipeScholar.
           </p>
           {!user && (
@@ -265,8 +265,7 @@ const Index = () => {
         </div>
 
         {!user && (
-          <div className="px-2 max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-16 max-w-6xl mx-auto">
               <div className="bg-card p-6 md:p-8 rounded-2xl shadow-card-modern hover:scale-105 transition-transform group">
                 <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-primary rounded-2xl mb-4 md:mb-6 mx-auto group-hover:rotate-12 transition-transform">
                   <Rocket className="text-primary-foreground w-6 h-6 md:w-8 md:h-8" />
@@ -309,7 +308,6 @@ const Index = () => {
                 <h3 className="text-lg md:text-xl font-bold text-primary mb-3 md:mb-4 text-center">School Matchmaker</h3>
                 <p className="text-sm md:text-base text-muted-foreground text-center leading-relaxed">Find perfect schools that match your interests, budget, and location preferences</p>
               </div>
-            </div>
           </div>
         )}
 
