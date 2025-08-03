@@ -85,3 +85,10 @@
     min-height: auto;
   }
 }
+
+/* Responsive compass background */
+@media (min-width: 768px) {
+  .compass-background {
+    background-size: 1200px !important;
+  }
+}

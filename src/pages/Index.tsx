@@ -8,7 +8,6 @@ import { GraduationCap, Rocket, DollarSign, Clock, Sparkles, BookOpen, Users, Tr
 
 import Wallet from '@/components/Wallet';
 import { CrawlForm } from '@/components/CrawlForm';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { ExpandedFramework } from '@/types/essay';
@@ -20,7 +19,6 @@ const Index = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const isMobile = useIsMobile();
   const [essayStep, setEssayStep] = useState(1);
   const [essayTopic, setEssayTopic] = useState("Describe a challenge you've faced and how it has prepared you for college.");
   const [showFrameworkPreview, setShowFrameworkPreview] = useState(false);
@@ -185,15 +183,15 @@ const Index = () => {
   if (user) {
     // Dashboard layout for logged-in users
     return (
-      <div className="p-4 lg:p-6 max-w-5xl mx-auto relative">
+      <div className="p-4 lg:p-6 max-w-5xl mx-auto relative compass-bg-container">
         {/* Compass background for logged-in dashboard */}
         <div 
-          className="absolute inset-0 pointer-events-none z-0"
+          className="absolute inset-0 pointer-events-none z-0 compass-background"
           style={{
             backgroundImage: `url(/lovable-uploads/f5f92d18-9536-46ff-8d97-1a799437f06a.png)`,
             backgroundRepeat: 'no-repeat',
             backgroundPosition: 'center top',
-            backgroundSize: isMobile ? '600px' : '1200px',
+            backgroundSize: '600px',
             opacity: 0.3
           }}
         />
@@ -464,7 +462,7 @@ const Index = () => {
             </p>
             <Button 
               onClick={() => navigate('/auth')} 
-              className={`bg-accent hover:bg-accent/90 text-accent-foreground ${isMobile ? 'px-6 py-4 text-lg' : 'px-8 py-6 text-xl'} rounded-full shadow-glow hover:scale-105 transition-transform`}
+              className="bg-accent hover:bg-accent/90 text-accent-foreground px-6 py-4 md:px-8 md:py-6 text-lg md:text-xl rounded-full shadow-glow hover:scale-105 transition-transform"
             >
               Sign Up Now
             </Button>
