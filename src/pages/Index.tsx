@@ -257,15 +257,15 @@ const Index = () => {
 
         {!user && (
           <div className="relative grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-8 mb-16">
-            {/* Background compass image */}
+            {/* Background compass image - made huge and more visible */}
             <div 
-              className="absolute inset-0 flex items-center justify-center pointer-events-none z-0"
+              className="absolute inset-0 -top-20 -bottom-20 -left-20 -right-20 pointer-events-none z-0"
               style={{
                 backgroundImage: `url(/lovable-uploads/f5f92d18-9536-46ff-8d97-1a799437f06a.png)`,
                 backgroundRepeat: 'no-repeat',
                 backgroundPosition: 'center',
-                backgroundSize: '150%',
-                opacity: 0.5
+                backgroundSize: '200%',
+                opacity: 0.8
               }}
             />
             <div className="bg-card/95 p-6 md:p-8 rounded-2xl shadow-card-modern hover:scale-105 transition-transform group relative z-10">
