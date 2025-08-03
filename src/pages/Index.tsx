@@ -185,13 +185,24 @@ const Index = () => {
   if (user) {
     // Dashboard layout for logged-in users
     return (
-      <div className="p-4 lg:p-6 max-w-5xl mx-auto">
-        <div className="mb-6">
+      <div className="p-4 lg:p-6 max-w-5xl mx-auto relative">
+        {/* Compass background for logged-in dashboard */}
+        <div 
+          className="absolute inset-0 pointer-events-none z-0"
+          style={{
+            backgroundImage: `url(/lovable-uploads/f5f92d18-9536-46ff-8d97-1a799437f06a.png)`,
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center center',
+            backgroundSize: '600px',
+            opacity: 0.3
+          }}
+        />
+        <div className="mb-6 relative z-10">
           <h1 className="text-2xl lg:text-3xl font-bold text-primary mb-2">Welcome back!</h1>
           <p className="text-muted-foreground">Find your perfect scholarship match</p>
         </div>
         
-        <div className="flex justify-center mb-8">
+        <div className="flex justify-center mb-8 relative z-10">
           <div className="w-full max-w-sm">
             <ScholarshipSwiper />
             <div className="text-center mt-4">
@@ -203,7 +214,7 @@ const Index = () => {
         </div>
           
         {isAdmin && (
-          <div className="mb-8">
+          <div className="mb-8 relative z-10">
             <div className="bg-card/95 rounded-xl p-6 shadow-card-modern">
               <h2 className="text-xl font-semibold text-foreground mb-4">Admin: Add New Scholarship</h2>
               <CrawlForm />
@@ -211,7 +222,7 @@ const Index = () => {
           </div>
         )}
 
-        <div className="bg-card/95 rounded-xl p-6 shadow-card-modern">
+        <div className="bg-card/95 rounded-xl p-6 shadow-card-modern relative z-10">
           <h2 className="text-xl font-semibold text-accent mb-4 flex items-center gap-2">
             <WalletIcon className="h-5 w-5" />
             Your Scholarship Wallet
@@ -225,20 +236,7 @@ const Index = () => {
   // Landing page layout for non-logged-in users
   return (
     <div className="min-h-screen min-w-screen bg-background overflow-x-hidden relative">
-      {/* MASSIVE Compass background - positioned to be definitely visible */}
-      <div 
-        className="fixed inset-0 w-screen h-screen pointer-events-none z-0"
-        style={{
-          backgroundImage: `url(/lovable-uploads/f5f92d18-9536-46ff-8d97-1a799437f06a.png)`,
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'center center',
-          backgroundSize: 'cover',
-          opacity: 0.3,
-          transform: 'scale(1.5)'
-        }}
-      />
-      
-      <div className={`container px-4 ${isMobile ? 'py-4' : 'py-8'} relative z-20`}>
+      <div className={`container px-4 ${isMobile ? 'py-4' : 'py-8'} relative z-10`}>
         {!user && (
           <div className="flex justify-end mb-6 pt-safe">
             <Button onClick={() => navigate('/auth')} variant="outline" className="bg-card hover:bg-muted shadow-card-modern">
@@ -257,18 +255,7 @@ const Index = () => {
           <p className="text-lg md:text-2xl text-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
             Find Your Perfect Scholarship Match with a Simple Swipe! Join students across the country who are securing their funding through SwipeScholar.
           </p>
-        {/* TEST: Direct visible image to check if file loads */}
-        <div className="flex justify-center mb-8">
-          <img 
-            src="/lovable-uploads/f5f92d18-9536-46ff-8d97-1a799437f06a.png" 
-            alt="Test compass" 
-            className="w-96 h-96 opacity-50"
-            onError={(e) => console.error('Image failed to load:', e)}
-            onLoad={() => console.log('Image loaded successfully')}
-          />
-        </div>
-
-        {!user && (
+          {!user && (
             <Button 
               onClick={() => navigate('/auth')} 
               className={`bg-primary text-primary-foreground hover:bg-primary/90 ${isMobile ? 'px-6 py-4 text-lg' : 'px-8 py-6 text-xl'} rounded-full shadow-glow hover:scale-105 transition-transform animate-pulse`}
