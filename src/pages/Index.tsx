@@ -234,93 +234,93 @@ const Index = () => {
   // Landing page layout for non-logged-in users
   return (
     <div className="min-h-screen bg-background">
-      <div className="w-full max-w-none sm:max-w-7xl mx-auto px-3 sm:px-4 py-4 md:py-8">
+      <div className="w-full max-w-sm sm:max-w-2xl md:max-w-4xl lg:max-w-7xl mx-auto px-2 sm:px-4 py-2 sm:py-4 md:py-8">
         {!user && (
-          <div className="flex justify-end mb-6">
-            <Button onClick={() => navigate('/auth')} variant="outline" className="bg-card hover:bg-muted shadow-card-modern">
+          <div className="flex justify-end mb-3 sm:mb-6">
+            <Button onClick={() => navigate('/auth')} variant="outline" className="bg-card hover:bg-muted shadow-card-modern text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2">
               Log In
             </Button>
           </div>
         )}
 
-        <div className="text-center mb-8 md:mb-16">
-          <div className="flex justify-center mb-4">
-            <GraduationCap className="w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 text-primary" />
+        <div className="text-center mb-6 md:mb-16">
+          <div className="flex justify-center mb-3">
+            <GraduationCap className="w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 text-primary" />
           </div>
-          <h1 className="text-2xl md:text-4xl lg:text-7xl font-bold text-primary mb-4 md:mb-6 drop-shadow-lg px-2">
+          <h1 className="text-xl sm:text-2xl md:text-4xl lg:text-7xl font-bold text-primary mb-3 md:mb-6 drop-shadow-lg px-1">
             SwipeScholar
           </h1>
-          <p className="text-sm md:text-base lg:text-2xl text-foreground mb-6 md:mb-8 leading-relaxed max-w-xs md:max-w-4xl mx-auto px-4">
+          <p className="text-xs sm:text-sm md:text-base lg:text-2xl text-foreground mb-4 md:mb-8 leading-relaxed max-w-xs sm:max-w-md md:max-w-4xl mx-auto px-2">
             Find Your Perfect Scholarship Match with a Simple Swipe! Join students across the country who are securing their funding through SwipeScholar.
           </p>
           {!user && (
             <Button 
               onClick={() => navigate('/auth')} 
-              className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 md:px-6 md:py-4 lg:px-8 lg:py-6 text-sm md:text-lg lg:text-xl rounded-full shadow-glow"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-4 lg:px-8 lg:py-6 text-xs sm:text-sm md:text-lg lg:text-xl rounded-full shadow-glow"
             >
-              <Sparkles className="mr-2 h-4 w-4 md:h-5 md:w-5 lg:h-6 lg:w-6" />
+              <Sparkles className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 lg:h-6 lg:w-6" />
               Start Your Journey Today
             </Button>
           )}
         </div>
 
         {!user && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-16 w-full sm:max-w-6xl mx-auto">
-              <div className="bg-card p-4 sm:p-6 md:p-8 rounded-2xl shadow-card-modern group">
-                <div className="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-primary rounded-2xl mb-3 md:mb-4 lg:mb-6 mx-auto">
-                  <Rocket className="text-primary-foreground w-5 h-5 md:w-6 md:h-6 lg:w-8 lg:h-8" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 md:gap-6 mb-8 sm:mb-16 w-full">
+              <div className="bg-card p-3 sm:p-4 md:p-6 lg:p-8 rounded-xl sm:rounded-2xl shadow-card-modern group">
+                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-primary rounded-xl sm:rounded-2xl mb-2 sm:mb-3 md:mb-4 lg:mb-6 mx-auto">
+                  <Rocket className="text-primary-foreground w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-8 lg:h-8" />
                 </div>
-                <h3 className="text-base md:text-lg lg:text-xl font-bold text-primary mb-2 md:mb-3 lg:mb-4 text-center">Quick & Easy</h3>
-                <p className="text-xs md:text-sm lg:text-base text-muted-foreground text-center leading-relaxed">Swipe right on scholarships that match your profile - as simple as using your favorite social app!</p>
+                <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-primary mb-1 sm:mb-2 md:mb-3 lg:mb-4 text-center">Quick & Easy</h3>
+                <p className="text-xs sm:text-xs md:text-sm lg:text-base text-muted-foreground text-center leading-relaxed">Swipe right on scholarships that match your profile - as simple as using your favorite social app!</p>
               </div>
 
-              <div className="bg-card p-4 sm:p-6 md:p-8 rounded-2xl shadow-card-modern group">
-                <div className="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-accent rounded-2xl mb-3 md:mb-4 lg:mb-6 mx-auto">
-                  <BookOpen className="text-accent-foreground w-5 h-5 md:w-6 md:h-6 lg:w-8 lg:h-8" />
+              <div className="bg-card p-3 sm:p-4 md:p-6 lg:p-8 rounded-xl sm:rounded-2xl shadow-card-modern group">
+                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-accent rounded-xl sm:rounded-2xl mb-2 sm:mb-3 md:mb-4 lg:mb-6 mx-auto">
+                  <BookOpen className="text-accent-foreground w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-8 lg:h-8" />
                 </div>
-                <h3 className="text-base md:text-lg lg:text-xl font-bold text-accent mb-2 md:mb-3 lg:mb-4 text-center">Personalized Matches</h3>
-                <p className="text-xs md:text-sm lg:text-base text-muted-foreground text-center leading-relaxed">Get scholarships tailored to your unique academic profile and interests</p>
+                <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-accent mb-1 sm:mb-2 md:mb-3 lg:mb-4 text-center">Personalized Matches</h3>
+                <p className="text-xs sm:text-xs md:text-sm lg:text-base text-muted-foreground text-center leading-relaxed">Get scholarships tailored to your unique academic profile and interests</p>
               </div>
 
-              <div className="bg-card p-4 sm:p-6 md:p-8 rounded-2xl shadow-card-modern group">
-                <div className="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-primary rounded-2xl mb-3 md:mb-4 lg:mb-6 mx-auto">
-                  <DollarSign className="text-primary-foreground w-5 h-5 md:w-6 md:h-6 lg:w-8 lg:h-8" />
+              <div className="bg-card p-3 sm:p-4 md:p-6 lg:p-8 rounded-xl sm:rounded-2xl shadow-card-modern group">
+                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-primary rounded-xl sm:rounded-2xl mb-2 sm:mb-3 md:mb-4 lg:mb-6 mx-auto">
+                  <DollarSign className="text-primary-foreground w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-8 lg:h-8" />
                 </div>
-                <h3 className="text-base md:text-lg lg:text-xl font-bold text-primary mb-2 md:mb-3 lg:mb-4 text-center">Save Money</h3>
-                <p className="text-xs md:text-sm lg:text-base text-muted-foreground text-center leading-relaxed">Access thousands of dollars in scholarship opportunities just waiting for you</p>
+                <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-primary mb-1 sm:mb-2 md:mb-3 lg:mb-4 text-center">Save Money</h3>
+                <p className="text-xs sm:text-xs md:text-sm lg:text-base text-muted-foreground text-center leading-relaxed">Access thousands of dollars in scholarship opportunities just waiting for you</p>
               </div>
 
-              <div className="bg-card p-4 sm:p-6 md:p-8 rounded-2xl shadow-card-modern group">
-                <div className="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-accent rounded-2xl mb-3 md:mb-4 lg:mb-6 mx-auto">
-                  <Clock className="text-accent-foreground w-5 h-5 md:w-6 md:h-6 lg:w-8 lg:h-8" />
+              <div className="bg-card p-3 sm:p-4 md:p-6 lg:p-8 rounded-xl sm:rounded-2xl shadow-card-modern group">
+                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-accent rounded-xl sm:rounded-2xl mb-2 sm:mb-3 md:mb-4 lg:mb-6 mx-auto">
+                  <Clock className="text-accent-foreground w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-8 lg:h-8" />
                 </div>
-                <h3 className="text-base md:text-lg lg:text-xl font-bold text-accent mb-2 md:mb-3 lg:mb-4 text-center">Save Time</h3>
-                <p className="text-xs md:text-sm lg:text-base text-muted-foreground text-center leading-relaxed">Apply to multiple scholarships efficiently with your single profile</p>
+                <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-accent mb-1 sm:mb-2 md:mb-3 lg:mb-4 text-center">Save Time</h3>
+                <p className="text-xs sm:text-xs md:text-sm lg:text-base text-muted-foreground text-center leading-relaxed">Apply to multiple scholarships efficiently with your single profile</p>
               </div>
 
               <div 
-                className="bg-card p-4 sm:p-6 md:p-8 rounded-2xl shadow-card-modern group cursor-pointer md:col-span-2 lg:col-span-1"
+                className="bg-card p-3 sm:p-4 md:p-6 lg:p-8 rounded-xl sm:rounded-2xl shadow-card-modern group cursor-pointer md:col-span-2 lg:col-span-1"
                 onClick={() => navigate('/school-matchmaker')}
               >
-                <div className="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-primary rounded-2xl mb-3 md:mb-4 lg:mb-6 mx-auto">
-                  <School className="text-primary-foreground w-5 h-5 md:w-6 md:h-6 lg:w-8 lg:h-8" />
+                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-primary rounded-xl sm:rounded-2xl mb-2 sm:mb-3 md:mb-4 lg:mb-6 mx-auto">
+                  <School className="text-primary-foreground w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-8 lg:h-8" />
                 </div>
-                <h3 className="text-base md:text-lg lg:text-xl font-bold text-primary mb-2 md:mb-3 lg:mb-4 text-center">School Matchmaker</h3>
-                <p className="text-xs md:text-sm lg:text-base text-muted-foreground text-center leading-relaxed">Find perfect schools that match your interests, budget, and location preferences</p>
+                <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-primary mb-1 sm:mb-2 md:mb-3 lg:mb-4 text-center">School Matchmaker</h3>
+                <p className="text-xs sm:text-xs md:text-sm lg:text-base text-muted-foreground text-center leading-relaxed">Find perfect schools that match your interests, budget, and location preferences</p>
               </div>
           </div>
         )}
 
 
         {!user && (
-          <div className="text-center mb-16 bg-card/90 p-8 md:p-12 rounded-3xl shadow-card-modern">
-            <div className="mb-8">
-              <h2 className="text-3xl md:text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-4">
+          <div className="text-center mb-8 sm:mb-16 bg-card/90 p-4 sm:p-6 md:p-8 lg:p-12 rounded-2xl sm:rounded-3xl shadow-card-modern">
+            <div className="mb-4 sm:mb-6 md:mb-8">
+              <h2 className="text-lg sm:text-xl md:text-3xl lg:text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-2 sm:mb-3 md:mb-4">
                 Unlock Premium Essay Tools
               </h2>
-              <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+              <p className="text-xs sm:text-sm md:text-lg lg:text-xl text-muted-foreground max-w-xs sm:max-w-md md:max-w-3xl mx-auto mb-4 sm:mb-6 md:mb-8">
                 Your scholarship essays deserve the best. Our AI-powered Essay Assistant helps you craft winning applications.
-                <span className="block text-primary font-bold mt-2 text-xl">
+                <span className="block text-primary font-bold mt-1 sm:mt-2 text-sm sm:text-base md:text-xl">
                   Just $10/month - Cancel Anytime!
                 </span>
               </p>
