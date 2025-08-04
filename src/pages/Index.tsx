@@ -234,7 +234,7 @@ const Index = () => {
   // Landing page layout for non-logged-in users
   return (
     <div className="min-h-screen bg-background">
-      <div className="w-full max-w-7xl mx-auto px-4 py-4 md:py-8">
+      <div className="w-full max-w-none sm:max-w-7xl mx-auto px-3 sm:px-4 py-4 md:py-8">
         {!user && (
           <div className="flex justify-end mb-6">
             <Button onClick={() => navigate('/auth')} variant="outline" className="bg-card hover:bg-muted shadow-card-modern">
@@ -265,8 +265,8 @@ const Index = () => {
         </div>
 
         {!user && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-16 max-w-6xl mx-auto">
-              <div className="bg-card p-6 md:p-8 rounded-2xl shadow-card-modern group">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-16 w-full sm:max-w-6xl mx-auto">
+              <div className="bg-card p-4 sm:p-6 md:p-8 rounded-2xl shadow-card-modern group">
                 <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-primary rounded-2xl mb-4 md:mb-6 mx-auto">
                   <Rocket className="text-primary-foreground w-6 h-6 md:w-8 md:h-8" />
                 </div>
@@ -274,7 +274,7 @@ const Index = () => {
                 <p className="text-sm md:text-base text-muted-foreground text-center leading-relaxed">Swipe right on scholarships that match your profile - as simple as using your favorite social app!</p>
               </div>
 
-              <div className="bg-card p-6 md:p-8 rounded-2xl shadow-card-modern group">
+              <div className="bg-card p-4 sm:p-6 md:p-8 rounded-2xl shadow-card-modern group">
                 <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-accent rounded-2xl mb-4 md:mb-6 mx-auto">
                   <BookOpen className="text-accent-foreground w-6 h-6 md:w-8 md:h-8" />
                 </div>
@@ -282,7 +282,7 @@ const Index = () => {
                 <p className="text-sm md:text-base text-muted-foreground text-center leading-relaxed">Get scholarships tailored to your unique academic profile and interests</p>
               </div>
 
-              <div className="bg-card p-6 md:p-8 rounded-2xl shadow-card-modern group">
+              <div className="bg-card p-4 sm:p-6 md:p-8 rounded-2xl shadow-card-modern group">
                 <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-primary rounded-2xl mb-4 md:mb-6 mx-auto">
                   <DollarSign className="text-primary-foreground w-6 h-6 md:w-8 md:h-8" />
                 </div>
@@ -290,7 +290,7 @@ const Index = () => {
                 <p className="text-sm md:text-base text-muted-foreground text-center leading-relaxed">Access thousands of dollars in scholarship opportunities just waiting for you</p>
               </div>
 
-              <div className="bg-card p-6 md:p-8 rounded-2xl shadow-card-modern group">
+              <div className="bg-card p-4 sm:p-6 md:p-8 rounded-2xl shadow-card-modern group">
                 <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-accent rounded-2xl mb-4 md:mb-6 mx-auto">
                   <Clock className="text-accent-foreground w-6 h-6 md:w-8 md:h-8" />
                 </div>
@@ -299,7 +299,7 @@ const Index = () => {
               </div>
 
               <div 
-                className="bg-card p-6 md:p-8 rounded-2xl shadow-card-modern group cursor-pointer md:col-span-2 lg:col-span-1"
+                className="bg-card p-4 sm:p-6 md:p-8 rounded-2xl shadow-card-modern group cursor-pointer md:col-span-2 lg:col-span-1"
                 onClick={() => navigate('/school-matchmaker')}
               >
                 <div className="flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-primary rounded-2xl mb-4 md:mb-6 mx-auto">
