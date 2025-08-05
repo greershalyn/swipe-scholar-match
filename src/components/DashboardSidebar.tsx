@@ -117,7 +117,7 @@ export function DashboardSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Main Tools</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-black font-bold">Main Tools</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainNavItems.map((item) => (
@@ -126,9 +126,9 @@ export function DashboardSidebar() {
                     <NavLink 
                       to={item.url} 
                       end={item.url === "/"}
-                      className={getNavClassName(item.url)}
+                      className={`${getNavClassName(item.url)} flex items-center p-2 rounded-md text-black hover:bg-gray-100`}
                     >
-                      <item.icon className="h-3 w-3 md:h-4 md:w-4" />
+                      <item.icon className="h-3 w-3 md:h-4 md:w-4 text-black" />
                       {!collapsed && (
                         <div className="flex flex-col min-w-0">
                           <span className="font-bold text-xs md:text-sm truncate text-black">{item.title}</span>
@@ -146,7 +146,7 @@ export function DashboardSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Resources</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-black font-bold">Resources</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {resourcesItems.map((item) => (
@@ -154,9 +154,9 @@ export function DashboardSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink 
                       to={item.url} 
-                      className={getNavClassName(item.url)}
+                      className={`${getNavClassName(item.url)} flex items-center p-2 rounded-md text-black hover:bg-gray-100`}
                     >
-                      <item.icon className="h-3 w-3 md:h-4 md:w-4" />
+                      <item.icon className="h-3 w-3 md:h-4 md:w-4 text-black" />
                       {!collapsed && (
                         <div className="flex flex-col min-w-0">
                           <span className="font-bold text-xs md:text-sm truncate text-black">{item.title}</span>
@@ -174,15 +174,15 @@ export function DashboardSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Account</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-black font-bold">Account</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton 
                   onClick={() => navigate('/questionnaire')}
-                  className="hover:bg-accent/50"
+                  className="flex items-center p-2 rounded-md text-black hover:bg-gray-100"
                 >
-                  <User className="h-3 w-3 md:h-4 md:w-4" />
+                  <User className="h-3 w-3 md:h-4 md:w-4 text-black" />
                   {!collapsed && (
                     <div className="flex flex-col min-w-0">
                       <span className="font-bold text-xs md:text-sm truncate text-black">Update Profile</span>
@@ -197,9 +197,9 @@ export function DashboardSidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton 
                   onClick={handleLogout}
-                  className="hover:bg-accent/50"
+                  className="flex items-center p-2 rounded-md text-black hover:bg-gray-100"
                 >
-                  <LogOut className="h-3 w-3 md:h-4 md:w-4" />
+                  <LogOut className="h-3 w-3 md:h-4 md:w-4 text-black" />
                   {!collapsed && (
                     <div className="flex flex-col min-w-0">
                       <span className="font-bold text-xs md:text-sm truncate text-black">Log Out</span>
@@ -214,9 +214,9 @@ export function DashboardSidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton 
                   onClick={() => setShowDeactivateDialog(true)}
-                  className="hover:bg-red-50 text-red-600 hover:text-red-700"
+                  className="flex items-center p-2 rounded-md text-red-700 hover:bg-red-50"
                 >
-                  <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
+                  <Trash2 className="h-3 w-3 md:h-4 md:w-4 text-red-700" />
                   {!collapsed && (
                     <div className="flex flex-col min-w-0">
                       <span className="font-bold text-xs md:text-sm truncate text-red-700">Deactivate Account</span>
