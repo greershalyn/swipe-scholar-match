@@ -79,11 +79,11 @@ const resourcesItems = [
 ]
 
 export function DashboardSidebar() {
-  const { state } = useSidebar()
+  const { state, isMobile } = useSidebar()
   const location = useLocation()
   const navigate = useNavigate()
   const currentPath = location.pathname
-  const collapsed = state === "collapsed"
+  const collapsed = state === "collapsed" && !isMobile // Don't collapse text on mobile
   const [showDeactivateDialog, setShowDeactivateDialog] = useState(false)
   const { handleLogout } = useAccountActions()
 
