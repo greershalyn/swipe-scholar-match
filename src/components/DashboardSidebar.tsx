@@ -108,8 +108,8 @@ export function DashboardSidebar() {
           <GraduationCap className="h-6 w-6 md:h-8 md:w-8 text-primary" />
           {!collapsed && (
             <div className="hidden sm:block">
-              <h1 className="font-bold text-sm md:text-lg text-primary">SwipeScholar</h1>
-              <p className="text-xs text-muted-foreground hidden md:block">Dashboard</p>
+              <h1 className="font-bold text-sm md:text-lg text-black">SwipeScholar</h1>
+              <p className="text-xs text-gray-600 hidden md:block">Dashboard</p>
             </div>
           )}
         </div>
@@ -131,8 +131,8 @@ export function DashboardSidebar() {
                       <item.icon className="h-3 w-3 md:h-4 md:w-4" />
                       {!collapsed && (
                         <div className="flex flex-col min-w-0">
-                          <span className="font-medium text-xs md:text-sm truncate">{item.title}</span>
-                          <span className="text-xs text-muted-foreground hidden md:block">
+                          <span className="font-bold text-xs md:text-sm truncate text-black">{item.title}</span>
+                          <span className="text-xs text-gray-600 hidden md:block">
                             {item.description}
                           </span>
                         </div>
@@ -159,8 +159,8 @@ export function DashboardSidebar() {
                       <item.icon className="h-3 w-3 md:h-4 md:w-4" />
                       {!collapsed && (
                         <div className="flex flex-col min-w-0">
-                          <span className="font-medium text-xs md:text-sm truncate">{item.title}</span>
-                          <span className="text-xs text-muted-foreground hidden md:block">
+                          <span className="font-bold text-xs md:text-sm truncate text-black">{item.title}</span>
+                          <span className="text-xs text-gray-600 hidden md:block">
                             {item.description}
                           </span>
                         </div>
@@ -185,8 +185,8 @@ export function DashboardSidebar() {
                   <User className="h-3 w-3 md:h-4 md:w-4" />
                   {!collapsed && (
                     <div className="flex flex-col min-w-0">
-                      <span className="font-medium text-xs md:text-sm truncate">Update Profile</span>
-                      <span className="text-xs text-muted-foreground hidden md:block">
+                      <span className="font-bold text-xs md:text-sm truncate text-black">Update Profile</span>
+                      <span className="text-xs text-gray-600 hidden md:block">
                         Edit your information
                       </span>
                     </div>
@@ -202,8 +202,8 @@ export function DashboardSidebar() {
                   <LogOut className="h-3 w-3 md:h-4 md:w-4" />
                   {!collapsed && (
                     <div className="flex flex-col min-w-0">
-                      <span className="font-medium text-xs md:text-sm truncate">Log Out</span>
-                      <span className="text-xs text-muted-foreground hidden md:block">
+                      <span className="font-bold text-xs md:text-sm truncate text-black">Log Out</span>
+                      <span className="text-xs text-gray-600 hidden md:block">
                         Sign out of your account
                       </span>
                     </div>
@@ -219,8 +219,8 @@ export function DashboardSidebar() {
                   <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
                   {!collapsed && (
                     <div className="flex flex-col min-w-0">
-                      <span className="font-medium text-xs md:text-sm truncate">Deactivate Account</span>
-                      <span className="text-xs text-muted-foreground hidden md:block">
+                      <span className="font-bold text-xs md:text-sm truncate text-red-700">Deactivate Account</span>
+                      <span className="text-xs text-gray-600 hidden md:block">
                         Permanently delete account
                       </span>
                     </div>
