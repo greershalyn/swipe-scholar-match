@@ -112,22 +112,12 @@ const EssayAssistant = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className={`container px-4 ${isMobile ? 'py-4' : 'py-8'}`}>
-        <div className={`flex justify-between items-center ${isMobile ? 'mb-4' : 'mb-8'}`}>
-          <Link to="/">
-            <img 
-              src="/lovable-uploads/24f07198-1e4c-4eea-8e07-259aa77d1711.png"
-              alt="SwipeScholar Logo"
-              className={`${isMobile ? 'h-24' : 'h-40'} w-auto invert`}
-            />
-          </Link>
-          
-        </div>
+      <div className={`container px-2 md:px-4 ${isMobile ? 'py-2' : 'py-4 md:py-8'}`}>
 
         <div className="max-w-3xl mx-auto">
-          <div className={`flex items-center gap-3 ${isMobile ? 'mb-4' : 'mb-8'}`}>
-            <PencilIcon className={`${isMobile ? 'h-6 w-6' : 'h-8 w-8'} text-primary`} />
-            <h1 className={`${isMobile ? 'text-2xl' : 'text-4xl'} font-bold text-foreground`}>Essay Assistant</h1>
+          <div className={`flex items-center gap-2 md:gap-3 ${isMobile ? 'mb-3' : 'mb-4 md:mb-8'}`}>
+            <PencilIcon className={`${isMobile ? 'h-5 w-5' : 'h-6 w-6 md:h-8 md:w-8'} text-primary`} />
+            <h1 className={`${isMobile ? 'text-lg' : 'text-2xl md:text-4xl'} font-bold text-foreground`}>Essay Assistant</h1>
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className={`${isMobile ? 'mb-4' : 'mb-8'}`}>

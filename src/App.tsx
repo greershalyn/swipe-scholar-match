@@ -67,12 +67,12 @@ const AppContent = () => {
   }
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={false}>
       <div className="min-h-screen flex w-full">
         <DashboardSidebar />
-        <div className="flex-1 flex flex-col">
-          <header className="h-14 flex items-center border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <SidebarTrigger className="ml-4" />
+        <div className="flex-1 flex flex-col min-w-0">
+          <header className="h-12 md:h-14 flex items-center border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-2 md:px-4">
+            <SidebarTrigger className="h-8 w-8 md:h-10 md:w-10" />
           </header>
           <main className="flex-1 overflow-auto">
             <Routes>

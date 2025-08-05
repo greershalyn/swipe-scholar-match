@@ -100,16 +100,16 @@ export function DashboardSidebar() {
 
   return (
     <Sidebar
-      className={collapsed ? "w-16" : "w-64"}
+      className={collapsed ? "w-12 md:w-16" : "w-56 md:w-64"}
       collapsible="icon"
     >
-      <SidebarHeader className="border-b p-4">
-        <div className="flex items-center gap-2">
-          <GraduationCap className="h-8 w-8 text-primary" />
+      <SidebarHeader className="border-b p-2 md:p-4">
+        <div className="flex items-center gap-1 md:gap-2">
+          <GraduationCap className="h-6 w-6 md:h-8 md:w-8 text-primary" />
           {!collapsed && (
-            <div>
-              <h1 className="font-bold text-lg text-primary">SwipeScholar</h1>
-              <p className="text-xs text-muted-foreground">Dashboard</p>
+            <div className="hidden sm:block">
+              <h1 className="font-bold text-sm md:text-lg text-primary">SwipeScholar</h1>
+              <p className="text-xs text-muted-foreground hidden md:block">Dashboard</p>
             </div>
           )}
         </div>
@@ -128,11 +128,11 @@ export function DashboardSidebar() {
                       end={item.url === "/"}
                       className={getNavClassName(item.url)}
                     >
-                      <item.icon className="h-4 w-4" />
+                      <item.icon className="h-3 w-3 md:h-4 md:w-4" />
                       {!collapsed && (
-                        <div className="flex flex-col">
-                          <span className="font-medium">{item.title}</span>
-                          <span className="text-xs text-muted-foreground">
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-medium text-xs md:text-sm truncate">{item.title}</span>
+                          <span className="text-xs text-muted-foreground hidden md:block">
                             {item.description}
                           </span>
                         </div>
@@ -156,11 +156,11 @@ export function DashboardSidebar() {
                       to={item.url} 
                       className={getNavClassName(item.url)}
                     >
-                      <item.icon className="h-4 w-4" />
+                      <item.icon className="h-3 w-3 md:h-4 md:w-4" />
                       {!collapsed && (
-                        <div className="flex flex-col">
-                          <span className="font-medium">{item.title}</span>
-                          <span className="text-xs text-muted-foreground">
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-medium text-xs md:text-sm truncate">{item.title}</span>
+                          <span className="text-xs text-muted-foreground hidden md:block">
                             {item.description}
                           </span>
                         </div>
@@ -182,11 +182,11 @@ export function DashboardSidebar() {
                   onClick={() => navigate('/questionnaire')}
                   className="hover:bg-accent/50"
                 >
-                  <User className="h-4 w-4" />
+                  <User className="h-3 w-3 md:h-4 md:w-4" />
                   {!collapsed && (
-                    <div className="flex flex-col">
-                      <span className="font-medium">Update Profile</span>
-                      <span className="text-xs text-muted-foreground">
+                    <div className="flex flex-col min-w-0">
+                      <span className="font-medium text-xs md:text-sm truncate">Update Profile</span>
+                      <span className="text-xs text-muted-foreground hidden md:block">
                         Edit your information
                       </span>
                     </div>
@@ -199,11 +199,11 @@ export function DashboardSidebar() {
                   onClick={handleLogout}
                   className="hover:bg-accent/50"
                 >
-                  <LogOut className="h-4 w-4" />
+                  <LogOut className="h-3 w-3 md:h-4 md:w-4" />
                   {!collapsed && (
-                    <div className="flex flex-col">
-                      <span className="font-medium">Log Out</span>
-                      <span className="text-xs text-muted-foreground">
+                    <div className="flex flex-col min-w-0">
+                      <span className="font-medium text-xs md:text-sm truncate">Log Out</span>
+                      <span className="text-xs text-muted-foreground hidden md:block">
                         Sign out of your account
                       </span>
                     </div>
@@ -216,11 +216,11 @@ export function DashboardSidebar() {
                   onClick={() => setShowDeactivateDialog(true)}
                   className="hover:bg-red-50 text-red-600 hover:text-red-700"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="h-3 w-3 md:h-4 md:w-4" />
                   {!collapsed && (
-                    <div className="flex flex-col">
-                      <span className="font-medium">Deactivate Account</span>
-                      <span className="text-xs text-muted-foreground">
+                    <div className="flex flex-col min-w-0">
+                      <span className="font-medium text-xs md:text-sm truncate">Deactivate Account</span>
+                      <span className="text-xs text-muted-foreground hidden md:block">
                         Permanently delete account
                       </span>
                     </div>
