@@ -125,6 +125,26 @@ const FinancialEducation = () => {
                 </div>
               </CardContent>
             </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <PiggyBank className="h-5 w-5 text-primary" />
+                  Save Even More with Lewte
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className={`${isMobile ? 'text-sm' : ''} leading-relaxed space-y-3`}>
+                  <p>Already in college? Don't stop at scholarships—stretch your budget further with Lewte. Lewte connects you with exclusive student discounts, rewards, and free perks from your favorite brands on and off campus. Every dollar saved is another step toward making your college journey more affordable.</p>
+                  <p>Join Lewte today and start saving while you study.</p>
+                </div>
+                <Button asChild className="w-full">
+                  <a href="https://lewte.com" target="_blank" rel="noopener noreferrer">
+                    Join Now
+                  </a>
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
