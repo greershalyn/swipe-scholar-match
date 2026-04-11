@@ -11,7 +11,9 @@ import {
   School,
   User,
   LogOut,
-  Trash2
+  Trash2,
+  ShieldCheck,
+  Settings
 } from "lucide-react"
 import { DeactivateAccountDialog } from "@/components/account/DeactivateAccountDialog"
 import { useAccountActions } from "@/hooks/useAccountActions"
@@ -37,11 +39,13 @@ const mainNavItems = [
   { title: "Essay Assistant", url: "/essay-assistant", icon: PencilIcon, description: "AI-powered essay help" },
   { title: "Test Prep", url: "/test-prep", icon: Calculator, description: "SAT & ACT preparation" },
   { title: "School Matchmaker", url: "/school-matchmaker", icon: School, description: "Find your perfect school" },
+  { title: "Lewte", url: "/lewte", icon: ShieldCheck, description: "Verified student perks" },
 ]
 
 const resourcesItems = [
   { title: "Financial Education", url: "/financial-education", icon: BookOpen, description: "Learn about college finances" },
   { title: "First-Gen Resources", url: "/first-gen-resources", icon: Users, description: "Support for first-gen students" },
+  { title: "Admin", url: "/admin", icon: Settings, description: "Manage Lewte content" },
 ]
 
 export function DashboardSidebar() {
