@@ -139,23 +139,105 @@ Deno.serve(async (req) => {
         result = await adminClient.from(table).delete().eq("id", id);
         break;
       case "list_users": {
-        // Super admin only: list all users with their roles
+        // Super admin only: list only users who have admin roles
         if (!isSuperAdmin) {
           return new Response(JSON.stringify({ error: "Super admin required" }), {
             status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
-        const { data: { users }, error: usersError } = await adminClient.auth.admin.listUsers();
-        if (usersError) throw usersError;
-        // Get all roles
         const { data: allRoles } = await adminClient.from("user_roles").select("*");
-        const userList = (users || []).map((u: any) => ({
-          id: u.id,
-          email: u.email,
-          created_at: u.created_at,
-          roles: (allRoles || []).filter((r: any) => r.user_id === u.id).map((r: any) => r.role),
-        }));
-        return new Response(JSON.stringify({ data: userList }), {
+        // Get unique user IDs that have roles
+        const adminUserIds = [...new Set((allRoles || []).map((r: any) => r.user_id))];
+        // Fetch only those users from auth
+        const adminUsers = [];
+        for (const uid of adminUserIds) {
+          const { data: { user: adminUser } } = await adminClient.auth.admin.getUserById(uid as string);
+          if (adminUser) {
+            adminUsers.push({
+              id: adminUser.id,
+              email: adminUser.email,
+              created_at: adminUser.created_at,
+              roles: (allRoles || []).filter((r: any) => r.user_id === adminUser.id).map((r: any) => r.role),
+            });
+          }
+        }
+        return new Response(JSON.stringify({ data: adminUsers }), {
+          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      case "create_admin": {
+        // Super admin only: create a new auth user and assign a role
+        if (!isSuperAdmin) {
+          return new Response(JSON.stringify({ error: "Super admin required" }), {
+            status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        const { email: newEmail, password: newPassword, role: newRole } = data;
+        if (!newEmail || !newPassword || !newRole) {
+          return new Response(JSON.stringify({ error: "email, password, and role required" }), {
+            status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        const validRoles = ["advertiser", "school_admin", "moderator"];
+        if (!validRoles.includes(newRole)) {
+          return new Response(JSON.stringify({ error: "Invalid role. Must be: " + validRoles.join(", ") }), {
+            status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        // Create the auth user
+        const { data: newUserData, error: createError } = await adminClient.auth.admin.createUser({
+          email: newEmail,
+          password: newPassword,
+          email_confirm: true,
+        });
+        if (createError) {
+          return new Response(JSON.stringify({ error: createError.message }), {
+            status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        // Assign the role
+        const { error: roleError } = await adminClient.from("user_roles").insert({
+          user_id: newUserData.user.id,
+          role: newRole,
+        });
+        if (roleError) {
+          return new Response(JSON.stringify({ error: roleError.message }), {
+            status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        return new Response(JSON.stringify({ data: { id: newUserData.user.id, email: newEmail, role: newRole } }), {
+          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      case "delete_admin": {
+        // Super admin only: remove all roles and delete the auth user
+        if (!isSuperAdmin) {
+          return new Response(JSON.stringify({ error: "Super admin required" }), {
+            status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        const { user_id: delUserId } = data;
+        if (!delUserId) {
+          return new Response(JSON.stringify({ error: "user_id required" }), {
+            status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        // Prevent deleting yourself
+        if (delUserId === user.id) {
+          return new Response(JSON.stringify({ error: "Cannot delete your own account" }), {
+            status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        // Remove roles
+        await adminClient.from("user_roles").delete().eq("user_id", delUserId);
+        // Delete auth user
+        const { error: delError } = await adminClient.auth.admin.deleteUser(delUserId);
+        if (delError) {
+          return new Response(JSON.stringify({ error: delError.message }), {
+            status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        return new Response(JSON.stringify({ data: { deleted: true } }), {
           status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
