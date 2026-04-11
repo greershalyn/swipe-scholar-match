@@ -38,7 +38,7 @@ export default function Admin() {
     );
   }
 
-  const defaultTab = isSuperAdmin ? "users" : isAdvertiser ? "coupons" : isSchoolAdmin ? "surveys" : "coupons";
+  const defaultTab = "domains";
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-6xl">
@@ -62,9 +62,6 @@ export default function Admin() {
       <Tabs defaultValue={defaultTab} className="space-y-4">
         <TabsList className="flex-wrap">
           {isSuperAdmin && (
-            <TabsTrigger value="users"><Users className="h-4 w-4 mr-1" /> Users</TabsTrigger>
-          )}
-          {isSuperAdmin && (
             <TabsTrigger value="domains"><Globe className="h-4 w-4 mr-1" /> Domains</TabsTrigger>
           )}
           {(isSuperAdmin || isAdvertiser) && (
@@ -78,9 +75,6 @@ export default function Admin() {
           )}
         </TabsList>
 
-        {isSuperAdmin && (
-          <TabsContent value="users"><UserManagementTab /></TabsContent>
-        )}
         {isSuperAdmin && (
           <TabsContent value="domains"><DomainsTab /></TabsContent>
         )}
