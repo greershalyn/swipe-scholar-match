@@ -32,6 +32,8 @@ export function useAdminManage() {
   const listUsers = useCallback(() => adminAction("user_roles", "list_users"), [adminAction]);
   const assignRole = useCallback((userId: string, role: string) => adminAction("user_roles", "assign_role", { user_id: userId, role }), [adminAction]);
   const removeRole = useCallback((userId: string, role: string) => adminAction("user_roles", "remove_role", { user_id: userId, role }), [adminAction]);
+  const createAdmin = useCallback((email: string, password: string, role: string) => adminAction("user_roles", "create_admin", { email, password, role }), [adminAction]);
+  const deleteAdmin = useCallback((userId: string) => adminAction("user_roles", "delete_admin", { user_id: userId }), [adminAction]);
 
   return { list, create, update, remove, listUsers, assignRole, removeRole, isLoading, error };
 }

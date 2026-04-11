@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Users, Shield, Loader2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Plus, Trash2, Users, Loader2, UserPlus } from "lucide-react";
 import { useAdminManage } from "@/hooks/useAdminManage";
 import { toast } from "@/hooks/use-toast";
-import type { AppRole } from "@/hooks/useUserRole";
 
 const ROLE_LABELS: Record<string, { label: string; color: string }> = {
   super_admin: { label: "Super Admin", color: "bg-red-500/10 text-red-600 border-red-200" },
@@ -18,120 +18,182 @@ const ROLE_LABELS: Record<string, { label: string; color: string }> = {
 };
 
 export default function UserManagementTab() {
-  const { listUsers, assignRole, removeRole, isLoading } = useAdminManage();
-  const [users, setUsers] = useState<any[]>([]);
-  const [search, setSearch] = useState("");
-  const [selectedRole, setSelectedRole] = useState<string>("advertiser");
-  const [assigningUserId, setAssigningUserId] = useState<string | null>(null);
+  const { listUsers, isLoading } = useAdminManage();
+  const [admins, setAdmins] = useState<any[]>([]);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [form, setForm] = useState({ email: "", password: "", role: "advertiser" });
+  const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => { loadUsers(); }, []);
+  useEffect(() => { loadAdmins(); }, []);
 
-  async function loadUsers() {
+  async function loadAdmins() {
     const data = await listUsers();
-    setUsers(data || []);
+    setAdmins(data || []);
   }
 
-  async function handleAssignRole(userId: string) {
-    setAssigningUserId(userId);
-    await assignRole(userId, selectedRole);
-    toast({ title: "Role assigned", description: `${ROLE_LABELS[selectedRole]?.label} role granted` });
-    await loadUsers();
-    setAssigningUserId(null);
-  }
-
-  async function handleRemoveRole(userId: string, role: string) {
-    if (role === "super_admin") {
-      toast({ title: "Cannot remove", description: "Super admin role cannot be removed here", variant: "destructive" });
+  async function handleCreate() {
+    if (!form.email || !form.password || !form.role) {
+      toast({ title: "All fields required", variant: "destructive" });
       return;
     }
-    await removeRole(userId, role);
-    toast({ title: "Role removed" });
-    await loadUsers();
+    if (form.password.length < 6) {
+      toast({ title: "Password must be at least 6 characters", variant: "destructive" });
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const { data: result, error } = await (await import("@/integrations/supabase/client")).supabase.functions.invoke("admin-manage", {
+        body: { table: "user_roles", action: "create_admin", data: form },
+      });
+      if (error) throw new Error(error.message);
+      if (result?.error) throw new Error(result.error);
+      toast({ title: "Admin created", description: `${form.email} added as ${ROLE_LABELS[form.role]?.label}` });
+      setForm({ email: "", password: "", role: "advertiser" });
+      setCreateOpen(false);
+      loadAdmins();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
   }
 
-  const filteredUsers = users.filter((u) =>
-    u.email?.toLowerCase().includes(search.toLowerCase())
-  );
+  async function handleDelete(userId: string, email: string) {
+    if (!confirm(`Delete admin account "${email}"? This cannot be undone.`)) return;
+    try {
+      const { data: result, error } = await (await import("@/integrations/supabase/client")).supabase.functions.invoke("admin-manage", {
+        body: { table: "user_roles", action: "delete_admin", data: { user_id: userId } },
+      });
+      if (error) throw new Error(error.message);
+      if (result?.error) throw new Error(result.error);
+      toast({ title: "Admin deleted" });
+      loadAdmins();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  }
+
+  // Filter out super_admin (yourself) from the deletable list
+  const otherAdmins = admins.filter((a) => !a.roles?.includes("super_admin"));
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Users className="h-5 w-5" /> User & Role Management
-        </CardTitle>
-        <CardDescription>Assign admin roles to users. Advertisers manage coupons, school admins manage surveys.</CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" /> Admin Accounts
+            </CardTitle>
+            <CardDescription>Create and manage admin accounts. These are separate from regular users.</CardDescription>
+          </div>
+          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+            <DialogTrigger asChild>
+              <Button><UserPlus className="h-4 w-4 mr-1" /> Create Admin</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle>Create New Admin Account</DialogTitle></DialogHeader>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Email</label>
+                  <Input
+                    type="email"
+                    placeholder="admin@company.com"
+                    value={form.email}
+                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Temporary Password</label>
+                  <Input
+                    type="text"
+                    placeholder="Minimum 6 characters"
+                    value={form.password}
+                    onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Share this with the admin so they can log in</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Account Type</label>
+                  <Select value={form.role} onValueChange={(v) => setForm({ ...form, role: v })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="advertiser">
+                        <div className="flex flex-col">
+                          <span>Advertiser</span>
+                          <span className="text-xs text-muted-foreground">Can create & manage their own coupons, view analytics</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="school_admin">
+                        <div className="flex flex-col">
+                          <span>School Admin</span>
+                          <span className="text-xs text-muted-foreground">Can create surveys for their school's students</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="moderator">
+                        <div className="flex flex-col">
+                          <span>Moderator</span>
+                          <span className="text-xs text-muted-foreground">Can review content but not create admin accounts</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button onClick={handleCreate} className="w-full" disabled={submitting}>
+                  {submitting ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <UserPlus className="h-4 w-4 mr-1" />}
+                  Create Admin Account
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <Input
-          placeholder="Search by email..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="max-w-md"
-        />
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Email</TableHead>
-              <TableHead>Current Roles</TableHead>
-              <TableHead>Assign Role</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredUsers.map((u) => (
-              <TableRow key={u.id}>
-                <TableCell className="font-mono text-sm">{u.email}</TableCell>
-                <TableCell>
-                  <div className="flex flex-wrap gap-1">
-                    {u.roles?.length > 0 ? u.roles.map((r: string) => (
-                      <Badge
-                        key={r}
-                        variant="outline"
-                        className={`text-xs ${ROLE_LABELS[r]?.color || ""} cursor-pointer`}
-                        onClick={() => handleRemoveRole(u.id, r)}
-                        title="Click to remove"
-                      >
-                        {ROLE_LABELS[r]?.label || r}
-                        {r !== "super_admin" && <Trash2 className="h-2.5 w-2.5 ml-1" />}
-                      </Badge>
-                    )) : (
-                      <span className="text-xs text-muted-foreground">No roles</span>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-1">
-                    <Select value={selectedRole} onValueChange={setSelectedRole}>
-                      <SelectTrigger className="w-[140px] h-8 text-xs">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="advertiser">Advertiser</SelectItem>
-                        <SelectItem value="school_admin">School Admin</SelectItem>
-                        <SelectItem value="moderator">Moderator</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleAssignRole(u.id)}
-                      disabled={isLoading && assigningUserId === u.id}
-                    >
-                      {isLoading && assigningUserId === u.id ? (
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                      ) : (
-                        <Plus className="h-3 w-3" />
-                      )}
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        {isLoading && users.length === 0 && (
+      <CardContent>
+        {isLoading && admins.length === 0 ? (
           <div className="flex justify-center py-8">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
+        ) : otherAdmins.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            <Users className="h-10 w-10 mx-auto mb-2 opacity-40" />
+            <p className="text-sm">No admin accounts yet. Create one to get started.</p>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Email</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Created</TableHead>
+                <TableHead className="w-20">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {otherAdmins.map((a) => (
+                <TableRow key={a.id}>
+                  <TableCell className="font-mono text-sm">{a.email}</TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap gap-1">
+                      {a.roles?.map((r: string) => (
+                        <Badge key={r} variant="outline" className={`text-xs ${ROLE_LABELS[r]?.color || ""}`}>
+                          {ROLE_LABELS[r]?.label || r}
+                        </Badge>
+                      ))}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {new Date(a.created_at).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <Button variant="ghost" size="sm" onClick={() => handleDelete(a.id, a.email)}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         )}
       </CardContent>
     </Card>
