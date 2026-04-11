@@ -19,6 +19,7 @@ import SchoolMatchmaker from "./pages/SchoolMatchmaker";
 import Footer from "./components/Footer";
 import { DashboardSidebar } from "./components/DashboardSidebar";
 import { supabase } from "./integrations/supabase/client";
+import { SvgGradientDefs } from "./components/ui/gradient-icon";
 
 const queryClient = new QueryClient();
 
