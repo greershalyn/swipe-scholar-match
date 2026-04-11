@@ -38,6 +38,41 @@ export type Database = {
         }
         Relationships: []
       }
+      coupon_analytics: {
+        Row: {
+          coupon_id: string
+          created_at: string
+          event_type: string
+          id: string
+          metadata: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          coupon_id: string
+          created_at?: string
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          coupon_id?: string
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coupon_analytics_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "coupons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coupons: {
         Row: {
           category: string | null
@@ -51,6 +86,7 @@ export type Database = {
           is_active: boolean
           merchant_name: string
           merchant_url: string | null
+          owner_id: string | null
           title: string
           updated_at: string
         }
@@ -66,6 +102,7 @@ export type Database = {
           is_active?: boolean
           merchant_name: string
           merchant_url?: string | null
+          owner_id?: string | null
           title: string
           updated_at?: string
         }
@@ -81,6 +118,7 @@ export type Database = {
           is_active?: boolean
           merchant_name?: string
           merchant_url?: string | null
+          owner_id?: string | null
           title?: string
           updated_at?: string
         }
@@ -498,6 +536,7 @@ export type Database = {
           description: string | null
           id: string
           is_active: boolean
+          owner_id: string | null
           title: string
           updated_at: string
         }
@@ -506,6 +545,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean
+          owner_id?: string | null
           title: string
           updated_at?: string
         }
@@ -514,6 +554,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_active?: boolean
+          owner_id?: string | null
           title?: string
           updated_at?: string
         }
@@ -543,20 +584,49 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
       has_premium_access: { Args: { user_id: string }; Returns: boolean }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       has_verified_student_email: {
         Args: { p_user_id: string }
         Returns: boolean
       }
+      is_any_admin: { Args: { _user_id: string }; Returns: boolean }
       remove_expired_scholarships: { Args: never; Returns: undefined }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "super_admin" | "advertiser" | "school_admin" | "moderator"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -683,6 +753,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["super_admin", "advertiser", "school_admin", "moderator"],
+    },
   },
 } as const
