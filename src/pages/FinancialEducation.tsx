@@ -138,7 +138,7 @@ const FinancialEducation = () => {
                   <p>Already in college? Don't stop at scholarships—stretch your budget further with Lewte. Lewte connects you with exclusive student discounts, rewards, and free perks from your favorite brands on and off campus. Every dollar saved is another step toward making your college journey more affordable.</p>
                   <p>Join Lewte today and start saving while you study.</p>
                 </div>
-                <Button asChild className="w-full">
+                <Button asChild className="w-full bg-gradient-primary hover:opacity-90 text-primary-foreground border-0">
                   <a href="https://lewte.com" target="_blank" rel="noopener noreferrer">
                     Join Now
                   </a>
