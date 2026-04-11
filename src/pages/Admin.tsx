@@ -9,13 +9,12 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Edit, Globe, Tag, ClipboardList, Loader2, Settings, Users, BarChart3, Shield, Lock } from "lucide-react";
+import { Plus, Trash2, Edit, Globe, Tag, ClipboardList, Loader2, Settings, BarChart3, Shield, Lock } from "lucide-react";
 import { useAdminManage } from "@/hooks/useAdminManage";
 import { useUserRole } from "@/hooks/useUserRole";
 import { toast } from "@/hooks/use-toast";
 import { GradientIcon } from "@/components/ui/gradient-icon";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import UserManagementTab from "@/components/admin/UserManagementTab";
 import AnalyticsTab from "@/components/admin/AnalyticsTab";
 
 export default function Admin() {
@@ -39,7 +38,7 @@ export default function Admin() {
     );
   }
 
-  const defaultTab = isSuperAdmin ? "users" : isAdvertiser ? "coupons" : isSchoolAdmin ? "surveys" : "coupons";
+  const defaultTab = "domains";
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-6xl">
@@ -63,9 +62,6 @@ export default function Admin() {
       <Tabs defaultValue={defaultTab} className="space-y-4">
         <TabsList className="flex-wrap">
           {isSuperAdmin && (
-            <TabsTrigger value="users"><Users className="h-4 w-4 mr-1" /> Users</TabsTrigger>
-          )}
-          {isSuperAdmin && (
             <TabsTrigger value="domains"><Globe className="h-4 w-4 mr-1" /> Domains</TabsTrigger>
           )}
           {(isSuperAdmin || isAdvertiser) && (
@@ -79,9 +75,6 @@ export default function Admin() {
           )}
         </TabsList>
 
-        {isSuperAdmin && (
-          <TabsContent value="users"><UserManagementTab /></TabsContent>
-        )}
         {isSuperAdmin && (
           <TabsContent value="domains"><DomainsTab /></TabsContent>
         )}
