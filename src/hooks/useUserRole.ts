@@ -17,10 +17,11 @@ export function useUserRole() {
         return;
       }
       setUserId(user.id);
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", user.id);
+      console.log("user_roles query:", { data, error, userId: user.id });
       setRoles((data || []).map((r: any) => r.role as AppRole));
       setIsLoading(false);
     }
