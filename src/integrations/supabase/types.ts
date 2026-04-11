@@ -14,6 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
+      allowed_school_domains: {
+        Row: {
+          created_at: string
+          domain: string
+          id: string
+          is_active: boolean
+          school_name: string
+        }
+        Insert: {
+          created_at?: string
+          domain: string
+          id?: string
+          is_active?: boolean
+          school_name: string
+        }
+        Update: {
+          created_at?: string
+          domain?: string
+          id?: string
+          is_active?: boolean
+          school_name?: string
+        }
+        Relationships: []
+      }
+      coupons: {
+        Row: {
+          category: string | null
+          coupon_code: string | null
+          created_at: string
+          description: string | null
+          discount_value: string | null
+          expires_at: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          merchant_name: string
+          merchant_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          coupon_code?: string | null
+          created_at?: string
+          description?: string | null
+          discount_value?: string | null
+          expires_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          merchant_name: string
+          merchant_url?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          coupon_code?: string | null
+          created_at?: string
+          description?: string | null
+          discount_value?: string | null
+          expires_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          merchant_name?: string
+          merchant_url?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           account_active: boolean | null
@@ -260,6 +332,39 @@ export type Database = {
         }
         Relationships: []
       }
+      student_email_verifications: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          school_email: string
+          updated_at: string
+          user_id: string
+          verification_code: string
+          verified: boolean
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          school_email: string
+          updated_at?: string
+          user_id: string
+          verification_code: string
+          verified?: boolean
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          school_email?: string
+          updated_at?: string
+          user_id?: string
+          verification_code?: string
+          verified?: boolean
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           amount_cents: number
@@ -304,6 +409,116 @@ export type Database = {
           },
         ]
       }
+      survey_questions: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          is_required: boolean
+          options: Json | null
+          question_text: string
+          question_type: string
+          survey_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_required?: boolean
+          options?: Json | null
+          question_text: string
+          question_type?: string
+          survey_id: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_required?: boolean
+          options?: Json | null
+          question_text?: string
+          question_type?: string
+          survey_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "survey_questions_survey_id_fkey"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "surveys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      survey_responses: {
+        Row: {
+          answer: Json
+          created_at: string
+          id: string
+          question_id: string
+          survey_id: string
+          user_id: string
+        }
+        Insert: {
+          answer: Json
+          created_at?: string
+          id?: string
+          question_id: string
+          survey_id: string
+          user_id: string
+        }
+        Update: {
+          answer?: Json
+          created_at?: string
+          id?: string
+          question_id?: string
+          survey_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "survey_responses_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "survey_questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "survey_responses_survey_id_fkey"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "surveys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      surveys: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       swiped_scholarships: {
         Row: {
           created_at: string
@@ -334,6 +549,10 @@ export type Database = {
     }
     Functions: {
       has_premium_access: { Args: { user_id: string }; Returns: boolean }
+      has_verified_student_email: {
+        Args: { p_user_id: string }
+        Returns: boolean
+      }
       remove_expired_scholarships: { Args: never; Returns: undefined }
     }
     Enums: {
