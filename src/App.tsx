@@ -16,6 +16,8 @@ import EssayAssistant from "./pages/EssayAssistant";
 import TestPrep from "./pages/TestPrep";
 import FirstGenResources from "./pages/FirstGenResources";
 import SchoolMatchmaker from "./pages/SchoolMatchmaker";
+import Lewte from "./pages/Lewte";
+import Admin from "./pages/Admin";
 import Footer from "./components/Footer";
 import { DashboardSidebar } from "./components/DashboardSidebar";
 import { supabase } from "./integrations/supabase/client";
@@ -59,6 +61,8 @@ const AppContent = () => {
             <Route path="/test-prep" element={<TestPrep />} />
             <Route path="/first-gen-resources" element={<FirstGenResources />} />
             <Route path="/school-matchmaker" element={<SchoolMatchmaker />} />
+            <Route path="/lewte" element={<Lewte />} />
+            <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
@@ -86,6 +90,8 @@ const AppContent = () => {
               <Route path="/test-prep" element={<TestPrep />} />
               <Route path="/first-gen-resources" element={<FirstGenResources />} />
               <Route path="/school-matchmaker" element={<SchoolMatchmaker />} />
+              <Route path="/lewte" element={<Lewte />} />
+              <Route path="/admin" element={<Admin />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
