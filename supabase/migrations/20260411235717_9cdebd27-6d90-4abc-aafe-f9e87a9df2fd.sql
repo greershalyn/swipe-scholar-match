@@ -1,0 +1,1 @@
+ALTER TABLE public.coupons ADD COLUMN deal_type text NOT NULL DEFAULT 'discount';

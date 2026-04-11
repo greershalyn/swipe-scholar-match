@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tag, ExternalLink, Copy, Check } from "lucide-react";
+import { Tag, ExternalLink, Copy, Check, Gift, Percent } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,12 +17,15 @@ interface Coupon {
   merchant_url: string | null;
   category: string | null;
   expires_at: string | null;
+  image_url: string | null;
+  deal_type: string;
 }
 
 export function LewteCoupons() {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   useEffect(() => {
     fetchCoupons();
@@ -40,6 +43,9 @@ export function LewteCoupons() {
     toast({ title: "Coupon code copied!" });
     setTimeout(() => setCopiedId(null), 2000);
   }
+
+  const categories = [...new Set(coupons.map((c) => c.category).filter(Boolean))] as string[];
+  const filtered = selectedCategory ? coupons.filter((c) => c.category === selectedCategory) : coupons;
 
   if (loading) {
     return (
@@ -63,53 +69,90 @@ export function LewteCoupons() {
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2">
-      {coupons.map((coupon) => (
-        <Card key={coupon.id} className="overflow-hidden">
-          <CardHeader className="pb-2">
-            <div className="flex items-start justify-between">
-              <div>
-                <CardTitle className="text-base">{coupon.title}</CardTitle>
-                <CardDescription>{coupon.merchant_name}</CardDescription>
+    <div className="space-y-4">
+      {categories.length > 1 && (
+        <div className="flex gap-2 flex-wrap">
+          <Button
+            variant={selectedCategory === null ? "default" : "outline"}
+            size="sm"
+            onClick={() => setSelectedCategory(null)}
+          >
+            All
+          </Button>
+          {categories.map((cat) => (
+            <Button
+              key={cat}
+              variant={selectedCategory === cat ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSelectedCategory(cat)}
+            >
+              {cat}
+            </Button>
+          ))}
+        </div>
+      )}
+
+      <div className="grid gap-4 md:grid-cols-2">
+        {filtered.map((coupon) => (
+          <Card key={coupon.id} className="overflow-hidden">
+            {coupon.image_url && (
+              <div className="h-36 w-full overflow-hidden bg-muted">
+                <img src={coupon.image_url} alt={coupon.title} className="h-full w-full object-cover" />
               </div>
-              {coupon.discount_value && (
-                <Badge className="bg-primary/10 text-primary border-primary/20">
-                  {coupon.discount_value}
-                </Badge>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {coupon.description && <p className="text-sm text-muted-foreground">{coupon.description}</p>}
-            {coupon.category && <Badge variant="outline" className="text-xs">{coupon.category}</Badge>}
-            <div className="flex items-center gap-2">
-              {coupon.coupon_code && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => copyCode(coupon.id, coupon.coupon_code!)}
-                  className="font-mono"
-                >
-                  {copiedId === coupon.id ? <Check className="h-3 w-3 mr-1" /> : <Copy className="h-3 w-3 mr-1" />}
-                  {coupon.coupon_code}
-                </Button>
-              )}
-              {coupon.merchant_url && (
-                <Button variant="ghost" size="sm" asChild>
-                  <a href={coupon.merchant_url} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-3 w-3 mr-1" /> Visit
-                  </a>
-                </Button>
-              )}
-            </div>
-            {coupon.expires_at && (
-              <p className="text-xs text-muted-foreground">
-                Expires: {new Date(coupon.expires_at).toLocaleDateString()}
-              </p>
             )}
-          </CardContent>
-        </Card>
-      ))}
+            <CardHeader className="pb-2">
+              <div className="flex items-start justify-between">
+                <div>
+                  <CardTitle className="text-base">{coupon.title}</CardTitle>
+                  <CardDescription>{coupon.merchant_name}</CardDescription>
+                </div>
+                <div className="flex flex-col items-end gap-1">
+                  <Badge
+                    className={coupon.deal_type === "free_item"
+                      ? "bg-green-500/10 text-green-700 border-green-500/20"
+                      : "bg-primary/10 text-primary border-primary/20"}
+                  >
+                    {coupon.deal_type === "free_item" ? (
+                      <><Gift className="h-3 w-3 mr-1" /> Free Item</>
+                    ) : (
+                      <><Percent className="h-3 w-3 mr-1" /> {coupon.discount_value || "Discount"}</>
+                    )}
+                  </Badge>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {coupon.description && <p className="text-sm text-muted-foreground">{coupon.description}</p>}
+              {coupon.category && <Badge variant="outline" className="text-xs">{coupon.category}</Badge>}
+              <div className="flex items-center gap-2">
+                {coupon.coupon_code && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => copyCode(coupon.id, coupon.coupon_code!)}
+                    className="font-mono"
+                  >
+                    {copiedId === coupon.id ? <Check className="h-3 w-3 mr-1" /> : <Copy className="h-3 w-3 mr-1" />}
+                    {coupon.coupon_code}
+                  </Button>
+                )}
+                {coupon.merchant_url && (
+                  <Button variant="ghost" size="sm" asChild>
+                    <a href={coupon.merchant_url} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="h-3 w-3 mr-1" /> Visit
+                    </a>
+                  </Button>
+                )}
+              </div>
+              {coupon.expires_at && (
+                <p className="text-xs text-muted-foreground">
+                  Expires: {new Date(coupon.expires_at).toLocaleDateString()}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }

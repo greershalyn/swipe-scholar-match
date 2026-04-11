@@ -165,7 +165,12 @@ function CouponsTab() {
   const { list, create, remove, isLoading } = useAdminManage();
   const [coupons, setCoupons] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ title: "", description: "", coupon_code: "", discount_value: "", merchant_name: "", merchant_url: "", category: "" });
+  const [form, setForm] = useState({
+    title: "", description: "", coupon_code: "", discount_value: "",
+    merchant_name: "", merchant_url: "", category: "", image_url: "", deal_type: "discount",
+  });
+
+  const categories = ["Food & Drink", "Clothing", "Tech", "Entertainment", "Health & Beauty", "Travel", "Education", "Other"];
 
   useEffect(() => { loadCoupons(); }, []);
   async function loadCoupons() { setCoupons(await list("coupons") || []); }
@@ -174,7 +179,7 @@ function CouponsTab() {
     if (!form.title || !form.merchant_name) return;
     await create("coupons", form);
     toast({ title: "Coupon created" });
-    setForm({ title: "", description: "", coupon_code: "", discount_value: "", merchant_name: "", merchant_url: "", category: "" });
+    setForm({ title: "", description: "", coupon_code: "", discount_value: "", merchant_name: "", merchant_url: "", category: "", image_url: "", deal_type: "discount" });
     setOpen(false);
     loadCoupons();
   }
@@ -197,18 +202,46 @@ function CouponsTab() {
             <DialogTrigger asChild>
               <Button><Plus className="h-4 w-4 mr-1" /> New Coupon</Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-h-[90vh] overflow-y-auto">
               <DialogHeader><DialogTitle>Create Coupon</DialogTitle></DialogHeader>
               <div className="space-y-3">
                 <Input placeholder="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
                 <Textarea placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Deal Type</Label>
+                    <Select value={form.deal_type} onValueChange={(v) => setForm({ ...form, deal_type: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="discount">Discount</SelectItem>
+                        <SelectItem value="free_item">Free Item</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Category</Label>
+                    <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
+                      <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+                      <SelectContent>
+                        {categories.map((c) => (
+                          <SelectItem key={c} value={c}>{c}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
                 <div className="grid grid-cols-2 gap-2">
                   <Input placeholder="Coupon Code" value={form.coupon_code} onChange={(e) => setForm({ ...form, coupon_code: e.target.value })} />
                   <Input placeholder="Discount (e.g. 20% off)" value={form.discount_value} onChange={(e) => setForm({ ...form, discount_value: e.target.value })} />
                 </div>
                 <Input placeholder="Merchant Name" value={form.merchant_name} onChange={(e) => setForm({ ...form, merchant_name: e.target.value })} />
                 <Input placeholder="Merchant URL" value={form.merchant_url} onChange={(e) => setForm({ ...form, merchant_url: e.target.value })} />
-                <Input placeholder="Category" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
+                <Input placeholder="Image URL" value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} />
+                {form.image_url && (
+                  <div className="rounded-md overflow-hidden border h-24 flex items-center justify-center bg-muted">
+                    <img src={form.image_url} alt="Preview" className="max-h-full object-contain" onError={(e) => (e.currentTarget.style.display = "none")} />
+                  </div>
+                )}
                 <Button onClick={handleCreate} className="w-full" disabled={isLoading}>Create Coupon</Button>
               </div>
             </DialogContent>
@@ -219,20 +252,34 @@ function CouponsTab() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Image</TableHead>
               <TableHead>Title</TableHead>
               <TableHead>Merchant</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Category</TableHead>
               <TableHead>Code</TableHead>
-              <TableHead>Discount</TableHead>
               <TableHead className="w-20">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {coupons.map((c) => (
               <TableRow key={c.id}>
+                <TableCell>
+                  {c.image_url ? (
+                    <img src={c.image_url} alt="" className="h-8 w-8 rounded object-cover" />
+                  ) : (
+                    <div className="h-8 w-8 rounded bg-muted flex items-center justify-center"><Tag className="h-4 w-4 text-muted-foreground" /></div>
+                  )}
+                </TableCell>
                 <TableCell className="font-medium">{c.title}</TableCell>
                 <TableCell>{c.merchant_name}</TableCell>
+                <TableCell>
+                  <Badge variant={c.deal_type === "free_item" ? "default" : "secondary"} className="text-xs">
+                    {c.deal_type === "free_item" ? "Free Item" : "Discount"}
+                  </Badge>
+                </TableCell>
+                <TableCell>{c.category || "—"}</TableCell>
                 <TableCell><code className="text-xs bg-muted px-1 py-0.5 rounded">{c.coupon_code || "—"}</code></TableCell>
-                <TableCell>{c.discount_value || "—"}</TableCell>
                 <TableCell>
                   <Button variant="ghost" size="sm" onClick={() => handleDelete(c.id)}>
                     <Trash2 className="h-4 w-4 text-destructive" />
