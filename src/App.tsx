@@ -61,6 +61,8 @@ const AppContent = () => {
             <Route path="/test-prep" element={<TestPrep />} />
             <Route path="/first-gen-resources" element={<FirstGenResources />} />
             <Route path="/school-matchmaker" element={<SchoolMatchmaker />} />
+            <Route path="/lewte" element={<Lewte />} />
+            <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
@@ -88,6 +90,8 @@ const AppContent = () => {
               <Route path="/test-prep" element={<TestPrep />} />
               <Route path="/first-gen-resources" element={<FirstGenResources />} />
               <Route path="/school-matchmaker" element={<SchoolMatchmaker />} />
+              <Route path="/lewte" element={<Lewte />} />
+              <Route path="/admin" element={<Admin />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
