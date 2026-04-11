@@ -78,6 +78,7 @@ export type Database = {
           category: string | null
           coupon_code: string | null
           created_at: string
+          deal_type: string
           description: string | null
           discount_value: string | null
           expires_at: string | null
@@ -94,6 +95,7 @@ export type Database = {
           category?: string | null
           coupon_code?: string | null
           created_at?: string
+          deal_type?: string
           description?: string | null
           discount_value?: string | null
           expires_at?: string | null
@@ -110,6 +112,7 @@ export type Database = {
           category?: string | null
           coupon_code?: string | null
           created_at?: string
+          deal_type?: string
           description?: string | null
           discount_value?: string | null
           expires_at?: string | null
