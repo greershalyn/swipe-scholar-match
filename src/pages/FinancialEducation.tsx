@@ -6,12 +6,43 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
+const GradientIcon = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
+  <span className={`inline-flex ${className}`} style={{
+    background: 'linear-gradient(135deg, hsl(263 87% 55%), hsl(290 80% 55%))',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+  }}>
+    {React.Children.map(children, child =>
+      React.isValidElement(child)
+        ? React.cloneElement(child as React.ReactElement<any>, {
+            style: { stroke: 'url(#icon-gradient)', ...(child as any).props?.style },
+          })
+        : child
+    )}
+  </span>
+);
+
+const SvgGradientDefs = () => (
+  <svg width="0" height="0" style={{ position: 'absolute' }}>
+    <defs>
+      <linearGradient id="icon-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="hsl(263 87% 55%)" />
+        <stop offset="100%" stopColor="hsl(290 80% 55%)" />
+      </linearGradient>
+    </defs>
+  </svg>
+);
+
+const GIcon = ({ icon: Icon, className = '' }: { icon: React.ElementType; className?: string }) => (
+  <Icon className={className} style={{ stroke: 'url(#icon-gradient)' }} />
+);
 
 const FinancialEducation = () => {
   const isMobile = useIsMobile();
   
   return (
     <div className="min-h-screen bg-background">
+      <SvgGradientDefs />
       <div className={`container px-4 ${isMobile ? 'py-4' : 'py-8'}`}>
         <div className={`flex justify-between items-center ${isMobile ? 'mb-6' : 'mb-8'}`}>
           <Link to="/">
@@ -21,12 +52,11 @@ const FinancialEducation = () => {
               className={`${isMobile ? 'h-24' : 'h-40'} w-auto invert`}
             />
           </Link>
-          
         </div>
 
         <div className={`max-w-4xl mx-auto ${isMobile ? 'px-2' : ''}`}>
           <h1 className={`${isMobile ? 'text-xl' : 'text-4xl'} font-bold text-foreground ${isMobile ? 'mb-6' : 'mb-8'} flex items-center gap-2`}>
-            <Book className={`${isMobile ? 'h-5 w-5' : 'h-8 w-8'} flex-shrink-0`} />
+            <GIcon icon={Book} className={`${isMobile ? 'h-5 w-5' : 'h-8 w-8'} flex-shrink-0`} />
             <span className={isMobile ? 'leading-tight' : ''}>
               {isMobile ? 'Financial Education' : 'Financial Education Resources'}
             </span>
@@ -36,39 +66,39 @@ const FinancialEducation = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <GraduationCap className="h-5 w-5" style={{background: 'linear-gradient(135deg, hsl(263 87% 55%), hsl(290 80% 55%))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}} />
+                  <GIcon icon={GraduationCap} className="h-5 w-5" />
                   Official Education Resources
                 </CardTitle>
                 <CardDescription>Access trusted government resources for financial aid and college planning</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Button variant="outline" className="w-full justify-start text-left h-auto py-3 px-4" asChild>
+                <Button variant="outline" className="w-full justify-start text-left h-auto py-3 px-4 border-primary/20 hover:border-primary/40 hover:bg-gradient-primary hover:text-primary-foreground group" asChild>
                   <a href="https://www.consumerfinance.gov/paying-for-college/" target="_blank" rel="noopener noreferrer" className="flex items-start gap-3">
                     <div className="flex-1 min-w-0">
                       <div className={`font-medium ${isMobile ? 'text-sm' : ''}`}>Consumer Financial Protection Bureau</div>
-                      {isMobile && <div className="text-xs text-muted-foreground mt-1">Paying for College Resources</div>}
-                      {!isMobile && <div className="text-sm text-muted-foreground">Paying for College</div>}
+                      {isMobile && <div className="text-xs text-muted-foreground group-hover:text-primary-foreground/80 mt-1">Paying for College Resources</div>}
+                      {!isMobile && <div className="text-sm text-muted-foreground group-hover:text-primary-foreground/80">Paying for College</div>}
                     </div>
                     <ExternalLink className="h-4 w-4 flex-shrink-0 mt-1" />
                   </a>
                 </Button>
-                <Button variant="outline" className="w-full justify-start text-left h-auto py-3 px-4" asChild>
+                <Button variant="outline" className="w-full justify-start text-left h-auto py-3 px-4 border-primary/20 hover:border-primary/40 hover:bg-gradient-primary hover:text-primary-foreground group" asChild>
                   <a href="https://studentaid.gov/understand-aid/types/grants" target="_blank" rel="noopener noreferrer" className="flex items-start gap-3">
                     <div className="flex-1 min-w-0">
                       <div className={`font-medium ${isMobile ? 'text-sm' : ''}`}>Federal Student Aid</div>
-                      {isMobile && <div className="text-xs text-muted-foreground mt-1">Grants Guide</div>}
-                      {!isMobile && <div className="text-sm text-muted-foreground">Grants Guide</div>}
+                      {isMobile && <div className="text-xs text-muted-foreground group-hover:text-primary-foreground/80 mt-1">Grants Guide</div>}
+                      {!isMobile && <div className="text-sm text-muted-foreground group-hover:text-primary-foreground/80">Grants Guide</div>}
                     </div>
                     <ExternalLink className="h-4 w-4 flex-shrink-0 mt-1" />
                   </a>
                 </Button>
-                <Button variant="outline" className="w-full justify-start text-left h-auto py-3 px-4" asChild>
+                <Button variant="outline" className="w-full justify-start text-left h-auto py-3 px-4 border-destructive/20 hover:border-destructive/40 hover:bg-gradient-primary hover:text-primary-foreground group" asChild>
                   <a href="https://consumer.ftc.gov/articles/how-avoid-scholarship-and-financial-aid-scams" target="_blank" rel="noopener noreferrer" className="flex items-start gap-3">
-                    <AlertTriangle className="h-4 w-4 text-destructive flex-shrink-0 mt-1" />
+                    <AlertTriangle className="h-4 w-4 text-destructive group-hover:text-primary-foreground flex-shrink-0 mt-1" />
                     <div className="flex-1 min-w-0">
                       <div className={`font-medium ${isMobile ? 'text-sm' : ''}`}>Federal Trade Commission</div>
-                      {isMobile && <div className="text-xs text-muted-foreground mt-1">Avoid Scholarship Scams</div>}
-                      {!isMobile && <div className="text-sm text-muted-foreground">How to Avoid Scholarship Scams</div>}
+                      {isMobile && <div className="text-xs text-muted-foreground group-hover:text-primary-foreground/80 mt-1">Avoid Scholarship Scams</div>}
+                      {!isMobile && <div className="text-sm text-muted-foreground group-hover:text-primary-foreground/80">How to Avoid Scholarship Scams</div>}
                     </div>
                     <ExternalLink className="h-4 w-4 flex-shrink-0 mt-1" />
                   </a>
@@ -79,7 +109,7 @@ const FinancialEducation = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                   <PiggyBank className="h-5 w-5" style={{background: 'linear-gradient(135deg, hsl(263 87% 55%), hsl(290 80% 55%))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}} />
+                  <GIcon icon={PiggyBank} className="h-5 w-5" />
                   Personal Finance Tips
                 </CardTitle>
                 <CardDescription>Essential financial management tips from the American Bankers Association</CardDescription>
@@ -88,7 +118,7 @@ const FinancialEducation = () => {
                 <div className="grid gap-4">
                   <div className={`bg-muted ${isMobile ? 'p-3' : 'p-4'} rounded-lg`}>
                     <h3 className={`font-semibold ${isMobile ? 'mb-1' : 'mb-2'} flex items-center gap-2`}>
-                      <DollarSign className="h-4 w-4 flex-shrink-0" style={{background: 'linear-gradient(135deg, hsl(263 87% 55%), hsl(290 80% 55%))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}} />
+                      <GIcon icon={DollarSign} className="h-4 w-4 flex-shrink-0" />
                       <span className={isMobile ? 'text-sm' : ''}>Take Control</span>
                     </h3>
                     <p className={`${isMobile ? 'text-sm' : ''} leading-relaxed`}>You are responsible for your finances. Create a realistic budget and stick to it.</p>
@@ -96,7 +126,7 @@ const FinancialEducation = () => {
                   
                   <div className={`bg-muted ${isMobile ? 'p-3' : 'p-4'} rounded-lg`}>
                     <h3 className={`font-semibold ${isMobile ? 'mb-1' : 'mb-2'} flex items-center gap-2`}>
-                      <ShieldCheck className="h-4 w-4 flex-shrink-0" style={{background: 'linear-gradient(135deg, hsl(263 87% 55%), hsl(290 80% 55%))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}} />
+                      <GIcon icon={ShieldCheck} className="h-4 w-4 flex-shrink-0" />
                       <span className={isMobile ? 'text-sm' : ''}>Watch Your Spending</span>
                     </h3>
                     <p className={`${isMobile ? 'text-sm' : ''} leading-relaxed`}>Control your money by pacing spending and cutting unnecessary expenses to make it last throughout the semester.</p>
@@ -129,7 +159,7 @@ const FinancialEducation = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <PiggyBank className="h-5 w-5" style={{background: 'linear-gradient(135deg, hsl(263 87% 55%), hsl(290 80% 55%))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}} />
+                  <GIcon icon={PiggyBank} className="h-5 w-5" />
                   Save Even More with Lewte
                 </CardTitle>
               </CardHeader>
