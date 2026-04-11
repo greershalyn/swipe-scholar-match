@@ -100,6 +100,7 @@ const App = () => (
   <TooltipProvider>
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
+        <SvgGradientDefs />
         <AppContent />
         <Toaster />
         <Sonner />
