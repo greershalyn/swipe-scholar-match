@@ -9,33 +9,91 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Edit, Globe, Tag, ClipboardList, Loader2, Settings } from "lucide-react";
+import { Plus, Trash2, Edit, Globe, Tag, ClipboardList, Loader2, Settings, Users, BarChart3, Shield, Lock } from "lucide-react";
 import { useAdminManage } from "@/hooks/useAdminManage";
+import { useUserRole } from "@/hooks/useUserRole";
 import { toast } from "@/hooks/use-toast";
 import { GradientIcon } from "@/components/ui/gradient-icon";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import UserManagementTab from "@/components/admin/UserManagementTab";
+import AnalyticsTab from "@/components/admin/AnalyticsTab";
 
 export default function Admin() {
+  const { roles, isLoading: rolesLoading, isSuperAdmin, isAdvertiser, isSchoolAdmin, isModerator, isAnyAdmin } = useUserRole();
+
+  if (rolesLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!isAnyAdmin) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <Lock className="h-16 w-16 text-muted-foreground" />
+        <h1 className="text-xl font-semibold text-foreground">Access Denied</h1>
+        <p className="text-sm text-muted-foreground">You don't have admin privileges.</p>
+      </div>
+    );
+  }
+
+  const defaultTab = isSuperAdmin ? "users" : isAdvertiser ? "coupons" : isSchoolAdmin ? "surveys" : "coupons";
+
   return (
     <div className="container mx-auto px-4 py-6 max-w-6xl">
       <div className="flex items-center gap-3 mb-6">
-        <GradientIcon icon={Settings} className="h-8 w-8" />
+        <GradientIcon icon={Shield} className="h-8 w-8" />
         <div>
           <h1 className="text-2xl font-bold text-foreground">Admin Panel</h1>
-          <p className="text-sm text-muted-foreground">Manage domains, coupons, and surveys</p>
+          <p className="text-sm text-muted-foreground">
+            {isSuperAdmin ? "Full control — manage users, content, and analytics" :
+             isAdvertiser ? "Manage your coupons and view analytics" :
+             isSchoolAdmin ? "Manage your surveys" : "Admin panel"}
+          </p>
+          <div className="flex gap-1 mt-1">
+            {roles.map((r) => (
+              <Badge key={r} variant="outline" className="text-xs">{r.replace("_", " ")}</Badge>
+            ))}
+          </div>
         </div>
       </div>
 
-      <Tabs defaultValue="domains" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="domains"><Globe className="h-4 w-4 mr-1" /> Domains</TabsTrigger>
-          <TabsTrigger value="coupons"><Tag className="h-4 w-4 mr-1" /> Coupons</TabsTrigger>
-          <TabsTrigger value="surveys"><ClipboardList className="h-4 w-4 mr-1" /> Surveys</TabsTrigger>
+      <Tabs defaultValue={defaultTab} className="space-y-4">
+        <TabsList className="flex-wrap">
+          {isSuperAdmin && (
+            <TabsTrigger value="users"><Users className="h-4 w-4 mr-1" /> Users</TabsTrigger>
+          )}
+          {isSuperAdmin && (
+            <TabsTrigger value="domains"><Globe className="h-4 w-4 mr-1" /> Domains</TabsTrigger>
+          )}
+          {(isSuperAdmin || isAdvertiser) && (
+            <TabsTrigger value="coupons"><Tag className="h-4 w-4 mr-1" /> Coupons</TabsTrigger>
+          )}
+          {(isSuperAdmin || isSchoolAdmin) && (
+            <TabsTrigger value="surveys"><ClipboardList className="h-4 w-4 mr-1" /> Surveys</TabsTrigger>
+          )}
+          {(isSuperAdmin || isAdvertiser) && (
+            <TabsTrigger value="analytics"><BarChart3 className="h-4 w-4 mr-1" /> Analytics</TabsTrigger>
+          )}
         </TabsList>
 
-        <TabsContent value="domains"><DomainsTab /></TabsContent>
-        <TabsContent value="coupons"><CouponsTab /></TabsContent>
-        <TabsContent value="surveys"><SurveysTab /></TabsContent>
+        {isSuperAdmin && (
+          <TabsContent value="users"><UserManagementTab /></TabsContent>
+        )}
+        {isSuperAdmin && (
+          <TabsContent value="domains"><DomainsTab /></TabsContent>
+        )}
+        {(isSuperAdmin || isAdvertiser) && (
+          <TabsContent value="coupons"><CouponsTab /></TabsContent>
+        )}
+        {(isSuperAdmin || isSchoolAdmin) && (
+          <TabsContent value="surveys"><SurveysTab /></TabsContent>
+        )}
+        {(isSuperAdmin || isAdvertiser) && (
+          <TabsContent value="analytics"><AnalyticsTab /></TabsContent>
+        )}
       </Tabs>
     </div>
   );

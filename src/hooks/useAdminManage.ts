@@ -28,5 +28,10 @@ export function useAdminManage() {
   const update = useCallback((table: string, id: string, data: any) => adminAction(table, "update", data, id), [adminAction]);
   const remove = useCallback((table: string, id: string) => adminAction(table, "delete", undefined, id), [adminAction]);
 
-  return { list, create, update, remove, isLoading, error };
+  // User management (super admin only)
+  const listUsers = useCallback(() => adminAction("user_roles", "list_users"), [adminAction]);
+  const assignRole = useCallback((userId: string, role: string) => adminAction("user_roles", "assign_role", { user_id: userId, role }), [adminAction]);
+  const removeRole = useCallback((userId: string, role: string) => adminAction("user_roles", "remove_role", { user_id: userId, role }), [adminAction]);
+
+  return { list, create, update, remove, listUsers, assignRole, removeRole, isLoading, error };
 }
