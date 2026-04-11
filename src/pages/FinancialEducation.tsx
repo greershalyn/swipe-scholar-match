@@ -36,7 +36,7 @@ const FinancialEducation = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <GraduationCap className="h-5 w-5 text-primary" />
+                  <GraduationCap className="h-5 w-5" style={{background: 'linear-gradient(135deg, hsl(263 87% 55%), hsl(290 80% 55%))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}} />
                   Official Education Resources
                 </CardTitle>
                 <CardDescription>Access trusted government resources for financial aid and college planning</CardDescription>
@@ -79,7 +79,7 @@ const FinancialEducation = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <PiggyBank className="h-5 w-5 text-primary" />
+                   <PiggyBank className="h-5 w-5" style={{background: 'linear-gradient(135deg, hsl(263 87% 55%), hsl(290 80% 55%))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}} />
                   Personal Finance Tips
                 </CardTitle>
                 <CardDescription>Essential financial management tips from the American Bankers Association</CardDescription>
@@ -88,7 +88,7 @@ const FinancialEducation = () => {
                 <div className="grid gap-4">
                   <div className={`bg-muted ${isMobile ? 'p-3' : 'p-4'} rounded-lg`}>
                     <h3 className={`font-semibold ${isMobile ? 'mb-1' : 'mb-2'} flex items-center gap-2`}>
-                      <DollarSign className="h-4 w-4 text-primary flex-shrink-0" />
+                      <DollarSign className="h-4 w-4 flex-shrink-0" style={{background: 'linear-gradient(135deg, hsl(263 87% 55%), hsl(290 80% 55%))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}} />
                       <span className={isMobile ? 'text-sm' : ''}>Take Control</span>
                     </h3>
                     <p className={`${isMobile ? 'text-sm' : ''} leading-relaxed`}>You are responsible for your finances. Create a realistic budget and stick to it.</p>
@@ -96,7 +96,7 @@ const FinancialEducation = () => {
                   
                   <div className={`bg-muted ${isMobile ? 'p-3' : 'p-4'} rounded-lg`}>
                     <h3 className={`font-semibold ${isMobile ? 'mb-1' : 'mb-2'} flex items-center gap-2`}>
-                      <ShieldCheck className="h-4 w-4 text-primary flex-shrink-0" />
+                      <ShieldCheck className="h-4 w-4 flex-shrink-0" style={{background: 'linear-gradient(135deg, hsl(263 87% 55%), hsl(290 80% 55%))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}} />
                       <span className={isMobile ? 'text-sm' : ''}>Watch Your Spending</span>
                     </h3>
                     <p className={`${isMobile ? 'text-sm' : ''} leading-relaxed`}>Control your money by pacing spending and cutting unnecessary expenses to make it last throughout the semester.</p>
@@ -129,7 +129,7 @@ const FinancialEducation = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <PiggyBank className="h-5 w-5 text-primary" />
+                  <PiggyBank className="h-5 w-5" style={{background: 'linear-gradient(135deg, hsl(263 87% 55%), hsl(290 80% 55%))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}} />
                   Save Even More with Lewte
                 </CardTitle>
               </CardHeader>
