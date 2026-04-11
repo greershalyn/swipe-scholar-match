@@ -15,7 +15,7 @@ export function useUserRole() {
         .from("user_roles")
         .select("role")
         .eq("user_id", uid);
-      console.log("useUserRole fetch:", { data, error, uid });
+      if (error) console.error("useUserRole error:", error);
       setRoles((data || []).map((r: any) => r.role as AppRole));
       setIsLoading(false);
     }
