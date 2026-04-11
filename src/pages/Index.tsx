@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { ExpandedFramework } from '@/types/essay';
 import { ExpandedFrameworkView } from '@/components/essay/ExpandedFrameworkView';
+import { GradientIcon } from '@/components/ui/gradient-icon';
 
 
 const Index = () => {
@@ -126,8 +127,8 @@ const Index = () => {
       case 1:
         return (
           <div className="p-4">
-            <div className="flex gap-2 items-center mb-4 text-primary">
-              <BookOpen className="h-5 w-5" />
+            <div className="flex gap-2 items-center mb-4">
+              <GradientIcon icon={BookOpen} className="h-5 w-5" />
               <h3 className="font-semibold">Step 1: Share your essay topic</h3>
             </div>
             <div className="bg-secondary p-4 rounded-md mb-4 text-sm">
@@ -138,8 +139,8 @@ const Index = () => {
       case 2:
         return (
           <div className="p-4">
-            <div className="flex gap-2 items-center mb-4 text-primary">
-              <Lightbulb className="h-5 w-5" />
+            <div className="flex gap-2 items-center mb-4">
+              <GradientIcon icon={Lightbulb} className="h-5 w-5" />
               <h3 className="font-semibold">Step 2: Share your personal insight</h3>
             </div>
             <div className="bg-secondary p-4 rounded-md mb-4 text-sm">
@@ -156,17 +157,17 @@ const Index = () => {
       case 3:
         return (
           <div className="p-4">
-            <div className="flex gap-2 items-center mb-4 text-primary">
-              <FileText className="h-5 w-5" />
+            <div className="flex gap-2 items-center mb-4">
+              <GradientIcon icon={FileText} className="h-5 w-5" />
               <h3 className="font-semibold">Step 3: Select your essay approach</h3>
             </div>
             <div className="bg-secondary p-4 rounded-md mb-4">
-              <h4 className="font-medium text-primary mb-2">Growth Mindset Approach</h4>
+              <h4 className="font-medium bg-gradient-primary bg-clip-text text-transparent mb-2">Growth Mindset Approach</h4>
               <p className="text-sm mb-3">Focus on how this challenge helped you develop resilience and adaptability.</p>
               <div className="mt-2">
                 <Button 
                   size="sm" 
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground w-full"
+                  className="bg-gradient-primary hover:opacity-90 text-primary-foreground w-full"
                   onClick={handleChooseApproach}
                 >
                   Choose This Approach
@@ -181,10 +182,8 @@ const Index = () => {
   };
 
   if (user) {
-    // Dashboard layout for logged-in users
     return (
       <div className="p-4 lg:p-6 max-w-5xl mx-auto relative compass-bg-container">
-        {/* Compass background for logged-in dashboard */}
         <div 
           className="absolute inset-0 pointer-events-none z-0 compass-background"
           style={{
@@ -196,7 +195,7 @@ const Index = () => {
           }}
         />
         <div className="mb-6 relative z-10">
-          <h1 className="text-2xl lg:text-3xl font-bold text-primary mb-2">Welcome back!</h1>
+          <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-2">Welcome back!</h1>
           <p className="text-muted-foreground">Find your perfect scholarship match</p>
         </div>
         
@@ -221,8 +220,8 @@ const Index = () => {
         )}
 
         <div className="bg-card/95 rounded-xl p-6 shadow-card-modern relative z-10">
-          <h2 className="text-xl font-semibold text-accent mb-4 flex items-center gap-2">
-            <WalletIcon className="h-5 w-5" />
+          <h2 className="text-xl font-semibold bg-gradient-primary bg-clip-text text-transparent mb-4 flex items-center gap-2">
+            <GradientIcon icon={WalletIcon} className="h-5 w-5" />
             Your Scholarship Wallet
           </h2>
           <Wallet className="mt-4" />
@@ -231,7 +230,6 @@ const Index = () => {
     );
   }
 
-  // Landing page layout for non-logged-in users
   return (
     <div className="min-h-screen bg-background">
       <div className="w-full max-w-sm sm:max-w-2xl md:max-w-4xl lg:max-w-7xl mx-auto px-2 sm:px-4 py-2 sm:py-4 md:py-8">
@@ -245,9 +243,9 @@ const Index = () => {
 
         <div className="text-center mb-6 md:mb-16">
           <div className="flex justify-center mb-3">
-            <GraduationCap className="w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 text-primary" />
+            <GradientIcon icon={GraduationCap} className="w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 lg:w-20 lg:h-20" />
           </div>
-          <h1 className="text-xl sm:text-2xl md:text-4xl lg:text-7xl font-bold text-primary mb-3 md:mb-6 drop-shadow-lg px-1">
+          <h1 className="text-xl sm:text-2xl md:text-4xl lg:text-7xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-3 md:mb-6 drop-shadow-lg px-1">
             SwipeScholar
           </h1>
           <p className="text-xs sm:text-sm md:text-base lg:text-2xl text-foreground mb-4 md:mb-8 leading-relaxed max-w-xs sm:max-w-md md:max-w-4xl mx-auto px-2">
@@ -256,7 +254,7 @@ const Index = () => {
           {!user && (
             <Button 
               onClick={() => navigate('/auth')} 
-              className="bg-primary text-primary-foreground hover:bg-primary/90 px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-4 lg:px-8 lg:py-6 text-xs sm:text-sm md:text-lg lg:text-xl rounded-full shadow-glow"
+              className="bg-gradient-primary text-primary-foreground hover:opacity-90 px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-4 lg:px-8 lg:py-6 text-xs sm:text-sm md:text-lg lg:text-xl rounded-full shadow-glow"
             >
               <Sparkles className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 lg:h-6 lg:w-6" />
               Start Your Journey Today
@@ -267,34 +265,34 @@ const Index = () => {
         {!user && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 md:gap-6 mb-8 sm:mb-16 w-full">
               <div className="bg-card p-3 sm:p-4 md:p-6 lg:p-8 rounded-xl sm:rounded-2xl shadow-card-modern group">
-                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-primary rounded-xl sm:rounded-2xl mb-2 sm:mb-3 md:mb-4 lg:mb-6 mx-auto">
+                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-gradient-primary rounded-xl sm:rounded-2xl mb-2 sm:mb-3 md:mb-4 lg:mb-6 mx-auto">
                   <Rocket className="text-primary-foreground w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-8 lg:h-8" />
                 </div>
-                <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-primary mb-1 sm:mb-2 md:mb-3 lg:mb-4 text-center">Quick & Easy</h3>
+                <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-1 sm:mb-2 md:mb-3 lg:mb-4 text-center">Quick & Easy</h3>
                 <p className="text-xs sm:text-xs md:text-sm lg:text-base text-muted-foreground text-center leading-relaxed">Swipe right on scholarships that match your profile - as simple as using your favorite social app!</p>
               </div>
 
               <div className="bg-card p-3 sm:p-4 md:p-6 lg:p-8 rounded-xl sm:rounded-2xl shadow-card-modern group">
-                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-accent rounded-xl sm:rounded-2xl mb-2 sm:mb-3 md:mb-4 lg:mb-6 mx-auto">
-                  <BookOpen className="text-accent-foreground w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-8 lg:h-8" />
+                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-gradient-primary rounded-xl sm:rounded-2xl mb-2 sm:mb-3 md:mb-4 lg:mb-6 mx-auto">
+                  <BookOpen className="text-primary-foreground w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-8 lg:h-8" />
                 </div>
-                <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-accent mb-1 sm:mb-2 md:mb-3 lg:mb-4 text-center">Personalized Matches</h3>
+                <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-1 sm:mb-2 md:mb-3 lg:mb-4 text-center">Personalized Matches</h3>
                 <p className="text-xs sm:text-xs md:text-sm lg:text-base text-muted-foreground text-center leading-relaxed">Get scholarships tailored to your unique academic profile and interests</p>
               </div>
 
               <div className="bg-card p-3 sm:p-4 md:p-6 lg:p-8 rounded-xl sm:rounded-2xl shadow-card-modern group">
-                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-primary rounded-xl sm:rounded-2xl mb-2 sm:mb-3 md:mb-4 lg:mb-6 mx-auto">
+                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-gradient-primary rounded-xl sm:rounded-2xl mb-2 sm:mb-3 md:mb-4 lg:mb-6 mx-auto">
                   <DollarSign className="text-primary-foreground w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-8 lg:h-8" />
                 </div>
-                <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-primary mb-1 sm:mb-2 md:mb-3 lg:mb-4 text-center">Save Money</h3>
+                <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-1 sm:mb-2 md:mb-3 lg:mb-4 text-center">Save Money</h3>
                 <p className="text-xs sm:text-xs md:text-sm lg:text-base text-muted-foreground text-center leading-relaxed">Access thousands of dollars in scholarship opportunities just waiting for you</p>
               </div>
 
               <div className="bg-card p-3 sm:p-4 md:p-6 lg:p-8 rounded-xl sm:rounded-2xl shadow-card-modern group">
-                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-accent rounded-xl sm:rounded-2xl mb-2 sm:mb-3 md:mb-4 lg:mb-6 mx-auto">
-                  <Clock className="text-accent-foreground w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-8 lg:h-8" />
+                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-gradient-primary rounded-xl sm:rounded-2xl mb-2 sm:mb-3 md:mb-4 lg:mb-6 mx-auto">
+                  <Clock className="text-primary-foreground w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-8 lg:h-8" />
                 </div>
-                <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-accent mb-1 sm:mb-2 md:mb-3 lg:mb-4 text-center">Save Time</h3>
+                <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-1 sm:mb-2 md:mb-3 lg:mb-4 text-center">Save Time</h3>
                 <p className="text-xs sm:text-xs md:text-sm lg:text-base text-muted-foreground text-center leading-relaxed">Apply to multiple scholarships efficiently with your single profile</p>
               </div>
 
@@ -302,10 +300,10 @@ const Index = () => {
                 className="bg-card p-3 sm:p-4 md:p-6 lg:p-8 rounded-xl sm:rounded-2xl shadow-card-modern group cursor-pointer md:col-span-2 lg:col-span-1"
                 onClick={() => navigate('/school-matchmaker')}
               >
-                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-primary rounded-xl sm:rounded-2xl mb-2 sm:mb-3 md:mb-4 lg:mb-6 mx-auto">
+                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-gradient-primary rounded-xl sm:rounded-2xl mb-2 sm:mb-3 md:mb-4 lg:mb-6 mx-auto">
                   <School className="text-primary-foreground w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-8 lg:h-8" />
                 </div>
-                <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-primary mb-1 sm:mb-2 md:mb-3 lg:mb-4 text-center">School Matchmaker</h3>
+                <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-1 sm:mb-2 md:mb-3 lg:mb-4 text-center">School Matchmaker</h3>
                 <p className="text-xs sm:text-xs md:text-sm lg:text-base text-muted-foreground text-center leading-relaxed">Find perfect schools that match your interests, budget, and location preferences</p>
               </div>
           </div>
@@ -320,7 +318,7 @@ const Index = () => {
               </h2>
               <p className="text-xs sm:text-sm md:text-lg lg:text-xl text-muted-foreground max-w-xs sm:max-w-md md:max-w-3xl mx-auto mb-4 sm:mb-6 md:mb-8">
                 Your scholarship essays deserve the best. Our AI-powered Essay Assistant helps you craft winning applications.
-                <span className="block text-primary font-bold mt-1 sm:mt-2 text-sm sm:text-base md:text-xl">
+                <span className="block bg-gradient-primary bg-clip-text text-transparent font-bold mt-1 sm:mt-2 text-sm sm:text-base md:text-xl">
                   Just $10/month - Cancel Anytime!
                 </span>
               </p>
@@ -331,7 +329,7 @@ const Index = () => {
                 {showFrameworkPreview && (
                   <div className="absolute inset-0 bg-card rounded-xl p-6 z-10">
                     <div className="flex justify-between items-center mb-4">
-                      <h3 className="font-semibold text-primary">Your Essay Framework</h3>
+                      <h3 className="font-semibold bg-gradient-primary bg-clip-text text-transparent">Your Essay Framework</h3>
                       <Button variant="ghost" size="sm" onClick={handleCloseFrameworkPreview} className="h-8 w-8 p-0">
                         <X className="h-5 w-5" />
                       </Button>
@@ -347,7 +345,7 @@ const Index = () => {
                         </Button>
                         <Button 
                           onClick={() => navigate('/auth')} 
-                          className="bg-gradient-primary text-primary-foreground hover:shadow-glow px-6 py-2 rounded-full"
+                          className="bg-gradient-primary text-primary-foreground hover:opacity-90 px-6 py-2 rounded-full"
                         >
                           <Sparkles className="h-4 w-4 mr-2" />
                           Upgrade to Create Full Essays
@@ -381,7 +379,7 @@ const Index = () => {
                             Previous
                           </Button>
                           <Button 
-                            className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                            className="bg-gradient-primary hover:opacity-90 text-primary-foreground"
                             onClick={handleEssayNextStep}
                             disabled={essayStep === 3}
                           >
@@ -395,8 +393,8 @@ const Index = () => {
                   <TabsContent value="review">
                     <Card className="border-0 shadow-sm">
                       <CardContent className="p-4">
-                        <div className="flex gap-2 items-center mb-4 text-primary">
-                          <FileText className="h-5 w-5" />
+                        <div className="flex gap-2 items-center mb-4">
+                          <GradientIcon icon={FileText} className="h-5 w-5" />
                           <h3 className="font-semibold">Teacher's Feedback</h3>
                         </div>
                         <div className="border-l-4 border-primary pl-3 py-2 mb-3">
@@ -411,7 +409,7 @@ const Index = () => {
                 <div className="text-center mt-6">
                   <Button 
                     onClick={() => navigate('/auth')} 
-                    className="bg-gradient-primary text-primary-foreground hover:shadow-glow px-6 py-2 rounded-full"
+                    className="bg-gradient-primary text-primary-foreground hover:opacity-90 px-6 py-2 rounded-full"
                   >
                     <Sparkles className="h-4 w-4 mr-2" />
                     Upgrade to Premium
@@ -423,7 +421,7 @@ const Index = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
               <div className="bg-card/80 p-5 rounded-xl shadow-card-modern">
                 <div className="flex justify-center mb-3">
-                  <PencilIcon className="h-8 w-8 text-primary" />
+                  <GradientIcon icon={PencilIcon} className="h-8 w-8" />
                 </div>
                 <h3 className="font-semibold text-lg mb-2">Essay Frameworks</h3>
                 <p className="text-sm text-muted-foreground">Build your essay with personalized, AI-generated frameworks tailored to your experiences</p>
@@ -431,7 +429,7 @@ const Index = () => {
               
               <div className="bg-card/80 p-5 rounded-xl shadow-card-modern">
                 <div className="flex justify-center mb-3">
-                  <Search className="h-8 w-8 text-primary" />
+                  <GradientIcon icon={Search} className="h-8 w-8" />
                 </div>
                 <h3 className="font-semibold text-lg mb-2">Unlimited Scholarships</h3>
                 <p className="text-sm text-muted-foreground">Browse and apply to as many scholarships as you want with no daily limits</p>
@@ -439,7 +437,7 @@ const Index = () => {
               
               <div className="bg-card/80 p-5 rounded-xl shadow-card-modern">
                 <div className="flex justify-center mb-3">
-                  <BookOpen className="h-8 w-8 text-primary" />
+                  <GradientIcon icon={BookOpen} className="h-8 w-8" />
                 </div>
                 <h3 className="font-semibold text-lg mb-2">Test Prep</h3>
                 <p className="text-sm text-muted-foreground">Access comprehensive SAT & ACT practice materials and personalized study strategies</p>
@@ -451,16 +449,16 @@ const Index = () => {
         {!user && (
           <div className="text-center mt-16 bg-card/95 p-8 md:p-12 rounded-3xl shadow-card-modern">
             <div className="flex justify-center gap-4 md:gap-6 mb-6 md:mb-8">
-              <Users className="w-10 h-10 md:w-12 md:h-12 text-primary" />
-              <Trophy className="w-10 h-10 md:w-12 md:h-12 text-accent" />
+              <GradientIcon icon={Users} className="w-10 h-10 md:w-12 md:h-12" />
+              <GradientIcon icon={Trophy} className="w-10 h-10 md:w-12 md:h-12" />
             </div>
-            <h2 className="text-2xl md:text-3xl font-bold text-primary mb-4 md:mb-6">Join Our Community of Successful Scholars</h2>
+            <h2 className="text-2xl md:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-4 md:mb-6">Join Our Community of Successful Scholars</h2>
             <p className="text-lg md:text-xl text-muted-foreground mb-6 md:mb-8 max-w-2xl mx-auto">
               Tons of students have already found their perfect scholarship match with SwipeScholar. Don't miss out on opportunities waiting for you!
             </p>
             <Button 
               onClick={() => navigate('/auth')} 
-              className="bg-accent hover:bg-accent/90 text-accent-foreground px-6 py-4 md:px-8 md:py-6 text-lg md:text-xl rounded-full shadow-glow"
+              className="bg-gradient-primary hover:opacity-90 text-primary-foreground px-6 py-4 md:px-8 md:py-6 text-lg md:text-xl rounded-full shadow-glow"
             >
               Sign Up Now
             </Button>

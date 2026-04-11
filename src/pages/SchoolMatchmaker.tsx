@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { PremiumPageLayout } from "@/components/premium/PremiumPageLayout";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Loader2, GraduationCap, MapPin, DollarSign } from "lucide-react";
+import { GradientIcon } from "@/components/ui/gradient-icon";
 
 interface SchoolMatch {
   name: string;
@@ -60,26 +61,13 @@ export default function SchoolMatchmaker() {
     setResults([]);
 
     try {
-      const { data, error } = await supabase.functions.invoke('school-matcher', {
-        body: formData
-      });
-
-      if (error) {
-        throw new Error(error.message || 'Failed to find school matches');
-      }
+      const { data, error } = await supabase.functions.invoke('school-matcher', { body: formData });
+      if (error) throw new Error(error.message || 'Failed to find school matches');
       setResults(data.schools);
-      
-      toast({
-        title: "Success!",
-        description: `Found ${data.schools.length} school matches`,
-      });
+      toast({ title: "Success!", description: `Found ${data.schools.length} school matches` });
     } catch (error) {
       console.error('Error finding schools:', error);
-      toast({
-        title: "Error",
-        description: "Failed to find school matches. Please try again.",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to find school matches. Please try again.", variant: "destructive" });
     } finally {
       setIsLoading(false);
     }
@@ -89,7 +77,7 @@ export default function SchoolMatchmaker() {
     <PremiumPageLayout>
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
-          <h1 className={`${isMobile ? 'text-2xl' : 'text-4xl'} font-bold text-primary mb-4`}>School Matchmaker</h1>
+          <h1 className={`${isMobile ? 'text-2xl' : 'text-4xl'} font-bold bg-gradient-primary bg-clip-text text-transparent mb-4`}>School Matchmaker</h1>
           <p className={`${isMobile ? 'text-lg' : 'text-xl'} text-muted-foreground max-w-2xl mx-auto`}>
             Find the perfect schools and programs that match your interests, budget, and location preferences
           </p>
@@ -99,7 +87,7 @@ export default function SchoolMatchmaker() {
           <Card className="mb-8">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <GraduationCap className="h-5 w-5" />
+                <GradientIcon icon={GraduationCap} className="h-5 w-5" />
                 Tell us about your preferences
               </CardTitle>
               <CardDescription>
@@ -111,21 +99,12 @@ export default function SchoolMatchmaker() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="program">Desired Program/Major</Label>
-                    <Input
-                      id="program"
-                      placeholder="e.g., Computer Science, Business, Engineering"
-                      value={formData.program}
-                      onChange={(e) => setFormData(prev => ({ ...prev, program: e.target.value }))}
-                      required
-                    />
+                    <Input id="program" placeholder="e.g., Computer Science, Business, Engineering" value={formData.program} onChange={(e) => setFormData(prev => ({ ...prev, program: e.target.value }))} required />
                   </div>
-
                   <div className="space-y-2">
                     <Label htmlFor="budget">Budget Range (Annual)</Label>
                     <Select value={formData.budget} onValueChange={(value) => setFormData(prev => ({ ...prev, budget: value }))}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select budget range" />
-                      </SelectTrigger>
+                      <SelectTrigger><SelectValue placeholder="Select budget range" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="under-20k">Under $20,000</SelectItem>
                         <SelectItem value="20k-40k">$20,000 - $40,000</SelectItem>
@@ -139,13 +118,7 @@ export default function SchoolMatchmaker() {
 
                 <div className="space-y-2">
                   <Label htmlFor="interests">Additional Interests & Requirements</Label>
-                  <Textarea
-                    id="interests"
-                    placeholder="e.g., Strong research opportunities, diverse campus, good athletics program, urban setting..."
-                    value={formData.interests}
-                    onChange={(e) => setFormData(prev => ({ ...prev, interests: e.target.value }))}
-                    rows={3}
-                  />
+                  <Textarea id="interests" placeholder="e.g., Strong research opportunities, diverse campus, good athletics program, urban setting..." value={formData.interests} onChange={(e) => setFormData(prev => ({ ...prev, interests: e.target.value }))} rows={3} />
                 </div>
 
                 <div className="space-y-3">
@@ -153,26 +126,17 @@ export default function SchoolMatchmaker() {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2 max-h-40 overflow-y-auto border rounded-md p-3">
                     {US_STATES.map((state) => (
                       <div key={state} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={state}
-                          checked={formData.states.includes(state)}
-                          onCheckedChange={() => handleStateToggle(state)}
-                        />
+                        <Checkbox id={state} checked={formData.states.includes(state)} onCheckedChange={() => handleStateToggle(state)} />
                         <Label htmlFor={state} className="text-sm">{state}</Label>
                       </div>
                     ))}
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Selected: {formData.states.length} states
-                  </p>
+                  <p className="text-sm text-muted-foreground">Selected: {formData.states.length} states</p>
                 </div>
 
-                <Button type="submit" disabled={isLoading} className="w-full">
+                <Button type="submit" disabled={isLoading} className="w-full bg-gradient-primary hover:opacity-90 text-primary-foreground">
                   {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Finding your perfect matches...
-                    </>
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Finding your perfect matches...</>
                   ) : (
                     "Find My School Matches"
                   )}
@@ -191,12 +155,12 @@ export default function SchoolMatchmaker() {
                       <div>
                         <CardTitle className="text-xl">{school.name}</CardTitle>
                         <CardDescription className="flex items-center gap-1 mt-1">
-                          <MapPin className="h-4 w-4" />
+                          <GradientIcon icon={MapPin} className="h-4 w-4" />
                           {school.location}
                         </CardDescription>
                       </div>
                       <div className="text-right">
-                        <div className="flex items-center gap-1 text-lg font-semibold text-primary">
+                        <div className="flex items-center gap-1 text-lg font-semibold bg-gradient-primary bg-clip-text text-transparent">
                           {school.estimatedCost}
                         </div>
                         <p className="text-sm text-muted-foreground">per year</p>
@@ -205,19 +169,11 @@ export default function SchoolMatchmaker() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      <div>
-                        <h4 className="font-semibold text-foreground">Program: {school.program}</h4>
-                      </div>
+                      <div><h4 className="font-semibold text-foreground">Program: {school.program}</h4></div>
                       <p className="text-muted-foreground">{school.description}</p>
                       <div className="grid grid-cols-2 gap-4 pt-2">
-                        <div>
-                          <p className="text-sm font-medium">Ranking</p>
-                          <p className="text-sm text-muted-foreground">{school.ranking}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium">Admission Rate</p>
-                          <p className="text-sm text-muted-foreground">{school.admissionRate}</p>
-                        </div>
+                        <div><p className="text-sm font-medium">Ranking</p><p className="text-sm text-muted-foreground">{school.ranking}</p></div>
+                        <div><p className="text-sm font-medium">Admission Rate</p><p className="text-sm text-muted-foreground">{school.admissionRate}</p></div>
                       </div>
                     </div>
                   </CardContent>

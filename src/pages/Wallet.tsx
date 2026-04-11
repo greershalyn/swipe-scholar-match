@@ -34,30 +34,14 @@ const WalletPage = () => {
 
       const { data: savedScholarships, error } = await supabase
         .from('saved_scholarships')
-        .select(`
-          id,
-          applied,
-          scholarship:scholarships (
-            id,
-            title,
-            amount,
-            deadline,
-            url,
-            provider
-          )
-        `)
+        .select(`id, applied, scholarship:scholarships (id, title, amount, deadline, url, provider)`)
         .eq('profile_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching saved scholarships:', error);
-        throw error;
-      }
+      if (error) { console.error('Error fetching saved scholarships:', error); throw error; }
 
       const now = new Date();
-      return (savedScholarships as SavedScholarship[]).filter(
-        saved => new Date(saved.scholarship.deadline) > now
-      );
+      return (savedScholarships as SavedScholarship[]).filter(saved => new Date(saved.scholarship.deadline) > now);
     },
   });
 
@@ -66,31 +50,18 @@ const WalletPage = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      const { error } = await supabase
-        .from('saved_scholarships')
-        .delete()
-        .eq('scholarship_id', scholarshipId)
-        .eq('profile_id', user.id);
-
+      const { error } = await supabase.from('saved_scholarships').delete().eq('scholarship_id', scholarshipId).eq('profile_id', user.id);
       if (error) throw error;
 
-      // Immediately update the cache by removing the deleted scholarship
       queryClient.setQueryData(['saved-scholarships'], (oldData: SavedScholarship[] | undefined) => {
         if (!oldData) return oldData;
         return oldData.filter(saved => saved.scholarship.id !== scholarshipId);
       });
 
-      toast({
-        title: "Scholarship removed",
-        description: "The scholarship has been removed from your wallet.",
-      });
+      toast({ title: "Scholarship removed", description: "The scholarship has been removed from your wallet." });
     } catch (error) {
       console.error('Error removing scholarship:', error);
-      toast({
-        title: "Error",
-        description: "Failed to remove scholarship. Please try again.",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to remove scholarship. Please try again.", variant: "destructive" });
     }
   };
 
@@ -98,19 +69,10 @@ const WalletPage = () => {
     const deadline = new Date(dateString);
     const now = new Date();
     const daysUntilDeadline = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-
     return {
-      formatted: deadline.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      }),
+      formatted: deadline.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
       daysLeft: daysUntilDeadline
     };
-  };
-
-  const handleBack = () => {
-    navigate('/');
   };
 
   if (isLoading) {
@@ -124,11 +86,7 @@ const WalletPage = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center mb-6">
-        <Button 
-          variant="ghost" 
-          className="mr-4"
-          onClick={handleBack}
-        >
+        <Button variant="ghost" className="mr-4" onClick={() => navigate('/')}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
         </Button>
@@ -136,18 +94,13 @@ const WalletPage = () => {
       </div>
 
       {!savedScholarships?.length ? (
-        <div className="text-center text-muted-foreground p-4">
-          No saved scholarships yet
-        </div>
+        <div className="text-center text-muted-foreground p-4">No saved scholarships yet</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {savedScholarships.map((saved) => {
             const deadline = formatDeadline(saved.scholarship.deadline);
             return (
-              <div 
-                key={saved.id} 
-                className="bg-white p-4 rounded-lg shadow-sm border relative hover:shadow-md transition-shadow"
-              >
+              <div key={saved.id} className="bg-card p-4 rounded-lg shadow-sm border relative hover:shadow-md transition-shadow">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -157,16 +110,11 @@ const WalletPage = () => {
                   <X className="h-4 w-4" />
                 </Button>
                 
-                <h3 className="font-medium text-accent mb-2 pr-8">
-                  {saved.scholarship.title}
-                </h3>
-                
-                <p className="text-sm text-muted-foreground mb-2">
-                  Provider: {saved.scholarship.provider}
-                </p>
+                <h3 className="font-medium text-foreground mb-2 pr-8">{saved.scholarship.title}</h3>
+                <p className="text-sm text-muted-foreground mb-2">Provider: {saved.scholarship.provider}</p>
                 
                 <div className="flex flex-wrap gap-2 mb-3">
-                  <Badge variant="outline" className="bg-primary/10 text-primary">
+                  <Badge variant="outline" className="bg-gradient-primary text-primary-foreground border-0">
                     ${saved.scholarship.amount.toLocaleString()}
                   </Badge>
                   <Badge variant="outline" className={
@@ -174,7 +122,7 @@ const WalletPage = () => {
                       ? 'bg-destructive/10 text-destructive' 
                       : deadline.daysLeft <= 30 
                         ? 'bg-warning/10 text-warning' 
-                        : 'bg-accent/10 text-accent'
+                        : 'bg-gradient-primary text-primary-foreground border-0'
                   }>
                     {deadline.daysLeft} days left
                   </Badge>
@@ -183,7 +131,7 @@ const WalletPage = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="w-full flex items-center justify-center gap-2 hover:bg-accent hover:text-white transition-colors"
+                  className="w-full flex items-center justify-center gap-2 hover:bg-gradient-primary hover:text-primary-foreground transition-colors"
                   onClick={() => window.open(saved.scholarship.url, '_blank')}
                 >
                   Apply Now <ExternalLink className="h-4 w-4" />

@@ -5,6 +5,7 @@ import { PencilIcon, FileText } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
+import { GradientIcon } from '@/components/ui/gradient-icon';
 
 import { useSubscriptionCheck } from '@/hooks/useSubscriptionCheck';
 import { PremiumAccessPrompt } from '@/components/essay/PremiumAccessPrompt';
@@ -37,11 +38,7 @@ const EssayAssistant = () => {
         setSelectedPrompt(prompt);
       } catch (error) {
         console.error('Error analyzing essay topic:', error);
-        toast({
-          title: "Error",
-          description: "Failed to analyze your essay topic. Please try again.",
-          variant: "destructive",
-        });
+        toast({ title: "Error", description: "Failed to analyze your essay topic. Please try again.", variant: "destructive" });
       }
     }
 
@@ -53,16 +50,11 @@ const EssayAssistant = () => {
           setSuggestions(fetchedSuggestions);
         } catch (error) {
           console.error('Error generating suggestions:', error);
-          toast({
-            title: "Error",
-            description: "Failed to generate essay suggestions. Please try again.",
-            variant: "destructive",
-          });
+          toast({ title: "Error", description: "Failed to generate essay suggestions. Please try again.", variant: "destructive" });
         } finally {
           setIsLoading(false);
         }
       };
-      
       fetchSuggestions();
     }
   }, [step, essayTopic, response, suggestions.length, isLoading, toast, selectedPrompt]);
@@ -75,7 +67,6 @@ const EssayAssistant = () => {
     );
   }
 
-  // If user doesn't have premium access, show the premium prompt with direct payment link
   if (!hasPremiumAccess) {
     return (
       <PremiumAccessPrompt
@@ -88,35 +79,25 @@ const EssayAssistant = () => {
 
   const handleNextStep = () => {
     if (step === 4) return;
-    
-    setStep((prevStep: StepType) => {
-      const nextStep = prevStep + 1;
-      return nextStep as StepType;
-    });
+    setStep((prevStep: StepType) => (prevStep + 1) as StepType);
   };
 
   const handlePreviousStep = () => {
     if (step === 1) return;
-    
-    setStep((prevStep: StepType) => {
-      const nextStep = prevStep - 1;
-      return nextStep as StepType;
-    });
+    setStep((prevStep: StepType) => (prevStep - 1) as StepType);
   };
 
   const handleFrameworkGenerated = (framework: ExpandedFramework) => {
     setExpandedFramework(framework);
-    // Automatically move to the next step when a framework is selected
     handleNextStep();
   };
 
   return (
     <div className="min-h-screen bg-background">
       <div className={`container px-2 md:px-4 ${isMobile ? 'py-2' : 'py-4 md:py-8'}`}>
-
         <div className="max-w-3xl mx-auto">
           <div className={`flex items-center gap-2 md:gap-3 ${isMobile ? 'mb-3' : 'mb-4 md:mb-8'}`}>
-            <PencilIcon className={`${isMobile ? 'h-5 w-5' : 'h-6 w-6 md:h-8 md:w-8'} text-primary`} />
+            <GradientIcon icon={PencilIcon} className={`${isMobile ? 'h-5 w-5' : 'h-6 w-6 md:h-8 md:w-8'}`} />
             <h1 className={`${isMobile ? 'text-lg' : 'text-2xl md:text-4xl'} font-bold text-foreground`}>Essay Assistant</h1>
           </div>
 

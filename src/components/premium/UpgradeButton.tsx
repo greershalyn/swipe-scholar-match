@@ -10,7 +10,7 @@ interface UpgradeButtonProps {
 export const UpgradeButton = ({ onClick, loading }: UpgradeButtonProps) => {
   return (
     <Button 
-      className="w-full mt-4"
+      className="w-full mt-4 bg-gradient-primary hover:opacity-90 text-primary-foreground"
       onClick={onClick}
       disabled={loading}
     >
