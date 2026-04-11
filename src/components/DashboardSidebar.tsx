@@ -62,7 +62,7 @@ export function DashboardSidebar() {
   const getNavClassName = (path: string) =>
     isActive(path) 
       ? "border border-border rounded-md font-medium text-black" 
-      : "hover:bg-accent/50"
+      : "hover:bg-accent/10"
 
   return (
     <Sidebar
