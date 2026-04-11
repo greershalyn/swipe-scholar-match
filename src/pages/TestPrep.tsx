@@ -6,8 +6,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useSubscriptionCheck } from '@/hooks/useSubscriptionCheck';
 import { PremiumAccessPrompt } from '@/components/essay/PremiumAccessPrompt';
 import { useToast } from '@/hooks/use-toast';
+import { GradientIcon } from '@/components/ui/gradient-icon';
 
-// Import refactored components
 import TestPrepHeader from '@/components/testprep/TestPrepHeader';
 import LoadingState from '@/components/testprep/LoadingState';
 import ACTContent from '@/components/testprep/ACTContent';
@@ -20,11 +20,8 @@ const TestPrep = () => {
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
-  if (isCheckingAccess) {
-    return <LoadingState />;
-  }
+  if (isCheckingAccess) return <LoadingState />;
 
-  // If user doesn't have premium access, show the premium prompt
   if (!hasPremiumAccess) {
     return (
       <PremiumAccessPrompt
@@ -36,19 +33,12 @@ const TestPrep = () => {
   }
 
   const toggleQuiz = (quizId: string) => {
-    setActiveQuizzes(prev => ({
-      ...prev,
-      [quizId]: !prev[quizId]
-    }));
+    setActiveQuizzes(prev => ({ ...prev, [quizId]: !prev[quizId] }));
   };
 
   const handleQuizComplete = (sectionTitle: string, score: number, total: number) => {
     const percentage = Math.round((score / total) * 100);
-    
-    toast({
-      title: `${sectionTitle} Quiz Completed!`,
-      description: `You scored ${score} out of ${total} (${percentage}%)`,
-    });
+    toast({ title: `${sectionTitle} Quiz Completed!`, description: `You scored ${score} out of ${total} (${percentage}%)` });
   };
 
   return (
@@ -56,7 +46,7 @@ const TestPrep = () => {
       <div className={`container px-2 md:px-4 ${isMobile ? 'py-2' : 'py-4 md:py-8'}`}>
         <div className="max-w-3xl mx-auto">
           <div className={`flex items-center gap-2 md:gap-3 ${isMobile ? 'mb-3' : 'mb-4 md:mb-8'}`}>
-            <GraduationCap className={`${isMobile ? 'h-5 w-5' : 'h-6 w-6 md:h-8 md:w-8'} text-primary`} />
+            <GradientIcon icon={GraduationCap} className={`${isMobile ? 'h-5 w-5' : 'h-6 w-6 md:h-8 md:w-8'}`} />
             <h1 className={`${isMobile ? 'text-lg' : 'text-2xl md:text-4xl'} font-bold text-foreground`}>Test Prep</h1>
           </div>
 
@@ -73,19 +63,11 @@ const TestPrep = () => {
             </TabsList>
 
             <TabsContent value="act">
-              <ACTContent 
-                activeQuizzes={activeQuizzes} 
-                toggleQuiz={toggleQuiz}
-                handleQuizComplete={handleQuizComplete}
-              />
+              <ACTContent activeQuizzes={activeQuizzes} toggleQuiz={toggleQuiz} handleQuizComplete={handleQuizComplete} />
             </TabsContent>
 
             <TabsContent value="sat">
-              <SATContent 
-                activeQuizzes={activeQuizzes} 
-                toggleQuiz={toggleQuiz}
-                handleQuizComplete={handleQuizComplete}
-              />
+              <SATContent activeQuizzes={activeQuizzes} toggleQuiz={toggleQuiz} handleQuizComplete={handleQuizComplete} />
             </TabsContent>
           </Tabs>
         </div>
