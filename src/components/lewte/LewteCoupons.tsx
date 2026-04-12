@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tag, ExternalLink, Copy, Check, Gift, Percent } from "lucide-react";
+import { Tag, ExternalLink, Copy, Check, Gift, Percent, WalletIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,6 +19,7 @@ interface Coupon {
   expires_at: string | null;
   image_url: string | null;
   deal_type: string;
+  redemption_expiry_days: number;
 }
 
 export function LewteCoupons() {
