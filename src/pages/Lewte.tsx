@@ -40,6 +40,8 @@ export default function Lewte() {
         </Badge>
       </div>
 
+      <LewteDashboard />
+
       <Tabs defaultValue="coupons" className="space-y-4">
         <TabsList>
           <TabsTrigger value="coupons" className="flex items-center gap-1">
