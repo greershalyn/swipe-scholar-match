@@ -58,6 +58,31 @@ export function LewteCoupons() {
     setTimeout(() => setCopiedId(null), 2000);
   }
 
+  async function saveToWallet(coupon: Coupon) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + (coupon.redemption_expiry_days || 30));
+    
+    const { error } = await supabase.from("redeemed_coupons").insert({
+      user_id: user.id,
+      coupon_id: coupon.id,
+      expires_at: expiresAt.toISOString(),
+    });
+    
+    if (error) {
+      if (error.code === "23505") {
+        toast({ title: "Already saved", description: "This coupon is already in your wallet." });
+      } else {
+        toast({ title: "Error", description: error.message, variant: "destructive" });
+      }
+    } else {
+      setSavedIds(prev => new Set([...prev, coupon.id]));
+      toast({ title: "Saved to Wallet!", description: "Find this coupon in your wallet when you're ready to use it." });
+    }
+  }
+
   const categories = [...new Set(coupons.map((c) => c.category).filter(Boolean))] as string[];
   const filtered = selectedCategory ? coupons.filter((c) => c.category === selectedCategory) : coupons;
 
