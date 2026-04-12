@@ -263,49 +263,69 @@ const Index = () => {
         </div>
 
         {!user && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 md:gap-6 mb-8 sm:mb-16 w-full">
-              <div className="bg-card p-3 sm:p-4 md:p-6 lg:p-8 rounded-xl sm:rounded-2xl shadow-card-modern group">
-                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-gradient-primary rounded-xl sm:rounded-2xl mb-2 sm:mb-3 md:mb-4 lg:mb-6 mx-auto">
-                  <Rocket className="text-primary-foreground w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-8 lg:h-8" />
+          <div className="flex flex-col md:flex-row gap-4 md:gap-8 mb-8 sm:mb-16 w-full items-center">
+            {/* Stacked feature points */}
+            <div className="flex flex-col gap-2 sm:gap-3 w-full md:w-1/2">
+              <div className="flex items-center gap-3 bg-card p-3 sm:p-4 rounded-xl shadow-card-modern">
+                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-gradient-primary rounded-lg shrink-0">
+                  <Rocket className="text-primary-foreground w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-1 sm:mb-2 md:mb-3 lg:mb-4 text-center">Quick & Easy</h3>
-                <p className="text-xs sm:text-xs md:text-sm lg:text-base text-muted-foreground text-center leading-relaxed">Swipe right on scholarships that match your profile - as simple as using your favorite social app!</p>
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold bg-gradient-primary bg-clip-text text-transparent">Quick & Easy</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">Swipe right on scholarships that match your profile</p>
+                </div>
               </div>
 
-              <div className="bg-card p-3 sm:p-4 md:p-6 lg:p-8 rounded-xl sm:rounded-2xl shadow-card-modern group">
-                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-gradient-primary rounded-xl sm:rounded-2xl mb-2 sm:mb-3 md:mb-4 lg:mb-6 mx-auto">
-                  <BookOpen className="text-primary-foreground w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-8 lg:h-8" />
+              <div className="flex items-center gap-3 bg-card p-3 sm:p-4 rounded-xl shadow-card-modern">
+                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-gradient-primary rounded-lg shrink-0">
+                  <BookOpen className="text-primary-foreground w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-1 sm:mb-2 md:mb-3 lg:mb-4 text-center">Personalized Matches</h3>
-                <p className="text-xs sm:text-xs md:text-sm lg:text-base text-muted-foreground text-center leading-relaxed">Get scholarships tailored to your unique academic profile and interests</p>
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold bg-gradient-primary bg-clip-text text-transparent">Personalized Matches</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">Scholarships tailored to your academic profile and interests</p>
+                </div>
               </div>
 
-              <div className="bg-card p-3 sm:p-4 md:p-6 lg:p-8 rounded-xl sm:rounded-2xl shadow-card-modern group">
-                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-gradient-primary rounded-xl sm:rounded-2xl mb-2 sm:mb-3 md:mb-4 lg:mb-6 mx-auto">
-                  <DollarSign className="text-primary-foreground w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-8 lg:h-8" />
+              <div className="flex items-center gap-3 bg-card p-3 sm:p-4 rounded-xl shadow-card-modern">
+                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-gradient-primary rounded-lg shrink-0">
+                  <DollarSign className="text-primary-foreground w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-1 sm:mb-2 md:mb-3 lg:mb-4 text-center">Save Money</h3>
-                <p className="text-xs sm:text-xs md:text-sm lg:text-base text-muted-foreground text-center leading-relaxed">Access thousands of dollars in scholarship opportunities just waiting for you</p>
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold bg-gradient-primary bg-clip-text text-transparent">Save Money</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">Access thousands of dollars in scholarship opportunities</p>
+                </div>
               </div>
 
-              <div className="bg-card p-3 sm:p-4 md:p-6 lg:p-8 rounded-xl sm:rounded-2xl shadow-card-modern group">
-                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-gradient-primary rounded-xl sm:rounded-2xl mb-2 sm:mb-3 md:mb-4 lg:mb-6 mx-auto">
-                  <Clock className="text-primary-foreground w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-8 lg:h-8" />
+              <div className="flex items-center gap-3 bg-card p-3 sm:p-4 rounded-xl shadow-card-modern">
+                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-gradient-primary rounded-lg shrink-0">
+                  <Clock className="text-primary-foreground w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-1 sm:mb-2 md:mb-3 lg:mb-4 text-center">Save Time</h3>
-                <p className="text-xs sm:text-xs md:text-sm lg:text-base text-muted-foreground text-center leading-relaxed">Apply to multiple scholarships efficiently with your single profile</p>
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold bg-gradient-primary bg-clip-text text-transparent">Save Time</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">Apply to multiple scholarships with your single profile</p>
+                </div>
               </div>
 
               <div 
-                className="bg-card p-3 sm:p-4 md:p-6 lg:p-8 rounded-xl sm:rounded-2xl shadow-card-modern group cursor-pointer md:col-span-2 lg:col-span-1"
+                className="flex items-center gap-3 bg-card p-3 sm:p-4 rounded-xl shadow-card-modern cursor-pointer"
                 onClick={() => navigate('/school-matchmaker')}
               >
-                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 bg-gradient-primary rounded-xl sm:rounded-2xl mb-2 sm:mb-3 md:mb-4 lg:mb-6 mx-auto">
-                  <School className="text-primary-foreground w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-8 lg:h-8" />
+                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-gradient-primary rounded-lg shrink-0">
+                  <School className="text-primary-foreground w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-1 sm:mb-2 md:mb-3 lg:mb-4 text-center">School Matchmaker</h3>
-                <p className="text-xs sm:text-xs md:text-sm lg:text-base text-muted-foreground text-center leading-relaxed">Find perfect schools that match your interests, budget, and location preferences</p>
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold bg-gradient-primary bg-clip-text text-transparent">School Matchmaker</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">Find schools that match your interests, budget, and location</p>
+                </div>
               </div>
+            </div>
+
+            {/* Photo placeholder - right side */}
+            <div className="w-full md:w-1/2 flex items-center justify-center">
+              <div className="w-full aspect-[4/3] rounded-2xl bg-muted/30 border-2 border-dashed border-muted-foreground/20 flex items-center justify-center">
+                <p className="text-muted-foreground text-sm">Photo goes here</p>
+              </div>
+            </div>
           </div>
         )}
 
