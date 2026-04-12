@@ -322,9 +322,7 @@ const Index = () => {
 
             {/* Photo placeholder - right side */}
             <div className="w-full md:w-1/2 flex items-center justify-center">
-              <div className="w-full aspect-[4/3] rounded-2xl bg-muted/30 border-2 border-dashed border-muted-foreground/20 flex items-center justify-center">
-                <p className="text-muted-foreground text-sm">Photo goes here</p>
-              </div>
+              <img src={studentHero} alt="Excited student celebrating with books" className="w-full max-w-md rounded-2xl object-contain" />
             </div>
           </div>
         )}
