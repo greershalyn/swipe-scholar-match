@@ -1,0 +1,1 @@
+ALTER TABLE public.student_email_verifications ADD COLUMN date_of_birth date;

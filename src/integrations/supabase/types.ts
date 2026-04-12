@@ -376,6 +376,7 @@ export type Database = {
       student_email_verifications: {
         Row: {
           created_at: string
+          date_of_birth: string | null
           expires_at: string
           id: string
           school_email: string
@@ -386,6 +387,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          date_of_birth?: string | null
           expires_at?: string
           id?: string
           school_email: string
@@ -396,6 +398,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          date_of_birth?: string | null
           expires_at?: string
           id?: string
           school_email?: string

@@ -31,9 +31,31 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { school_email } = await req.json();
+    const { school_email, date_of_birth } = await req.json();
     if (!school_email || typeof school_email !== "string") {
       return new Response(JSON.stringify({ error: "school_email is required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (!date_of_birth || typeof date_of_birth !== "string") {
+      return new Response(JSON.stringify({ error: "date_of_birth is required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Validate age >= 16
+    const dob = new Date(date_of_birth);
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const monthDiff = today.getMonth() - dob.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+      age--;
+    }
+    if (age < 16) {
+      return new Response(JSON.stringify({ error: "You must be at least 16 years old to use Lewte." }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -78,6 +100,7 @@ Deno.serve(async (req) => {
           verification_code: code,
           verified: false,
           expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+          date_of_birth: date_of_birth,
         },
         { onConflict: "user_id,school_email" }
       );

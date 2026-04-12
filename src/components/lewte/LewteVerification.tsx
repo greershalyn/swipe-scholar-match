@@ -2,17 +2,24 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Mail, ShieldCheck, Loader2 } from "lucide-react";
+import { Mail, ShieldCheck, Loader2, CalendarIcon } from "lucide-react";
 import { useStudentVerification } from "@/hooks/useStudentVerification";
 import { GradientIcon } from "@/components/ui/gradient-icon";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 export function LewteVerification() {
   const [schoolEmail, setSchoolEmail] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState<Date>();
   const { verificationStatus, error, schoolName, debugCode, sendVerificationCode, verifyCode } = useStudentVerification();
 
   const handleSendCode = () => {
-    if (schoolEmail) sendVerificationCode(schoolEmail);
+    if (schoolEmail && dateOfBirth) {
+      sendVerificationCode(schoolEmail, format(dateOfBirth, "yyyy-MM-dd"));
+    }
   };
 
   const handleVerify = () => {
@@ -28,7 +35,7 @@ export function LewteVerification() {
           </div>
           <CardTitle className="text-xl">Verify Your Student Email</CardTitle>
           <CardDescription>
-            Lewte is exclusively available to verified students. Enter your school email to get started.
+            Lewte is exclusively available to verified students aged 16 and older. Enter your school email and date of birth to get started.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -47,8 +54,41 @@ export function LewteVerification() {
                   />
                 </div>
               </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Date of Birth</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !dateOfBirth && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dateOfBirth ? format(dateOfBirth, "PPP") : "Select your date of birth"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={dateOfBirth}
+                      onSelect={setDateOfBirth}
+                      disabled={(date) =>
+                        date > new Date() || date < new Date("1900-01-01")
+                      }
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                      captionLayout="dropdown-buttons"
+                      fromYear={1950}
+                      toYear={new Date().getFullYear()}
+                    />
+                  </PopoverContent>
+                </Popover>
+                <p className="text-xs text-muted-foreground">You must be at least 16 years old</p>
+              </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
-              <Button onClick={handleSendCode} className="w-full" disabled={!schoolEmail || verificationStatus === "sending"}>
+              <Button onClick={handleSendCode} className="w-full" disabled={!schoolEmail || !dateOfBirth || verificationStatus === "sending"}>
                 {verificationStatus === "sending" ? (
                   <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Sending...</>
                 ) : (
