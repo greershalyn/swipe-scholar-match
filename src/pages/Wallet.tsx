@@ -240,6 +240,9 @@ const WalletPage = () => {
 
         {/* Points History Tab */}
         <TabsContent value="points" className="space-y-6">
+          {/* QR Code Scanner */}
+          <QRCodeScanner onScanned={() => queryClient.invalidateQueries({ queryKey: ['point-transactions'] })} />
+
           {/* Promo Code Redemption */}
           <PromoCodeRedeemer onRedeemed={() => queryClient.invalidateQueries({ queryKey: ['point-transactions'] })} />
 
