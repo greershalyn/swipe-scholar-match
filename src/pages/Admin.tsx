@@ -179,7 +179,8 @@ function CouponsTab() {
 
   async function handleCreate() {
     if (!form.title || !form.merchant_name) return;
-    await create("coupons", form);
+    const submitData = { ...form, expires_at: form.expires_at ? new Date(form.expires_at).toISOString() : null };
+    await create("coupons", submitData);
     toast({ title: "Coupon created" });
     setForm({ title: "", description: "", coupon_code: "", discount_value: "", merchant_name: "", merchant_url: "", category: "", image_url: "", deal_type: "discount", redemption_expiry_days: 30, expires_at: "" });
     setOpen(false);
