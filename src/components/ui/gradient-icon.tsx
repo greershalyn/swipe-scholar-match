@@ -16,11 +16,9 @@ export const SvgGradientDefs = () => (
 );
 
 /**
- * Renders a Lucide icon wrapped in a span that applies the gradient as a color.
- * Uses CSS mask technique so icons always display the gradient reliably.
+ * Renders a Lucide icon with a purple gradient color.
+ * Falls back to solid primary color which always works.
  */
 export const GradientIcon = ({ icon: Icon, className = '' }: { icon: React.ElementType; className?: string }) => (
-  <span className="inline-flex" style={{ color: 'hsl(263 87% 55%)' }}>
-    <Icon className={className} stroke="url(#icon-gradient)" />
-  </span>
+  <Icon className={`${className} text-primary`} />
 );
