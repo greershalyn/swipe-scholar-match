@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Edit, Globe, Tag, ClipboardList, Loader2, Settings, Users, BarChart3, Shield, Lock, ArrowUp, ArrowDown, CheckCircle, Ticket, Award, Trophy, Star, Target, Gift, Calendar, ShoppingBag, Flame, Medal, Heart, Zap, Crown, Gem, Sparkles, GraduationCap, BookOpen, type LucideIcon } from "lucide-react";
+import { Plus, Trash2, Edit, Globe, Tag, ClipboardList, Loader2, Settings, Users, BarChart3, Shield, Lock, ArrowUp, ArrowDown, CheckCircle, Ticket, Award, Trophy, Star, Target, Gift, Calendar, ShoppingBag, Flame, Medal, Heart, Zap, Crown, Gem, Sparkles, GraduationCap, BookOpen, QrCode, type LucideIcon } from "lucide-react";
 import { useAdminManage } from "@/hooks/useAdminManage";
 import { useUserRole } from "@/hooks/useUserRole";
 import { toast } from "@/hooks/use-toast";
@@ -19,6 +19,7 @@ import { GradientIcon } from "@/components/ui/gradient-icon";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import AnalyticsTab from "@/components/admin/AnalyticsTab";
 import UserManagementTab from "@/components/admin/UserManagementTab";
+import QRCodesTab from "@/components/admin/QRCodesTab";
 
 export default function Admin() {
   const { roles, isLoading: rolesLoading, isSuperAdmin, isAdvertiser, isSchoolAdmin, isModerator, isAnyAdmin } = useUserRole();
@@ -82,6 +83,9 @@ export default function Admin() {
           {isSuperAdmin && (
             <TabsTrigger value="badges"><Award className="h-4 w-4 mr-1" /> Badges</TabsTrigger>
           )}
+          {isSuperAdmin && (
+            <TabsTrigger value="qrcodes"><QrCode className="h-4 w-4 mr-1" /> QR Codes</TabsTrigger>
+          )}
           {(isSuperAdmin || isAdvertiser) && (
             <TabsTrigger value="analytics"><BarChart3 className="h-4 w-4 mr-1" /> Analytics</TabsTrigger>
           )}
@@ -104,6 +108,9 @@ export default function Admin() {
         )}
         {isSuperAdmin && (
           <TabsContent value="badges"><BadgesTab /></TabsContent>
+        )}
+        {isSuperAdmin && (
+          <TabsContent value="qrcodes"><QRCodesTab /></TabsContent>
         )}
         {(isSuperAdmin || isAdvertiser) && (
           <TabsContent value="analytics"><AnalyticsTab /></TabsContent>

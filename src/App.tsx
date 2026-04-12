@@ -18,6 +18,7 @@ import SchoolMatchmaker from "./pages/SchoolMatchmaker";
 import Lewte from "./pages/Lewte";
 import Scholarships from "./pages/Scholarships";
 import Admin from "./pages/Admin";
+import QRRedeem from "./pages/QRRedeem";
 import Footer from "./components/Footer";
 import { DashboardNavbar } from "./components/DashboardNavbar";
 import { supabase } from "./integrations/supabase/client";
@@ -63,6 +64,7 @@ const AppContent = () => {
           <Route path="/lewte" element={<Lewte />} />
           <Route path="/scholarships" element={<Scholarships />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/qr/:code" element={<QRRedeem />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
