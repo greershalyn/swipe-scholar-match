@@ -388,6 +388,91 @@ function PromoCodeRedeemer({ onRedeemed }: { onRedeemed: () => void }) {
   );
 }
 
+function QRCodeScanner({ onScanned }: { onScanned: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [manualCode, setManualCode] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  async function handleManualRedeem() {
+    const trimmed = manualCode.trim();
+    if (!trimmed) return;
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("redeem-qr-code", {
+        body: { code: trimmed },
+      });
+      if (error) throw new Error(error.message);
+      if (data?.error) throw new Error(data.error);
+      toast({ title: "QR Code Redeemed!", description: `You earned ${data.points_awarded} points!${data.badge_earned ? " 🏆 Badge earned!" : ""}` });
+      setManualCode("");
+      setOpen(false);
+      onScanned();
+    } catch (err: any) {
+      toast({ title: "Failed", description: err.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handleCameraScan() {
+    // Use the device camera via file input to scan QR codes
+    // For a web app, we prompt the user to enter the code or use their camera app
+    toast({
+      title: "Use your camera app",
+      description: "Open your phone's camera and point it at the QR code. It will open automatically in the app.",
+    });
+  }
+
+  return (
+    <>
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <QrCode className="h-4 w-4" /> Scan QR Code
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-2">
+            <Button variant="outline" className="flex-1" onClick={() => setOpen(true)}>
+              <QrCode className="h-4 w-4 mr-2" /> Enter QR Code
+            </Button>
+            <Button variant="outline" onClick={handleCameraScan}>
+              <Camera className="h-4 w-4" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <QrCode className="h-5 w-5" /> Enter QR Code
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Enter the code from the QR code, or scan it with your phone's camera to open the link directly.
+          </p>
+          <div className="flex gap-2">
+            <Input
+              placeholder="Enter code"
+              value={manualCode}
+              onChange={(e) => setManualCode(e.target.value)}
+              className="font-mono uppercase"
+              onKeyDown={(e) => e.key === "Enter" && handleManualRedeem()}
+            />
+            <Button onClick={handleManualRedeem} disabled={loading || !manualCode.trim()}>
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Redeem"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
 // Re-export RedeemedCoupon type for use elsewhere
 export type { RedeemedCoupon };
 
