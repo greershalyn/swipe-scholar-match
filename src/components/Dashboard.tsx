@@ -41,6 +41,7 @@ interface DashboardCardProps {
   locked?: boolean;
   lockMessage?: string;
   span?: string;
+  bgImage?: string;
 }
 
 function DashboardCard({
@@ -52,6 +53,7 @@ function DashboardCard({
   locked,
   lockMessage,
   span = "",
+  bgImage,
 }: DashboardCardProps) {
   const navigate = useNavigate();
 
