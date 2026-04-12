@@ -157,6 +157,7 @@ export function Dashboard() {
           description="Swipe through scholarships matched to your profile. Save your favorites and apply fast."
           path="/scholarships"
           span="sm:col-span-2 lg:col-span-1"
+          bgImage={scholarshipBg}
         />
 
         {/* Wallet */}
