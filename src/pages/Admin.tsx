@@ -330,11 +330,28 @@ function SurveysTab() {
   }
 
   async function sendSurveyNotifications(surveyId: string, surveyTitle: string, domains: string[]) {
-    // Use admin-manage to get verified students, then create notifications
-    // For simplicity, we use the edge function to handle this
-    const { data: verifications } = await list("student_email_verifications") || { data: [] };
-    // This won't work since student_email_verifications isn't in permissions
-    // Instead, notifications will be created client-side when students load surveys
+    // Get verified student user IDs
+    const allVerifications: any[] = await list("student_email_verifications") || [];
+    const verified = allVerifications.filter((v: any) => v.verified);
+    
+    let targetUsers = verified;
+    if (domains.length > 0) {
+      targetUsers = verified.filter((v: any) => {
+        const emailDomain = v.school_email?.split("@")[1];
+        return domains.includes(emailDomain);
+      });
+    }
+
+    // Create notifications for each target user
+    for (const v of targetUsers) {
+      await create("notifications", {
+        user_id: v.user_id,
+        title: "New Survey Available",
+        message: `"${surveyTitle}" is now available for you to complete.`,
+        type: "survey",
+        reference_id: surveyId,
+      });
+    }
   }
 
   async function handleDelete(id: string) {
