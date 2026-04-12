@@ -16,6 +16,7 @@ import TestPrep from "./pages/TestPrep";
 import FirstGenResources from "./pages/FirstGenResources";
 import SchoolMatchmaker from "./pages/SchoolMatchmaker";
 import Lewte from "./pages/Lewte";
+import Scholarships from "./pages/Scholarships";
 import Admin from "./pages/Admin";
 import Footer from "./components/Footer";
 import { DashboardNavbar } from "./components/DashboardNavbar";
