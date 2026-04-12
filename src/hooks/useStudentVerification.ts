@@ -19,6 +19,20 @@ export function useStudentVerification() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setIsLoading(false); return; }
 
+      // Super admins bypass verification
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "super_admin")
+        .maybeSingle();
+
+      if (roleData) {
+        setIsVerified(true);
+        setIsLoading(false);
+        return;
+      }
+
       const { data } = await supabase
         .from("student_email_verifications")
         .select("verified")
