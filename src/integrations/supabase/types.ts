@@ -883,7 +883,10 @@ export type Database = {
       user_points: {
         Row: {
           created_at: string
+          current_streak: number
           id: string
+          last_checkin_date: string | null
+          longest_streak: number
           reward_points: number
           total_points: number
           updated_at: string
@@ -891,7 +894,10 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          current_streak?: number
           id?: string
+          last_checkin_date?: string | null
+          longest_streak?: number
           reward_points?: number
           total_points?: number
           updated_at?: string
@@ -899,7 +905,10 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          current_streak?: number
           id?: string
+          last_checkin_date?: string | null
+          longest_streak?: number
           reward_points?: number
           total_points?: number
           updated_at?: string
