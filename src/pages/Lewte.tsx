@@ -11,6 +11,7 @@ import { LewteCoupons } from "@/components/lewte/LewteCoupons";
 import { LewteSurveys } from "@/components/lewte/LewteSurveys";
 import { LewteDashboard } from "@/components/lewte/LewteDashboard";
 import { LewteNotifications } from "@/components/lewte/LewteNotifications";
+import { LewteBadges } from "@/components/lewte/LewteBadges";
 import { GradientIcon } from "@/components/ui/gradient-icon";
 
 export default function Lewte() {
@@ -43,6 +44,7 @@ export default function Lewte() {
 
       <LewteNotifications />
       <LewteDashboard />
+      <LewteBadges />
 
       <Tabs defaultValue="coupons" className="space-y-4">
         <TabsList>
