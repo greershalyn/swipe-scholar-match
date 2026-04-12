@@ -81,15 +81,12 @@ export function LewteSurveys() {
     setSurveys(filtered);
 
     // Check completed
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data: responses } = await supabase
-        .from("survey_responses")
-        .select("survey_id")
-        .eq("user_id", user.id);
-      if (responses) {
-        setCompleted(new Set(responses.map((r: any) => r.survey_id)));
-      }
+    const { data: responses } = await supabase
+      .from("survey_responses")
+      .select("survey_id")
+      .eq("user_id", user.id);
+    if (responses) {
+      setCompleted(new Set(responses.map((r: any) => r.survey_id)));
     }
     setLoading(false);
   }
