@@ -324,7 +324,19 @@ function SurveysTab() {
   async function loadQuestions(surveyId: string) {
     setQuestionOpen(surveyId);
     const data = await list("survey_questions");
-    setQuestions((data || []).filter((q: any) => q.survey_id === surveyId));
+    const filtered = (data || []).filter((q: any) => q.survey_id === surveyId);
+    filtered.sort((a: any, b: any) => (a.display_order ?? 0) - (b.display_order ?? 0));
+    setQuestions(filtered);
+  }
+
+  async function moveQuestion(idx: number, direction: "up" | "down") {
+    if ((direction === "up" && idx === 0) || (direction === "down" && idx === questions.length - 1)) return;
+    const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+    const a = questions[idx];
+    const b = questions[swapIdx];
+    await update("survey_questions", a.id, { display_order: swapIdx });
+    await update("survey_questions", b.id, { display_order: idx });
+    if (questionOpen) loadQuestions(questionOpen);
   }
 
   async function addQuestion() {
