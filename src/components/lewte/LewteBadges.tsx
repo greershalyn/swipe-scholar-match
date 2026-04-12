@@ -1,19 +1,30 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Award, Trophy, Star, Target, Gift, Calendar, CheckCircle, ShoppingBag } from "lucide-react";
+import { Award, Trophy, Star, Target, Gift, Calendar, CheckCircle, ShoppingBag, Flame, Medal, Heart, Zap, Crown, Gem, Sparkles, Shield, GraduationCap, BookOpen, type LucideIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
 
-const TRIGGER_ICONS: Record<string, any> = {
-  survey_completion: CheckCircle,
-  points_milestone: Star,
-  scholarship_actions: Target,
-  birthday: Calendar,
-  coupons_redeemed: ShoppingBag,
-  rewards_redeemed: Gift,
-  daily_checkin: Trophy,
+const ICON_MAP: Record<string, LucideIcon> = {
+  trophy: Trophy,
+  star: Star,
+  award: Award,
+  medal: Medal,
+  crown: Crown,
+  gem: Gem,
+  heart: Heart,
+  zap: Zap,
+  flame: Flame,
+  sparkles: Sparkles,
+  target: Target,
+  gift: Gift,
+  calendar: Calendar,
+  "check-circle": CheckCircle,
+  "shopping-bag": ShoppingBag,
+  shield: Shield,
+  "graduation-cap": GraduationCap,
+  "book-open": BookOpen,
 };
 
 export function LewteBadges() {
