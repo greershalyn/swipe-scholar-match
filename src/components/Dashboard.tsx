@@ -60,7 +60,16 @@ function DashboardCard({
       variants={item}
       className={`group relative overflow-hidden rounded-2xl border border-border bg-card shadow-card-modern hover:shadow-glow transition-all duration-300 cursor-pointer ${span}`}
       onClick={() => !locked && navigate(path)}
+      style={bgImage ? {
+        backgroundImage: `url(${bgImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      } : undefined}
     >
+      {bgImage && (
+        <div className="absolute inset-0 bg-background/70 dark:bg-background/80" />
+      )}
+
       {locked && (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-background/80 backdrop-blur-md rounded-2xl">
           <Lock className="h-8 w-8 text-muted-foreground" />
@@ -80,7 +89,7 @@ function DashboardCard({
         </div>
       )}
 
-      <div className={`p-5 sm:p-6 flex flex-col h-full ${locked ? "blur-sm" : ""}`}>
+      <div className={`relative z-[1] p-5 sm:p-6 flex flex-col h-full ${locked ? "blur-sm" : ""}`}>
         <div className="flex items-start justify-between mb-4">
           <GradientIcon icon={icon} className="h-8 w-8 sm:h-10 sm:w-10" />
           <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-200" />
