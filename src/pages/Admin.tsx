@@ -310,7 +310,7 @@ function SurveysTab() {
     if (!form.title) return;
     await create("surveys", form);
     toast({ title: "Survey created" });
-    setForm({ title: "", description: "" });
+    setForm({ title: "", description: "", points: 0 });
     setOpen(false);
     loadSurveys();
   }
