@@ -60,7 +60,7 @@ function DashboardCard({
   return (
     <motion.div
       variants={item}
-      className={`group relative overflow-hidden rounded-2xl border border-border bg-card shadow-card-modern hover:shadow-glow transition-all duration-300 cursor-pointer ${span}`}
+      className={`group relative overflow-hidden rounded-2xl border border-border shadow-card-modern hover:shadow-glow transition-all duration-300 cursor-pointer ${bgImage ? "min-h-[200px]" : "bg-card"} ${span}`}
       onClick={() => !locked && navigate(path)}
       style={bgImage ? {
         backgroundImage: `url(${bgImage})`,
