@@ -5,6 +5,7 @@ import { GradientIcon } from "@/components/ui/gradient-icon";
 import { Button } from "@/components/ui/button";
 import { DeactivateAccountDialog } from "@/components/account/DeactivateAccountDialog";
 import { useAccountActions } from "@/hooks/useAccountActions";
+import { useUserRole } from "@/hooks/useUserRole";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +17,7 @@ import {
 export function DashboardNavbar() {
   const navigate = useNavigate();
   const { handleLogout } = useAccountActions();
+  const { isAnyAdmin } = useUserRole();
   const [showDeactivateDialog, setShowDeactivateDialog] = useState(false);
 
   return (
@@ -42,9 +44,11 @@ export function DashboardNavbar() {
               <DropdownMenuItem onClick={() => navigate("/questionnaire")}>
                 <User className="h-4 w-4 mr-2" /> Update Profile
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/admin")}>
-                <Settings className="h-4 w-4 mr-2" /> Admin
-              </DropdownMenuItem>
+              {isAnyAdmin && (
+                <DropdownMenuItem onClick={() => navigate("/admin")}>
+                  <Settings className="h-4 w-4 mr-2" /> Admin
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout}>
                 <LogOut className="h-4 w-4 mr-2" /> Log Out

@@ -18,6 +18,7 @@ import {
 import { DeactivateAccountDialog } from "@/components/account/DeactivateAccountDialog"
 import { useAccountActions } from "@/hooks/useAccountActions"
 import { GradientIcon } from "@/components/ui/gradient-icon"
+import { useUserRole } from "@/hooks/useUserRole"
 
 import {
   Sidebar,
@@ -45,8 +46,9 @@ const mainNavItems = [
 const resourcesItems = [
   { title: "Financial Education", url: "/financial-education", icon: BookOpen, description: "Learn about college finances" },
   { title: "First-Gen Resources", url: "/first-gen-resources", icon: Users, description: "Support for first-gen students" },
-  { title: "Admin", url: "/admin", icon: Settings, description: "Manage Lewte content" },
 ]
+
+const adminItem = { title: "Admin", url: "/admin", icon: Settings, description: "Manage Lewte content" }
 
 export function DashboardSidebar() {
   const { state, isMobile } = useSidebar()
@@ -56,6 +58,7 @@ export function DashboardSidebar() {
   const collapsed = state === "collapsed" && !isMobile
   const [showDeactivateDialog, setShowDeactivateDialog] = useState(false)
   const { handleLogout } = useAccountActions()
+  const { isAnyAdmin } = useUserRole()
 
   const isActive = (path: string) => {
     if (path === "/" && currentPath === "/") return true
@@ -139,6 +142,26 @@ export function DashboardSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              {isAnyAdmin && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink 
+                      to={adminItem.url} 
+                      className={`${getNavClassName(adminItem.url)} flex items-center p-2 rounded-md text-black hover:bg-primary/5`}
+                    >
+                      <GradientIcon icon={adminItem.icon} className="h-3 w-3 md:h-4 md:w-4" />
+                      {!collapsed && (
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-bold text-xs md:text-sm truncate text-black">{adminItem.title}</span>
+                          <span className="text-xs text-gray-600 hidden md:block">
+                            {adminItem.description}
+                          </span>
+                        </div>
+                      )}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
