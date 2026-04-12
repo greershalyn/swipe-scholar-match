@@ -138,13 +138,17 @@ export default function QRCodesTab() {
                   <Label className="text-xs">Name / Label</Label>
                   <Input placeholder="e.g. Career Fair Check-in" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <Label className="text-xs">Points Per Scan</Label>
+                  <Input type="number" min={1} value={form.points_value} onChange={(e) => setForm({ ...form, points_value: parseInt(e.target.value) || 0 })} />
+                </div>
+
+                {/* Per-User Limits */}
+                <div className="border rounded-lg p-3 bg-muted/30 space-y-2">
+                  <p className="text-xs font-semibold text-foreground">Per-User Limits</p>
+                  <p className="text-xs text-muted-foreground">How often each individual student can scan this code</p>
                   <div className="space-y-1">
-                    <Label className="text-xs">Points Per Scan</Label>
-                    <Input type="number" min={1} value={form.points_value} onChange={(e) => setForm({ ...form, points_value: parseInt(e.target.value) || 0 })} />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs">Scan Limit Type</Label>
+                    <Label className="text-xs">Frequency</Label>
                     <Select value={form.redemption_limit_type} onValueChange={(v) => setForm({ ...form, redemption_limit_type: v })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
@@ -154,21 +158,27 @@ export default function QRCodesTab() {
                       </SelectContent>
                     </Select>
                   </div>
+                  {form.redemption_limit_type === "lifetime_limit" && (
+                    <div className="space-y-1">
+                      <Label className="text-xs">Max Scans Per User</Label>
+                      <Input type="number" min={1} value={form.redemption_limit_count} onChange={(e) => setForm({ ...form, redemption_limit_count: parseInt(e.target.value) || 1 })} />
+                    </div>
+                  )}
                 </div>
-                {form.redemption_limit_type === "lifetime_limit" && (
-                  <div className="space-y-1">
-                    <Label className="text-xs">Max Scans Per User</Label>
-                    <Input type="number" min={1} value={form.redemption_limit_count} onChange={(e) => setForm({ ...form, redemption_limit_count: parseInt(e.target.value) || 1 })} />
-                  </div>
-                )}
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-1">
-                    <Label className="text-xs">Max Total Redemptions (optional)</Label>
-                    <Input type="number" min={1} placeholder="No limit" value={form.max_total_redemptions} onChange={(e) => setForm({ ...form, max_total_redemptions: e.target.value })} />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs">Expiration (optional)</Label>
-                    <Input type="date" value={form.expires_at} onChange={(e) => setForm({ ...form, expires_at: e.target.value })} />
+
+                {/* Global Limits */}
+                <div className="border rounded-lg p-3 bg-muted/30 space-y-2">
+                  <p className="text-xs font-semibold text-foreground">Global Limits (All Users)</p>
+                  <p className="text-xs text-muted-foreground">Limits that apply across all students combined</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Max Total Redemptions</Label>
+                      <Input type="number" min={1} placeholder="Unlimited" value={form.max_total_redemptions} onChange={(e) => setForm({ ...form, max_total_redemptions: e.target.value })} />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Expiration Date</Label>
+                      <Input type="date" value={form.expires_at} onChange={(e) => setForm({ ...form, expires_at: e.target.value })} />
+                    </div>
                   </div>
                 </div>
                 <div className="border rounded-lg p-3 bg-muted/30 space-y-2">
