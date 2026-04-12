@@ -273,16 +273,58 @@ function CouponsTab() {
                     <img src={form.image_url} alt="Preview" className="max-h-full object-contain" onError={(e) => (e.currentTarget.style.display = "none")} />
                   </div>
                 )}
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-1">
-                    <Label className="text-xs">Coupon Expiration</Label>
-                    <Input type="date" value={form.expires_at} onChange={(e) => setForm({ ...form, expires_at: e.target.value })} />
+                {/* Per-User Limits */}
+                <div className="space-y-3 border rounded-lg p-3 bg-muted/30">
+                  <p className="text-xs font-medium text-muted-foreground">Per-User Limits</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Redemption Frequency</Label>
+                      <Select value={form.redemption_limit_type} onValueChange={(v) => setForm({ ...form, redemption_limit_type: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="once">Once ever</SelectItem>
+                          <SelectItem value="daily">Once per day</SelectItem>
+                          <SelectItem value="weekly">Once per week</SelectItem>
+                          <SelectItem value="monthly">Once per month</SelectItem>
+                          <SelectItem value="lifetime_limit">Limited total</SelectItem>
+                          <SelectItem value="unlimited">Unlimited</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {form.redemption_limit_type === "lifetime_limit" && (
+                      <div className="space-y-1">
+                        <Label className="text-xs">Max Per User</Label>
+                        <Input type="number" min={1} value={form.redemption_limit_count} onChange={(e) => setForm({ ...form, redemption_limit_count: parseInt(e.target.value) || 1 })} />
+                      </div>
+                    )}
                   </div>
                   <div className="space-y-1">
                     <Label className="text-xs">Days to Use After Saving</Label>
                     <Input type="number" min={1} max={365} value={form.redemption_expiry_days} onChange={(e) => setForm({ ...form, redemption_expiry_days: parseInt(e.target.value) || 30 })} />
                   </div>
                 </div>
+
+                {/* Global Limits */}
+                <div className="space-y-3 border rounded-lg p-3 bg-muted/30">
+                  <p className="text-xs font-medium text-muted-foreground">Global Limits</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Coupon Expiration</Label>
+                      <Input type="date" value={form.expires_at} onChange={(e) => setForm({ ...form, expires_at: e.target.value })} />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Max Total Redemptions</Label>
+                      <Input type="number" min={1} placeholder="Unlimited" value={form.max_total_redemptions} onChange={(e) => setForm({ ...form, max_total_redemptions: e.target.value })} />
+                    </div>
+                  </div>
+                  {form.deal_type === "free_item" && (
+                    <div className="space-y-1">
+                      <Label className="text-xs">Quantity in Stock</Label>
+                      <Input type="number" min={0} placeholder="Unlimited" value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} />
+                    </div>
+                  )}
+                </div>
+
                 {form.deal_type === "free_item" && (
                   <div className="space-y-3 border rounded-lg p-3 bg-muted/30">
                     <p className="text-xs font-medium text-muted-foreground">Reward Point Redemption (optional)</p>
