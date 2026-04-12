@@ -61,6 +61,7 @@ const AppContent = () => {
           <Route path="/first-gen-resources" element={<FirstGenResources />} />
           <Route path="/school-matchmaker" element={<SchoolMatchmaker />} />
           <Route path="/lewte" element={<Lewte />} />
+          <Route path="/scholarships" element={<Scholarships />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
