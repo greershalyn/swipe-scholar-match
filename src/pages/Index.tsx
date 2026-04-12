@@ -249,7 +249,7 @@ const Index = () => {
             SwipeScholar
           </h1>
           <p className="text-xs sm:text-sm md:text-base lg:text-2xl text-foreground mb-4 md:mb-8 leading-relaxed max-w-xs sm:max-w-md md:max-w-4xl mx-auto px-2">
-            Find Your Perfect Scholarship Match with a Simple Swipe! Join students across the country who are securing their funding through SwipeScholar.
+            Built to make education more accessible, this is your all-in-one hub for scholarships, student savings, and rewards. Everything you need to afford and navigate college, in one place.
           </p>
           {!user && (
             <Button 
