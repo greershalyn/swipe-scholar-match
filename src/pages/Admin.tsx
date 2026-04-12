@@ -450,6 +450,11 @@ function SurveysTab() {
                     <Plus className="h-3 w-3 mr-1" /> Add Question
                   </Button>
                 </div>
+                <div className="flex justify-end border-t pt-3">
+                  <Button variant="outline" size="sm" onClick={() => setQuestionOpen(null)}>
+                    <CheckCircle className="h-3 w-3 mr-1" /> Done
+                  </Button>
+                </div>
               </CardContent>
             )}
           </Card>
