@@ -298,7 +298,9 @@ function SurveysTab() {
   const { list, create, update, remove, isLoading } = useAdminManage();
   const [surveys, setSurveys] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ title: "", description: "", points: 0 });
+  const [form, setForm] = useState({ title: "", description: "", points: 0, target_audience: "all" });
+  const [selectedDomains, setSelectedDomains] = useState<string[]>([]);
+  const [allDomains, setAllDomains] = useState<any[]>([]);
   const [questionOpen, setQuestionOpen] = useState<string | null>(null);
   const [questions, setQuestions] = useState<any[]>([]);
   const [qForm, setQForm] = useState({ question_text: "", question_type: "text", options: "", is_required: true, display_order: 0 });
