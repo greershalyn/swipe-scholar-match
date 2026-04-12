@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -424,6 +425,35 @@ function SurveysTab() {
                   <Input type="number" min={0} max={100} placeholder="0" value={form.points} onChange={(e) => setForm({ ...form, points: parseInt(e.target.value) || 0 })} />
                   <p className="text-xs text-muted-foreground">Points earned by students for completing this survey (max 100)</p>
                 </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Target Audience</Label>
+                  <Select value={form.target_audience} onValueChange={(v) => { setForm({ ...form, target_audience: v }); if (v === "all") setSelectedDomains([]); }}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Verified Students</SelectItem>
+                      <SelectItem value="select_schools">Select Schools Only</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {form.target_audience === "select_schools" && (
+                  <div className="space-y-2 border rounded-md p-3 max-h-40 overflow-y-auto">
+                    <Label className="text-xs font-medium">Select Schools</Label>
+                    {allDomains.map((d: any) => (
+                      <div key={d.id} className="flex items-center gap-2">
+                        <Checkbox
+                          id={`domain-${d.id}`}
+                          checked={selectedDomains.includes(d.domain)}
+                          onCheckedChange={(checked) => {
+                            if (checked) setSelectedDomains([...selectedDomains, d.domain]);
+                            else setSelectedDomains(selectedDomains.filter((sd) => sd !== d.domain));
+                          }}
+                        />
+                        <Label htmlFor={`domain-${d.id}`} className="text-sm">{d.school_name} ({d.domain})</Label>
+                      </div>
+                    ))}
+                    {allDomains.length === 0 && <p className="text-xs text-muted-foreground">No school domains configured</p>}
+                  </div>
+                )}
                 <Button onClick={handleCreate} className="w-full" disabled={isLoading}>Create Survey</Button>
               </div>
             </DialogContent>
