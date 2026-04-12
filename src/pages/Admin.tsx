@@ -724,6 +724,27 @@ const TRIGGER_TYPES = [
   { value: "daily_checkin", label: "Daily Check-ins" },
 ];
 
+const BADGE_ICONS: { value: string; label: string; icon: LucideIcon }[] = [
+  { value: "trophy", label: "Trophy", icon: Trophy },
+  { value: "star", label: "Star", icon: Star },
+  { value: "award", label: "Award", icon: Award },
+  { value: "medal", label: "Medal", icon: Medal },
+  { value: "crown", label: "Crown", icon: Crown },
+  { value: "gem", label: "Gem", icon: Gem },
+  { value: "heart", label: "Heart", icon: Heart },
+  { value: "zap", label: "Zap", icon: Zap },
+  { value: "flame", label: "Flame", icon: Flame },
+  { value: "sparkles", label: "Sparkles", icon: Sparkles },
+  { value: "target", label: "Target", icon: Target },
+  { value: "gift", label: "Gift", icon: Gift },
+  { value: "calendar", label: "Calendar", icon: Calendar },
+  { value: "check-circle", label: "Check", icon: CheckCircle },
+  { value: "shopping-bag", label: "Shop", icon: ShoppingBag },
+  { value: "shield", label: "Shield", icon: Shield },
+  { value: "graduation-cap", label: "Grad Cap", icon: GraduationCap },
+  { value: "book-open", label: "Book", icon: BookOpen },
+];
+
 function BadgesTab() {
   const { isLoading } = useAdminManage();
   const [badges, setBadges] = useState<any[]>([]);
