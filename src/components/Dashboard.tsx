@@ -6,6 +6,7 @@ import scholarshipBg from "@/assets/scholarship-bg.png";
 import walletBg from "@/assets/wallet-bg.png";
 import lewteBg from "@/assets/lewte-bg.png";
 import essayBg from "@/assets/essay-bg.png";
+import testprepBg from "@/assets/testprep-bg.png";
 import {
   GraduationCap,
   WalletIcon,
@@ -203,6 +204,7 @@ export function Dashboard() {
           cta="Boost your scores"
           description="Practice questions, study plans, and strategies for the SAT and ACT."
           path="/test-prep"
+          bgImage={testprepBg}
         />
 
         {/* School Matchmaker */}
