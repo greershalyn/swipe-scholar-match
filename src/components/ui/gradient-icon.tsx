@@ -17,8 +17,25 @@ export const SvgGradientDefs = () => (
 
 /**
  * Renders a Lucide icon with the purple-to-magenta gradient stroke.
- * Usage: <GradientIcon icon={GraduationCap} className="h-5 w-5" />
+ * Each icon carries its own gradient def so it works regardless of DOM context.
  */
-export const GradientIcon = ({ icon: Icon, className = '' }: { icon: React.ElementType; className?: string }) => (
-  <Icon className={className} style={{ stroke: 'url(#icon-gradient)' }} />
-);
+let gradientIdCounter = 0;
+
+export const GradientIcon = ({ icon: Icon, className = '' }: { icon: React.ElementType; className?: string }) => {
+  const id = React.useId();
+  const gradientId = `icon-grad-${id}`;
+
+  return (
+    <Icon
+      className={className}
+      style={{ stroke: `url(#${gradientId})` }}
+    >
+      <defs>
+        <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="hsl(263 87% 55%)" />
+          <stop offset="100%" stopColor="hsl(290 80% 55%)" />
+        </linearGradient>
+      </defs>
+    </Icon>
+  );
+};
