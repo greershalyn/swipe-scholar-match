@@ -298,7 +298,7 @@ function SurveysTab() {
   const { list, create, update, remove, isLoading } = useAdminManage();
   const [surveys, setSurveys] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ title: "", description: "" });
+  const [form, setForm] = useState({ title: "", description: "", points: 0 });
   const [questionOpen, setQuestionOpen] = useState<string | null>(null);
   const [questions, setQuestions] = useState<any[]>([]);
   const [qForm, setQForm] = useState({ question_text: "", question_type: "text", options: "", is_required: true, display_order: 0 });
@@ -310,7 +310,7 @@ function SurveysTab() {
     if (!form.title) return;
     await create("surveys", form);
     toast({ title: "Survey created" });
-    setForm({ title: "", description: "" });
+    setForm({ title: "", description: "", points: 0 });
     setOpen(false);
     loadSurveys();
   }
@@ -380,6 +380,11 @@ function SurveysTab() {
               <div className="space-y-3">
                 <Input placeholder="Survey Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
                 <Textarea placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+                <div className="space-y-1">
+                  <Label className="text-xs">Points for Completion</Label>
+                  <Input type="number" min={0} max={100} placeholder="0" value={form.points} onChange={(e) => setForm({ ...form, points: parseInt(e.target.value) || 0 })} />
+                  <p className="text-xs text-muted-foreground">Points earned by students for completing this survey (max 100)</p>
+                </div>
                 <Button onClick={handleCreate} className="w-full" disabled={isLoading}>Create Survey</Button>
               </div>
             </DialogContent>
@@ -394,6 +399,7 @@ function SurveysTab() {
                 <div>
                   <CardTitle className="text-base">{s.title}</CardTitle>
                   {s.description && <CardDescription className="text-xs">{s.description}</CardDescription>}
+                  {s.points > 0 && <Badge variant="secondary" className="text-xs mt-1 w-fit">🎯 {s.points} pts</Badge>}
                 </div>
                 <div className="flex gap-1">
                   <Button variant="outline" size="sm" onClick={() => loadQuestions(s.id)}>

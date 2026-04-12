@@ -9,6 +9,7 @@ import { useStudentVerification } from "@/hooks/useStudentVerification";
 import { LewteVerification } from "@/components/lewte/LewteVerification";
 import { LewteCoupons } from "@/components/lewte/LewteCoupons";
 import { LewteSurveys } from "@/components/lewte/LewteSurveys";
+import { LewteDashboard } from "@/components/lewte/LewteDashboard";
 import { GradientIcon } from "@/components/ui/gradient-icon";
 
 export default function Lewte() {
@@ -38,6 +39,8 @@ export default function Lewte() {
           <ShieldCheck className="h-3 w-3 mr-1" /> Verified Student
         </Badge>
       </div>
+
+      <LewteDashboard />
 
       <Tabs defaultValue="coupons" className="space-y-4">
         <TabsList>
