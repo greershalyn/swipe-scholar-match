@@ -8,6 +8,7 @@ import lewteBg from "@/assets/lewte-bg.png";
 import essayBg from "@/assets/essay-bg.png";
 import testprepBg from "@/assets/testprep-bg.png";
 import schoolBg from "@/assets/school-bg.png";
+import financialBg from "@/assets/financial-bg.png";
 import {
   GraduationCap,
   WalletIcon,
@@ -225,6 +226,7 @@ export function Dashboard() {
           cta="Learn to manage college costs"
           description="Understand FAFSA, student loans, budgeting, and financial planning for college."
           path="/financial-education"
+          bgImage={financialBg}
         />
 
         {/* First-Gen Resources */}
