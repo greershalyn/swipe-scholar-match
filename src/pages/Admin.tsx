@@ -169,6 +169,7 @@ function CouponsTab() {
   const [form, setForm] = useState({
     title: "", description: "", coupon_code: "", discount_value: "",
     merchant_name: "", merchant_url: "", category: "", image_url: "", deal_type: "discount",
+    redemption_expiry_days: 30, expires_at: "",
   });
 
   const categories = ["Food & Drink", "Clothing", "Tech", "Entertainment", "Health & Beauty", "Travel", "Education", "Other"];
@@ -180,7 +181,7 @@ function CouponsTab() {
     if (!form.title || !form.merchant_name) return;
     await create("coupons", form);
     toast({ title: "Coupon created" });
-    setForm({ title: "", description: "", coupon_code: "", discount_value: "", merchant_name: "", merchant_url: "", category: "", image_url: "", deal_type: "discount" });
+    setForm({ title: "", description: "", coupon_code: "", discount_value: "", merchant_name: "", merchant_url: "", category: "", image_url: "", deal_type: "discount", redemption_expiry_days: 30, expires_at: "" });
     setOpen(false);
     loadCoupons();
   }
