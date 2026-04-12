@@ -75,18 +75,57 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Check if already redeemed
-    const { data: existing } = await adminClient
+    // Check global cap
+    if (coupon.max_total_redemptions && coupon.current_redemptions >= coupon.max_total_redemptions) {
+      return new Response(JSON.stringify({ error: "This coupon has reached its maximum number of redemptions" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Check quantity (stock)
+    if (coupon.quantity !== null && coupon.quantity <= 0) {
+      return new Response(JSON.stringify({ error: "This item is out of stock" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Check per-user frequency limit
+    const limitType = coupon.redemption_limit_type || "once";
+    const { data: userRedemptions } = await adminClient
       .from("redeemed_coupons")
-      .select("id")
+      .select("id, created_at")
       .eq("user_id", user.id)
       .eq("coupon_id", coupon.id)
-      .limit(1);
+      .order("created_at", { ascending: false });
 
-    if (existing && existing.length > 0) {
+    const redemptionCount = userRedemptions?.length || 0;
+
+    if (limitType === "once" && redemptionCount > 0) {
       return new Response(JSON.stringify({ error: "You have already redeemed this coupon" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    if (limitType === "lifetime_limit" && redemptionCount >= (coupon.redemption_limit_count || 1)) {
+      return new Response(JSON.stringify({ error: `You have reached the maximum of ${coupon.redemption_limit_count} redemptions for this coupon` }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (["daily", "weekly", "monthly"].includes(limitType) && userRedemptions && userRedemptions.length > 0) {
+      const latest = new Date(userRedemptions[0].created_at);
+      const now = new Date();
+      let msWindow = 0;
+      if (limitType === "daily") msWindow = 24 * 60 * 60 * 1000;
+      else if (limitType === "weekly") msWindow = 7 * 24 * 60 * 60 * 1000;
+      else if (limitType === "monthly") msWindow = 30 * 24 * 60 * 60 * 1000;
+
+      if (now.getTime() - latest.getTime() < msWindow) {
+        const label = limitType === "daily" ? "today" : limitType === "weekly" ? "this week" : "this month";
+        return new Response(JSON.stringify({ error: `You have already redeemed this coupon ${label}` }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     // Check user has enough reward points
@@ -137,6 +176,13 @@ Deno.serve(async (req) => {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Increment global redemption counter and decrement quantity
+    const updateData: any = { current_redemptions: (coupon.current_redemptions || 0) + 1 };
+    if (coupon.quantity !== null) {
+      updateData.quantity = coupon.quantity - 1;
+    }
+    await adminClient.from("coupons").update(updateData).eq("id", coupon.id);
 
     // Log the transaction
     await adminClient.from("point_transactions").insert({
