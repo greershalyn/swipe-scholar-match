@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { supabase } from "@/integrations/supabase/client";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -555,6 +556,132 @@ function SurveysTab() {
             )}
           </Card>
         ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+function PromoCodesTab() {
+  const { isLoading } = useAdminManage();
+  const [codes, setCodes] = useState<any[]>([]);
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ code: "", description: "", points_value: 100, max_redemptions: "", expires_at: "" });
+
+  useEffect(() => { loadCodes(); }, []);
+
+  async function loadCodes() {
+    const { data } = await supabase.functions.invoke("admin-manage", { body: { table: "promo_codes", action: "list" } });
+    setCodes(data?.data || []);
+  }
+
+  async function handleCreate() {
+    if (!form.code || !form.points_value) return;
+    const submitData: any = {
+      code: form.code.toUpperCase().trim(),
+      description: form.description || null,
+      points_value: form.points_value,
+      max_redemptions: form.max_redemptions ? parseInt(form.max_redemptions) : null,
+      expires_at: form.expires_at ? new Date(form.expires_at).toISOString() : null,
+    };
+    const { data } = await supabase.functions.invoke("admin-manage", { body: { table: "promo_codes", action: "create", data: submitData } });
+    if (data?.error) {
+      toast({ title: "Error", description: data.error, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Promo code created" });
+    setForm({ code: "", description: "", points_value: 100, max_redemptions: "", expires_at: "" });
+    setOpen(false);
+    loadCodes();
+  }
+
+  async function handleDelete(id: string) {
+    await supabase.functions.invoke("admin-manage", { body: { table: "promo_codes", action: "delete", id } });
+    toast({ title: "Promo code deleted" });
+    loadCodes();
+  }
+
+  async function handleToggle(id: string, currentActive: boolean) {
+    await supabase.functions.invoke("admin-manage", { body: { table: "promo_codes", action: "update", id, data: { is_active: !currentActive } } });
+    loadCodes();
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Promotional Codes</CardTitle>
+            <CardDescription>Create codes that students can redeem for points</CardDescription>
+          </div>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button><Plus className="h-4 w-4 mr-1" /> New Code</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle>Create Promo Code</DialogTitle></DialogHeader>
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <Label className="text-xs">Code (what students will enter)</Label>
+                  <Input placeholder="e.g. WELCOME50" value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} className="font-mono uppercase" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Description (optional)</Label>
+                  <Input placeholder="Welcome bonus for new students" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Points Value</Label>
+                    <Input type="number" min={1} value={form.points_value} onChange={(e) => setForm({ ...form, points_value: parseInt(e.target.value) || 0 })} />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Max Redemptions (blank = unlimited)</Label>
+                    <Input type="number" min={1} placeholder="Unlimited" value={form.max_redemptions} onChange={(e) => setForm({ ...form, max_redemptions: e.target.value })} />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Expiration Date (optional)</Label>
+                  <Input type="date" value={form.expires_at} onChange={(e) => setForm({ ...form, expires_at: e.target.value })} />
+                </div>
+                <Button onClick={handleCreate} className="w-full" disabled={isLoading}>Create Promo Code</Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Code</TableHead>
+              <TableHead>Points</TableHead>
+              <TableHead>Redemptions</TableHead>
+              <TableHead>Expires</TableHead>
+              <TableHead>Active</TableHead>
+              <TableHead className="w-20">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {codes.map((c) => (
+              <TableRow key={c.id}>
+                <TableCell><code className="font-mono text-sm bg-muted px-2 py-1 rounded">{c.code}</code></TableCell>
+                <TableCell className="font-semibold">{c.points_value} pts</TableCell>
+                <TableCell>{c.current_redemptions}{c.max_redemptions ? ` / ${c.max_redemptions}` : ""}</TableCell>
+                <TableCell>{c.expires_at ? new Date(c.expires_at).toLocaleDateString() : "Never"}</TableCell>
+                <TableCell>
+                  <Switch checked={c.is_active} onCheckedChange={() => handleToggle(c.id, c.is_active)} />
+                </TableCell>
+                <TableCell>
+                  <Button variant="ghost" size="sm" onClick={() => handleDelete(c.id)}>
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+            {codes.length === 0 && (
+              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No promo codes yet</TableCell></TableRow>
+            )}
+          </TableBody>
+        </Table>
       </CardContent>
     </Card>
   );
