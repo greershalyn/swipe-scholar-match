@@ -14,6 +14,7 @@ interface Survey {
   id: string;
   title: string;
   description: string | null;
+  points: number;
 }
 
 interface SurveyQuestion {

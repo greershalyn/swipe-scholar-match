@@ -9,6 +9,7 @@ import { useStudentVerification } from "@/hooks/useStudentVerification";
 import { LewteVerification } from "@/components/lewte/LewteVerification";
 import { LewteCoupons } from "@/components/lewte/LewteCoupons";
 import { LewteSurveys } from "@/components/lewte/LewteSurveys";
+import { LewteDashboard } from "@/components/lewte/LewteDashboard";
 import { GradientIcon } from "@/components/ui/gradient-icon";
 
 export default function Lewte() {
