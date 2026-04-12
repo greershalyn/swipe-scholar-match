@@ -83,6 +83,9 @@ export default function Admin() {
           {isSuperAdmin && (
             <TabsTrigger value="badges"><Award className="h-4 w-4 mr-1" /> Badges</TabsTrigger>
           )}
+          {isSuperAdmin && (
+            <TabsTrigger value="qrcodes"><QrCode className="h-4 w-4 mr-1" /> QR Codes</TabsTrigger>
+          )}
           {(isSuperAdmin || isAdvertiser) && (
             <TabsTrigger value="analytics"><BarChart3 className="h-4 w-4 mr-1" /> Analytics</TabsTrigger>
           )}
@@ -105,6 +108,9 @@ export default function Admin() {
         )}
         {isSuperAdmin && (
           <TabsContent value="badges"><BadgesTab /></TabsContent>
+        )}
+        {isSuperAdmin && (
+          <TabsContent value="qrcodes"><QRCodesTab /></TabsContent>
         )}
         {(isSuperAdmin || isAdvertiser) && (
           <TabsContent value="analytics"><AnalyticsTab /></TabsContent>
