@@ -256,16 +256,16 @@ const WalletPage = () => {
               {pointTransactions.map((tx) => (
                 <div key={tx.id} className="flex items-center justify-between p-3 border rounded-lg bg-card">
                   <div className="flex items-center gap-3">
-                    <div className={`h-8 w-8 rounded-full flex items-center justify-center ${tx.transaction_type === "earned" ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`}>
-                      {tx.transaction_type === "earned" ? "+" : "−"}
+                    <div className={`h-8 w-8 rounded-full flex items-center justify-center ${tx.transaction_type === "spent" ? "bg-orange-100 text-orange-700" : "bg-green-100 text-green-700"}`}>
+                      {tx.transaction_type === "spent" ? "−" : "+"}
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-foreground">{tx.description || (tx.transaction_type === "earned" ? "Points Earned" : "Points Spent")}</p>
+                      <p className="text-sm font-medium text-foreground">{tx.description || (tx.transaction_type === "spent" ? "Points Spent" : "Points Earned")}</p>
                       <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(tx.created_at), { addSuffix: true })}</p>
                     </div>
                   </div>
-                  <span className={`font-semibold ${tx.transaction_type === "earned" ? "text-green-700" : "text-orange-700"}`}>
-                    {tx.transaction_type === "earned" ? "+" : "−"}{tx.amount} pts
+                  <span className={`font-semibold ${tx.transaction_type === "spent" ? "text-orange-700" : "text-green-700"}`}>
+                    {tx.transaction_type === "spent" ? "−" : "+"}{tx.amount} pts
                   </span>
                 </div>
               ))}
