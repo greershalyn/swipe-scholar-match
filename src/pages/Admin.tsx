@@ -713,3 +713,155 @@ function PromoCodesTab() {
     </Card>
   );
 }
+
+const TRIGGER_TYPES = [
+  { value: "survey_completion", label: "Surveys Completed" },
+  { value: "points_milestone", label: "Points Milestone" },
+  { value: "scholarship_actions", label: "Scholarships Saved/Applied" },
+  { value: "birthday", label: "Birthday", noThreshold: true },
+  { value: "coupons_redeemed", label: "Coupons Redeemed" },
+  { value: "rewards_redeemed", label: "Rewards Redeemed" },
+  { value: "daily_checkin", label: "Daily Check-ins" },
+];
+
+function BadgesTab() {
+  const { isLoading } = useAdminManage();
+  const [badges, setBadges] = useState<any[]>([]);
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ name: "", description: "", icon: "trophy", points_value: 10, trigger_type: "survey_completion", trigger_threshold: 1 });
+
+  useEffect(() => { loadBadges(); }, []);
+
+  async function loadBadges() {
+    const { data } = await supabase.functions.invoke("admin-manage", { body: { table: "badges", action: "list" } });
+    setBadges(data?.data || []);
+  }
+
+  async function handleCreate() {
+    if (!form.name || !form.trigger_type) return;
+    const triggerInfo = TRIGGER_TYPES.find(t => t.value === form.trigger_type);
+    const submitData = {
+      ...form,
+      trigger_threshold: triggerInfo?.noThreshold ? 1 : form.trigger_threshold,
+    };
+    const { data } = await supabase.functions.invoke("admin-manage", { body: { table: "badges", action: "create", data: submitData } });
+    if (data?.error) {
+      toast({ title: "Error", description: data.error, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Badge created" });
+    setForm({ name: "", description: "", icon: "trophy", points_value: 10, trigger_type: "survey_completion", trigger_threshold: 1 });
+    setOpen(false);
+    loadBadges();
+  }
+
+  async function handleDelete(id: string) {
+    await supabase.functions.invoke("admin-manage", { body: { table: "badges", action: "delete", id } });
+    toast({ title: "Badge deleted" });
+    loadBadges();
+  }
+
+  async function handleToggle(id: string, currentActive: boolean) {
+    await supabase.functions.invoke("admin-manage", { body: { table: "badges", action: "update", id, data: { is_active: !currentActive } } });
+    loadBadges();
+  }
+
+  const selectedTrigger = TRIGGER_TYPES.find(t => t.value === form.trigger_type);
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Badges & Achievements</CardTitle>
+            <CardDescription>Create badges that students earn through various activities</CardDescription>
+          </div>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button><Plus className="h-4 w-4 mr-1" /> New Badge</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle>Create Badge</DialogTitle></DialogHeader>
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <Label className="text-xs">Badge Name</Label>
+                  <Input placeholder="e.g. Survey Star" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Description</Label>
+                  <Input placeholder="Awarded for completing 5 surveys" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Trigger Type</Label>
+                  <Select value={form.trigger_type} onValueChange={(v) => setForm({ ...form, trigger_type: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {TRIGGER_TYPES.map(t => (
+                        <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {!selectedTrigger?.noThreshold && (
+                  <div className="space-y-1">
+                    <Label className="text-xs">Threshold (how many to trigger)</Label>
+                    <Input type="number" min={1} value={form.trigger_threshold} onChange={(e) => setForm({ ...form, trigger_threshold: parseInt(e.target.value) || 1 })} />
+                  </div>
+                )}
+                <div className="space-y-1">
+                  <Label className="text-xs">Points Awarded</Label>
+                  <Input type="number" min={0} value={form.points_value} onChange={(e) => setForm({ ...form, points_value: parseInt(e.target.value) || 0 })} />
+                </div>
+                <Button onClick={handleCreate} className="w-full" disabled={isLoading}>Create Badge</Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Trigger</TableHead>
+              <TableHead>Threshold</TableHead>
+              <TableHead>Points</TableHead>
+              <TableHead>Active</TableHead>
+              <TableHead className="w-20">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {badges.map((b) => (
+              <TableRow key={b.id}>
+                <TableCell>
+                  <div>
+                    <span className="font-medium">{b.name}</span>
+                    {b.description && <p className="text-xs text-muted-foreground">{b.description}</p>}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Badge variant="outline" className="text-xs">
+                    {TRIGGER_TYPES.find(t => t.value === b.trigger_type)?.label || b.trigger_type}
+                  </Badge>
+                </TableCell>
+                <TableCell>{b.trigger_threshold}</TableCell>
+                <TableCell className="font-semibold">{b.points_value} pts</TableCell>
+                <TableCell>
+                  <Switch checked={b.is_active} onCheckedChange={() => handleToggle(b.id, b.is_active)} />
+                </TableCell>
+                <TableCell>
+                  <Button variant="ghost" size="sm" onClick={() => handleDelete(b.id)}>
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+            {badges.length === 0 && (
+              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No badges yet</TableCell></TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  );
+}
