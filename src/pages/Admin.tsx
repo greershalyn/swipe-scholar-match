@@ -295,7 +295,7 @@ function CouponsTab() {
 }
 
 function SurveysTab() {
-  const { list, create, remove, isLoading } = useAdminManage();
+  const { list, create, update, remove, isLoading } = useAdminManage();
   const [surveys, setSurveys] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ title: "", description: "" });
