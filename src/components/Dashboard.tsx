@@ -9,6 +9,7 @@ import essayBg from "@/assets/essay-bg.png";
 import testprepBg from "@/assets/testprep-bg.png";
 import schoolBg from "@/assets/school-bg.png";
 import financialBg from "@/assets/financial-bg.png";
+import firstgenBg from "@/assets/firstgen-bg.png";
 import {
   GraduationCap,
   WalletIcon,
@@ -236,7 +237,7 @@ export function Dashboard() {
           cta="You're not alone"
           description="Guides, checklists, and community support designed for first-generation students."
           path="/first-gen-resources"
-          bgImage={financialBg}
+          bgImage={firstgenBg}
         />
       </motion.div>
     </div>
