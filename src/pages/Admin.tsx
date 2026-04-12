@@ -312,7 +312,8 @@ function SurveysTab() {
     if (!form.title) return;
     await create("surveys", form);
     toast({ title: "Survey created" });
-    setForm({ title: "", description: "", points: 0 });
+    setForm({ title: "", description: "", points: 0, target_audience: "all" });
+    setSelectedDomains([]);
     setOpen(false);
     loadSurveys();
   }
