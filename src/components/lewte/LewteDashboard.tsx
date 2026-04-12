@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Star, Gift, TrendingUp, CalendarCheck, Loader2 } from "lucide-react";
+import { Star, Gift, TrendingUp, CalendarCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -17,62 +16,44 @@ export function LewteDashboard() {
   const [points, setPoints] = useState<UserPoints | null>(null);
   const [loading, setLoading] = useState(true);
   const [checkedInToday, setCheckedInToday] = useState(false);
-  const [checkingIn, setCheckingIn] = useState(false);
 
   useEffect(() => {
-    fetchData();
+    initDashboard();
   }, []);
 
-  async function fetchData() {
+  async function initDashboard() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // Fetch points and today's check-in status in parallel
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
 
     const [pointsRes, checkinRes] = await Promise.all([
-      supabase
-        .from("user_points")
-        .select("total_points, reward_points")
-        .eq("user_id", user.id)
-        .maybeSingle(),
-      supabase
-        .from("point_transactions")
-        .select("id")
-        .eq("user_id", user.id)
-        .eq("transaction_type", "checkin")
-        .gte("created_at", todayStart.toISOString())
-        .limit(1),
+      supabase.from("user_points").select("total_points, reward_points").eq("user_id", user.id).maybeSingle(),
+      supabase.from("point_transactions").select("id").eq("user_id", user.id).eq("transaction_type", "checkin").gte("created_at", todayStart.toISOString()).limit(1),
     ]);
 
     setPoints(pointsRes.data || { total_points: 0, reward_points: 0 });
-    setCheckedInToday((checkinRes.data?.length ?? 0) > 0);
+    const alreadyCheckedIn = (checkinRes.data?.length ?? 0) > 0;
+    setCheckedInToday(alreadyCheckedIn);
     setLoading(false);
+
+    // Auto check-in if not done today
+    if (!alreadyCheckedIn) {
+      await performCheckIn(user.id, pointsRes.data);
+    }
   }
 
-  async function handleCheckIn() {
-    setCheckingIn(true);
+  async function performCheckIn(userId: string, current: UserPoints | null) {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not logged in");
-
       const checkinPoints = 5;
 
-      // Insert check-in transaction
       await supabase.from("point_transactions").insert({
-        user_id: user.id,
+        user_id: userId,
         amount: checkinPoints,
         transaction_type: "checkin",
         description: "Daily check-in",
       });
-
-      // Update user points
-      const { data: current } = await supabase
-        .from("user_points")
-        .select("total_points, reward_points")
-        .eq("user_id", user.id)
-        .maybeSingle();
 
       if (current) {
         const newTotal = current.total_points + checkinPoints;
@@ -81,25 +62,22 @@ export function LewteDashboard() {
         await supabase.from("user_points").update({
           total_points: remainder,
           reward_points: current.reward_points + convertedRewards,
-        }).eq("user_id", user.id);
+        }).eq("user_id", userId);
+        setPoints({ total_points: remainder, reward_points: current.reward_points + convertedRewards });
       } else {
         await supabase.from("user_points").insert({
-          user_id: user.id,
+          user_id: userId,
           total_points: checkinPoints,
           reward_points: 0,
         });
+        setPoints({ total_points: checkinPoints, reward_points: 0 });
       }
 
-      // Trigger badge check
-      supabase.functions.invoke("check-badges").catch(() => {});
-
       setCheckedInToday(true);
-      toast.success(`Daily check-in! +${checkinPoints} points 🎉`);
-      fetchData();
-    } catch (err) {
-      toast.error("Check-in failed. Try again.");
-    } finally {
-      setCheckingIn(false);
+      toast.success("Daily check-in! +5 points 🎉");
+      supabase.functions.invoke("check-badges").catch(() => {});
+    } catch {
+      // Silent fail — not critical
     }
   }
 
@@ -183,13 +161,7 @@ export function LewteDashboard() {
               <p className="text-xs text-muted-foreground">Come back tomorrow for more points.</p>
             </div>
           ) : (
-            <div className="space-y-2">
-              <p className="text-xs text-muted-foreground">Earn 5 points daily just for showing up!</p>
-              <Button size="sm" onClick={handleCheckIn} disabled={checkingIn} className="w-full">
-                {checkingIn ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <CalendarCheck className="h-4 w-4 mr-1" />}
-                Check In
-              </Button>
-            </div>
+            <p className="text-xs text-muted-foreground">Checking in...</p>
           )}
         </CardContent>
       </Card>
