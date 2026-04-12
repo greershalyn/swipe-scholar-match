@@ -226,6 +226,7 @@ export function Dashboard() {
           cta="Learn to manage college costs"
           description="Understand FAFSA, student loans, budgeting, and financial planning for college."
           path="/financial-education"
+          bgImage={financialBg}
         />
 
         {/* First-Gen Resources */}
