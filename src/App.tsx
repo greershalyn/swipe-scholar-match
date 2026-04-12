@@ -2,7 +2,6 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -19,7 +18,7 @@ import SchoolMatchmaker from "./pages/SchoolMatchmaker";
 import Lewte from "./pages/Lewte";
 import Admin from "./pages/Admin";
 import Footer from "./components/Footer";
-import { DashboardSidebar } from "./components/DashboardSidebar";
+import { DashboardNavbar } from "./components/DashboardNavbar";
 import { supabase } from "./integrations/supabase/client";
 import { SvgGradientDefs } from "./components/ui/gradient-icon";
 
@@ -43,62 +42,30 @@ const AppContent = () => {
     return () => subscription.unsubscribe();
   }, []);
   
-  // Don't show sidebar on auth pages
-  const hideLayoutPages = ['/auth', '/questionnaire'];
-  const shouldShowSidebar = user && !hideLayoutPages.includes(location.pathname);
-
-  if (!shouldShowSidebar) {
-    return (
-      <div className="flex flex-col min-h-screen">
-        <div className="flex-1">
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/questionnaire" element={<Questionnaire />} />
-            <Route path="/wallet" element={<WalletPage />} />
-            <Route path="/financial-education" element={<FinancialEducation />} />
-            <Route path="/essay-assistant" element={<EssayAssistant />} />
-            <Route path="/test-prep" element={<TestPrep />} />
-            <Route path="/first-gen-resources" element={<FirstGenResources />} />
-            <Route path="/school-matchmaker" element={<SchoolMatchmaker />} />
-            <Route path="/lewte" element={<Lewte />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </div>
-        <Footer />
-      </div>
-    );
-  }
+  const hideNavPages = ['/auth', '/questionnaire'];
+  const showNavbar = user && !hideNavPages.includes(location.pathname);
 
   return (
-    <SidebarProvider defaultOpen={false}>
-      <div className="min-h-screen flex w-full">
-        <DashboardSidebar />
-        <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-12 md:h-14 flex items-center border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-2 md:px-4">
-            <SidebarTrigger className="h-8 w-8 md:h-10 md:w-10" />
-          </header>
-          <main className="flex-1 overflow-auto">
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/questionnaire" element={<Questionnaire />} />
-              <Route path="/wallet" element={<WalletPage />} />
-              <Route path="/financial-education" element={<FinancialEducation />} />
-              <Route path="/essay-assistant" element={<EssayAssistant />} />
-              <Route path="/test-prep" element={<TestPrep />} />
-              <Route path="/first-gen-resources" element={<FirstGenResources />} />
-              <Route path="/school-matchmaker" element={<SchoolMatchmaker />} />
-              <Route path="/lewte" element={<Lewte />} />
-              <Route path="/admin" element={<Admin />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </main>
-          <Footer />
-        </div>
+    <div className="flex flex-col min-h-screen">
+      {showNavbar && <DashboardNavbar />}
+      <div className="flex-1">
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/questionnaire" element={<Questionnaire />} />
+          <Route path="/wallet" element={<WalletPage />} />
+          <Route path="/financial-education" element={<FinancialEducation />} />
+          <Route path="/essay-assistant" element={<EssayAssistant />} />
+          <Route path="/test-prep" element={<TestPrep />} />
+          <Route path="/first-gen-resources" element={<FirstGenResources />} />
+          <Route path="/school-matchmaker" element={<SchoolMatchmaker />} />
+          <Route path="/lewte" element={<Lewte />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
       </div>
-    </SidebarProvider>
+      <Footer />
+    </div>
   );
 };
 
