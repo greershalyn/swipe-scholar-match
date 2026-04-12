@@ -176,7 +176,7 @@ function CouponsTab() {
   const [form, setForm] = useState({
     title: "", description: "", coupon_code: "", discount_value: "",
     merchant_name: "", merchant_url: "", category: "", image_url: "", deal_type: "discount",
-    redemption_expiry_days: 30, expires_at: "",
+    redemption_expiry_days: 30, expires_at: "", reward_points_cost: "", is_physical: false,
   });
 
   const categories = ["Food & Drink", "Clothing", "Tech", "Entertainment", "Health & Beauty", "Travel", "Education", "Other"];
@@ -186,10 +186,14 @@ function CouponsTab() {
 
   async function handleCreate() {
     if (!form.title || !form.merchant_name) return;
-    const submitData = { ...form, expires_at: form.expires_at ? new Date(form.expires_at).toISOString() : null };
+    const submitData: any = {
+      ...form,
+      expires_at: form.expires_at ? new Date(form.expires_at).toISOString() : null,
+      reward_points_cost: form.reward_points_cost ? parseInt(form.reward_points_cost) : null,
+    };
     await create("coupons", submitData);
     toast({ title: "Coupon created" });
-    setForm({ title: "", description: "", coupon_code: "", discount_value: "", merchant_name: "", merchant_url: "", category: "", image_url: "", deal_type: "discount", redemption_expiry_days: 30, expires_at: "" });
+    setForm({ title: "", description: "", coupon_code: "", discount_value: "", merchant_name: "", merchant_url: "", category: "", image_url: "", deal_type: "discount", redemption_expiry_days: 30, expires_at: "", reward_points_cost: "", is_physical: false });
     setOpen(false);
     loadCoupons();
   }
@@ -262,6 +266,23 @@ function CouponsTab() {
                     <Input type="number" min={1} max={365} value={form.redemption_expiry_days} onChange={(e) => setForm({ ...form, redemption_expiry_days: parseInt(e.target.value) || 30 })} />
                   </div>
                 </div>
+                {form.deal_type === "free_item" && (
+                  <div className="space-y-3 border rounded-lg p-3 bg-muted/30">
+                    <p className="text-xs font-medium text-muted-foreground">Reward Point Redemption (optional)</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <Label className="text-xs">Reward Points Cost</Label>
+                        <Input type="number" min={1} placeholder="e.g. 5" value={form.reward_points_cost} onChange={(e) => setForm({ ...form, reward_points_cost: e.target.value })} />
+                      </div>
+                      <div className="space-y-1 flex items-end">
+                        <div className="flex items-center gap-2 pb-2">
+                          <Switch checked={form.is_physical} onCheckedChange={(v) => setForm({ ...form, is_physical: v })} />
+                          <Label className="text-xs">Physical Item (needs shipping)</Label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <Button onClick={handleCreate} className="w-full" disabled={isLoading}>Create Coupon</Button>
               </div>
             </DialogContent>
