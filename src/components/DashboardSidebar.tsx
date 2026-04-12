@@ -96,7 +96,7 @@ export function DashboardSidebar() {
                     <NavLink 
                       to={item.url} 
                       end={item.url === "/"}
-                      className={`${getNavClassName(item.url)} flex items-center p-2 rounded-md text-black hover:bg-gray-100`}
+                      className={`${getNavClassName(item.url)} flex items-center p-2 rounded-md text-black hover:bg-primary/5`}
                     >
                       <GradientIcon icon={item.icon} className="h-3 w-3 md:h-4 md:w-4" />
                       {!collapsed && (
