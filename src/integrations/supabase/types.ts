@@ -127,6 +127,39 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string | null
+          reference_id: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string | null
+          reference_id?: string | null
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string | null
+          reference_id?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       point_transactions: {
         Row: {
           amount: number
@@ -566,6 +599,35 @@ export type Database = {
           },
         ]
       }
+      survey_school_targets: {
+        Row: {
+          created_at: string
+          domain: string
+          id: string
+          survey_id: string
+        }
+        Insert: {
+          created_at?: string
+          domain: string
+          id?: string
+          survey_id: string
+        }
+        Update: {
+          created_at?: string
+          domain?: string
+          id?: string
+          survey_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "survey_school_targets_survey_id_fkey"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "surveys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       surveys: {
         Row: {
           created_at: string
@@ -574,6 +636,7 @@ export type Database = {
           is_active: boolean
           owner_id: string | null
           points: number
+          target_audience: string
           title: string
           updated_at: string
         }
@@ -584,6 +647,7 @@ export type Database = {
           is_active?: boolean
           owner_id?: string | null
           points?: number
+          target_audience?: string
           title: string
           updated_at?: string
         }
@@ -594,6 +658,7 @@ export type Database = {
           is_active?: boolean
           owner_id?: string | null
           points?: number
+          target_audience?: string
           title?: string
           updated_at?: string
         }
