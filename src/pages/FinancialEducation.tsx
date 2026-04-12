@@ -138,7 +138,7 @@ const FinancialEducation = () => {
                   <p>Join Lewte today and start saving while you study.</p>
                 </div>
                 <Button asChild className="w-full bg-gradient-primary hover:opacity-90 text-primary-foreground border-0">
-                  <a href="https://lewte.com" target="_blank" rel="noopener noreferrer">
+                  <a href="/lewte">
                     Join Now
                   </a>
                 </Button>
