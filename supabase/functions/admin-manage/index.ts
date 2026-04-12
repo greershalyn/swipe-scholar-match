@@ -72,6 +72,8 @@ Deno.serve(async (req) => {
       user_roles: ["super_admin"],
       coupon_analytics: ["super_admin", "advertiser"],
       profiles: ["super_admin"],
+      promo_codes: ["super_admin"],
+      promo_code_redemptions: ["super_admin"],
     };
 
     const allowedRoles = tablePermissions[table];

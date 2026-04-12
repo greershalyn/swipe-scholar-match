@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { ExternalLink, X, ArrowLeft, Wallet as WalletIcon, Tag, History, Gift, Percent, Clock, Check, AlertTriangle } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { ExternalLink, X, ArrowLeft, Wallet as WalletIcon, Tag, History, Gift, Percent, Clock, Check, AlertTriangle, Ticket, Loader2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow, format, isPast } from 'date-fns';
@@ -237,7 +238,10 @@ const WalletPage = () => {
         </TabsContent>
 
         {/* Points History Tab */}
-        <TabsContent value="points">
+        <TabsContent value="points" className="space-y-6">
+          {/* Promo Code Redemption */}
+          <PromoCodeRedeemer onRedeemed={() => queryClient.invalidateQueries({ queryKey: ['point-transactions'] })} />
+
           {pointsLoading ? (
             <div className="flex items-center justify-center p-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -245,7 +249,7 @@ const WalletPage = () => {
           ) : !pointTransactions?.length ? (
             <div className="text-center py-12 text-muted-foreground">
               <History className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No point activity yet. Complete surveys to start earning!</p>
+              <p>No point activity yet. Complete surveys or redeem promo codes to start earning!</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -325,6 +329,56 @@ function CouponWalletCard({ rc, onMarkUsed, disabled }: { rc: RedeemedCoupon; on
             </Button>
           </div>
         )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function PromoCodeRedeemer({ onRedeemed }: { onRedeemed: () => void }) {
+  const [code, setCode] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+
+  async function handleRedeem() {
+    const trimmed = code.trim().toUpperCase();
+    if (!trimmed) return;
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("redeem-promo-code", {
+        body: { code: trimmed },
+      });
+      if (error) throw new Error(error.message);
+      if (data?.error) throw new Error(data.error);
+      toast({ title: "Code Redeemed!", description: `You earned ${data.points_awarded} points!` });
+      setCode("");
+      onRedeemed();
+    } catch (err: any) {
+      toast({ title: "Failed", description: err.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm flex items-center gap-2">
+          <Ticket className="h-4 w-4" /> Redeem Promo Code
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex gap-2">
+          <Input
+            placeholder="Enter promo code"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            className="font-mono uppercase"
+            onKeyDown={(e) => e.key === "Enter" && handleRedeem()}
+          />
+          <Button onClick={handleRedeem} disabled={loading || !code.trim()}>
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Redeem"}
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

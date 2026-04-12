@@ -301,6 +301,77 @@ export type Database = {
         }
         Relationships: []
       }
+      promo_code_redemptions: {
+        Row: {
+          created_at: string
+          id: string
+          points_awarded: number
+          promo_code_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          points_awarded?: number
+          promo_code_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          points_awarded?: number
+          promo_code_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promo_code_redemptions_promo_code_id_fkey"
+            columns: ["promo_code_id"]
+            isOneToOne: false
+            referencedRelation: "promo_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      promo_codes: {
+        Row: {
+          code: string
+          created_at: string
+          current_redemptions: number
+          description: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          max_redemptions: number | null
+          points_value: number
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          current_redemptions?: number
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_redemptions?: number | null
+          points_value?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          current_redemptions?: number
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_redemptions?: number | null
+          points_value?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       redeemed_coupons: {
         Row: {
           coupon_id: string
