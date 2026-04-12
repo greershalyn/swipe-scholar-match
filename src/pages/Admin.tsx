@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Edit, Globe, Tag, ClipboardList, Loader2, Settings, Users, BarChart3, Shield, Lock, ArrowUp, ArrowDown, CheckCircle, Ticket } from "lucide-react";
+import { Plus, Trash2, Edit, Globe, Tag, ClipboardList, Loader2, Settings, Users, BarChart3, Shield, Lock, ArrowUp, ArrowDown, CheckCircle, Ticket, Award } from "lucide-react";
 import { useAdminManage } from "@/hooks/useAdminManage";
 import { useUserRole } from "@/hooks/useUserRole";
 import { toast } from "@/hooks/use-toast";
@@ -79,6 +79,9 @@ export default function Admin() {
           {isSuperAdmin && (
             <TabsTrigger value="promo"><Ticket className="h-4 w-4 mr-1" /> Promo Codes</TabsTrigger>
           )}
+          {isSuperAdmin && (
+            <TabsTrigger value="badges"><Award className="h-4 w-4 mr-1" /> Badges</TabsTrigger>
+          )}
           {(isSuperAdmin || isAdvertiser) && (
             <TabsTrigger value="analytics"><BarChart3 className="h-4 w-4 mr-1" /> Analytics</TabsTrigger>
           )}
@@ -98,6 +101,9 @@ export default function Admin() {
         )}
         {isSuperAdmin && (
           <TabsContent value="promo"><PromoCodesTab /></TabsContent>
+        )}
+        {isSuperAdmin && (
+          <TabsContent value="badges"><BadgesTab /></TabsContent>
         )}
         {(isSuperAdmin || isAdvertiser) && (
           <TabsContent value="analytics"><AnalyticsTab /></TabsContent>
