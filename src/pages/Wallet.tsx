@@ -264,8 +264,8 @@ const WalletPage = () => {
                       <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(tx.created_at), { addSuffix: true })}</p>
                     </div>
                   </div>
-                  <span className={`font-semibold ${tx.transaction_type === "earned" ? "text-green-700" : "text-orange-700"}`}>
-                    {tx.transaction_type === "earned" ? "+" : "−"}{tx.amount} pts
+                  <span className={`font-semibold ${tx.transaction_type === "spent" ? "text-orange-700" : "text-green-700"}`}>
+                    {tx.transaction_type === "spent" ? "−" : "+"}{tx.amount} pts
                   </span>
                 </div>
               ))}
