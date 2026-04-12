@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Edit, Globe, Tag, ClipboardList, Loader2, Settings, Users, BarChart3, Shield, Lock, ArrowUp, ArrowDown, CheckCircle } from "lucide-react";
+import { Plus, Trash2, Edit, Globe, Tag, ClipboardList, Loader2, Settings, Users, BarChart3, Shield, Lock, ArrowUp, ArrowDown, CheckCircle, Ticket } from "lucide-react";
 import { useAdminManage } from "@/hooks/useAdminManage";
 import { useUserRole } from "@/hooks/useUserRole";
 import { toast } from "@/hooks/use-toast";
@@ -75,6 +75,9 @@ export default function Admin() {
           {(isSuperAdmin || isSchoolAdmin) && (
             <TabsTrigger value="surveys"><ClipboardList className="h-4 w-4 mr-1" /> Surveys</TabsTrigger>
           )}
+          {isSuperAdmin && (
+            <TabsTrigger value="promo"><Ticket className="h-4 w-4 mr-1" /> Promo Codes</TabsTrigger>
+          )}
           {(isSuperAdmin || isAdvertiser) && (
             <TabsTrigger value="analytics"><BarChart3 className="h-4 w-4 mr-1" /> Analytics</TabsTrigger>
           )}
@@ -91,6 +94,9 @@ export default function Admin() {
         )}
         {(isSuperAdmin || isSchoolAdmin) && (
           <TabsContent value="surveys"><SurveysTab /></TabsContent>
+        )}
+        {isSuperAdmin && (
+          <TabsContent value="promo"><PromoCodesTab /></TabsContent>
         )}
         {(isSuperAdmin || isAdvertiser) && (
           <TabsContent value="analytics"><AnalyticsTab /></TabsContent>
