@@ -34,8 +34,20 @@ export function LewteCoupons() {
   }, []);
 
   async function fetchCoupons() {
+    const { data: { user } } = await supabase.auth.getUser();
     const { data } = await supabase.from("coupons").select("*").eq("is_active", true);
     setCoupons((data as Coupon[]) || []);
+    
+    // Check which coupons user already saved
+    if (user) {
+      const { data: redeemed } = await supabase
+        .from("redeemed_coupons")
+        .select("coupon_id")
+        .eq("user_id", user.id);
+      if (redeemed) {
+        setSavedIds(new Set(redeemed.map((r: any) => r.coupon_id)));
+      }
+    }
     setLoading(false);
   }
 
