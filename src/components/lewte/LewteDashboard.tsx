@@ -179,7 +179,7 @@ export function LewteDashboard() {
         <CardContent>
           {checkedInToday ? (
             <div className="space-y-1">
-              <p className="text-sm font-medium text-green-600">✓ Checked in today!</p>
+              <p className="text-sm font-medium text-primary">✓ Checked in today!</p>
               <p className="text-xs text-muted-foreground">Come back tomorrow for more points.</p>
             </div>
           ) : (
