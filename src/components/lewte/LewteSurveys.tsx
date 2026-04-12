@@ -232,6 +232,10 @@ export function LewteSurveys() {
               <div>
                 <CardTitle className="text-base">{survey.title}</CardTitle>
                 {survey.description && <CardDescription>{survey.description}</CardDescription>}
+                {survey.points > 0 && (
+                  <span className="text-xs text-muted-foreground">🎯 Earn {survey.points} points</span>
+                )}
+              </div>
               </div>
               {completed.has(survey.id) ? (
                 <div className="flex items-center text-green-600 text-sm">
