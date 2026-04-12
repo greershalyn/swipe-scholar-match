@@ -123,7 +123,7 @@ export function Dashboard() {
           title="Scholarships"
           cta="New scholarships are waiting!"
           description="Swipe through scholarships matched to your profile. Save your favorites and apply fast."
-          path="/"
+          path="/scholarships"
           span="sm:col-span-2 lg:col-span-1"
         />
 
