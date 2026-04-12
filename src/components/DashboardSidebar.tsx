@@ -124,7 +124,7 @@ export function DashboardSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink 
                       to={item.url} 
-                      className={`${getNavClassName(item.url)} flex items-center p-2 rounded-md text-black hover:bg-gray-100`}
+                      className={`${getNavClassName(item.url)} flex items-center p-2 rounded-md text-black hover:bg-primary/5`}
                     >
                       <GradientIcon icon={item.icon} className="h-3 w-3 md:h-4 md:w-4" />
                       {!collapsed && (
@@ -150,7 +150,7 @@ export function DashboardSidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton 
                   onClick={() => navigate('/questionnaire')}
-                  className="flex items-center p-2 rounded-md text-black hover:bg-gray-100"
+                  className="flex items-center p-2 rounded-md text-black hover:bg-primary/5"
                 >
                   <GradientIcon icon={User} className="h-3 w-3 md:h-4 md:w-4" />
                   {!collapsed && (
@@ -167,7 +167,7 @@ export function DashboardSidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton 
                   onClick={handleLogout}
-                  className="flex items-center p-2 rounded-md text-black hover:bg-gray-100"
+                  className="flex items-center p-2 rounded-md text-black hover:bg-primary/5"
                 >
                   <GradientIcon icon={LogOut} className="h-3 w-3 md:h-4 md:w-4" />
                   {!collapsed && (
