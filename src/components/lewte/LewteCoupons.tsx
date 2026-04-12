@@ -182,6 +182,14 @@ export function LewteCoupons() {
                     </a>
                   </Button>
                 )}
+                <Button
+                  variant={savedIds.has(coupon.id) ? "secondary" : "outline"}
+                  size="sm"
+                  disabled={savedIds.has(coupon.id)}
+                  onClick={() => saveToWallet(coupon)}
+                >
+                  {savedIds.has(coupon.id) ? <><Check className="h-3 w-3 mr-1" /> Saved</> : <><WalletIcon className="h-3 w-3 mr-1" /> Save to Wallet</>}
+                </Button>
               </div>
               {coupon.expires_at && (
                 <p className="text-xs text-muted-foreground">
