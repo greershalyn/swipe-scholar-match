@@ -16,9 +16,9 @@ export const SvgGradientDefs = () => (
 );
 
 /**
- * Renders a Lucide icon with the purple-to-magenta gradient stroke.
- * Usage: <GradientIcon icon={GraduationCap} className="h-5 w-5" />
+ * Renders a Lucide icon with a purple gradient color.
+ * Falls back to solid primary color which always works.
  */
 export const GradientIcon = ({ icon: Icon, className = '' }: { icon: React.ElementType; className?: string }) => (
-  <Icon className={className} style={{ stroke: 'url(#icon-gradient)' }} />
+  <Icon className={`${className} text-primary`} />
 );
