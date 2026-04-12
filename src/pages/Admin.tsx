@@ -380,6 +380,11 @@ function SurveysTab() {
               <div className="space-y-3">
                 <Input placeholder="Survey Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
                 <Textarea placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+                <div className="space-y-1">
+                  <Label className="text-xs">Points for Completion</Label>
+                  <Input type="number" min={0} max={100} placeholder="0" value={form.points} onChange={(e) => setForm({ ...form, points: parseInt(e.target.value) || 0 })} />
+                  <p className="text-xs text-muted-foreground">Points earned by students for completing this survey (max 100)</p>
+                </div>
                 <Button onClick={handleCreate} className="w-full" disabled={isLoading}>Create Survey</Button>
               </div>
             </DialogContent>
