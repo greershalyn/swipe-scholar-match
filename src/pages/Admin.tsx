@@ -399,6 +399,7 @@ function SurveysTab() {
                 <div>
                   <CardTitle className="text-base">{s.title}</CardTitle>
                   {s.description && <CardDescription className="text-xs">{s.description}</CardDescription>}
+                  {s.points > 0 && <Badge variant="secondary" className="text-xs mt-1 w-fit">🎯 {s.points} pts</Badge>}
                 </div>
                 <div className="flex gap-1">
                   <Button variant="outline" size="sm" onClick={() => loadQuestions(s.id)}>
