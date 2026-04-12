@@ -117,6 +117,7 @@ export type Database = {
           category: string | null
           coupon_code: string | null
           created_at: string
+          current_redemptions: number
           deal_type: string
           description: string | null
           discount_value: string | null
@@ -125,10 +126,14 @@ export type Database = {
           image_url: string | null
           is_active: boolean
           is_physical: boolean
+          max_total_redemptions: number | null
           merchant_name: string
           merchant_url: string | null
           owner_id: string | null
+          quantity: number | null
           redemption_expiry_days: number
+          redemption_limit_count: number
+          redemption_limit_type: string
           reward_points_cost: number | null
           title: string
           updated_at: string
@@ -137,6 +142,7 @@ export type Database = {
           category?: string | null
           coupon_code?: string | null
           created_at?: string
+          current_redemptions?: number
           deal_type?: string
           description?: string | null
           discount_value?: string | null
@@ -145,10 +151,14 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean
           is_physical?: boolean
+          max_total_redemptions?: number | null
           merchant_name: string
           merchant_url?: string | null
           owner_id?: string | null
+          quantity?: number | null
           redemption_expiry_days?: number
+          redemption_limit_count?: number
+          redemption_limit_type?: string
           reward_points_cost?: number | null
           title: string
           updated_at?: string
@@ -157,6 +167,7 @@ export type Database = {
           category?: string | null
           coupon_code?: string | null
           created_at?: string
+          current_redemptions?: number
           deal_type?: string
           description?: string | null
           discount_value?: string | null
@@ -165,10 +176,14 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean
           is_physical?: boolean
+          max_total_redemptions?: number | null
           merchant_name?: string
           merchant_url?: string | null
           owner_id?: string | null
+          quantity?: number | null
           redemption_expiry_days?: number
+          redemption_limit_count?: number
+          redemption_limit_type?: string
           reward_points_cost?: number | null
           title?: string
           updated_at?: string
