@@ -1,5 +1,7 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
 import {
   GraduationCap,
   WalletIcon,
@@ -99,12 +101,30 @@ function DashboardCard({
 
 export function Dashboard() {
   const { isVerified } = useStudentVerification();
+  const [firstName, setFirstName] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchName = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("id", user.id)
+          .single();
+        if (data?.full_name) {
+          setFirstName(data.full_name.split(" ")[0]);
+        }
+      }
+    };
+    fetchName();
+  }, []);
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
       <div className="mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-1">
-          Welcome back!
+          {firstName ? `Welcome back, ${firstName}!` : "Welcome back!"}
         </h1>
         <p className="text-muted-foreground text-sm sm:text-base">
           Your all-in-one hub for scholarships, savings, and success.
