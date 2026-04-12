@@ -236,7 +236,6 @@ export function LewteSurveys() {
                   <span className="text-xs text-muted-foreground">🎯 Earn {survey.points} points</span>
                 )}
               </div>
-              </div>
               {completed.has(survey.id) ? (
                 <div className="flex items-center text-green-600 text-sm">
                   <CheckCircle className="h-4 w-4 mr-1" /> Completed
