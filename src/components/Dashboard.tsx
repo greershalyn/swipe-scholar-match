@@ -7,6 +7,7 @@ import walletBg from "@/assets/wallet-bg.png";
 import lewteBg from "@/assets/lewte-bg.png";
 import essayBg from "@/assets/essay-bg.png";
 import testprepBg from "@/assets/testprep-bg.png";
+import schoolBg from "@/assets/school-bg.png";
 import {
   GraduationCap,
   WalletIcon,
@@ -214,6 +215,7 @@ export function Dashboard() {
           cta="Find your perfect school"
           description="Discover colleges that match your interests, budget, and career goals."
           path="/school-matchmaker"
+          bgImage={schoolBg}
         />
 
         {/* Financial Education */}
