@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Edit, Globe, Tag, ClipboardList, Loader2, Settings, Users, BarChart3, Shield, Lock } from "lucide-react";
+import { Plus, Trash2, Edit, Globe, Tag, ClipboardList, Loader2, Settings, Users, BarChart3, Shield, Lock, ArrowUp, ArrowDown } from "lucide-react";
 import { useAdminManage } from "@/hooks/useAdminManage";
 import { useUserRole } from "@/hooks/useUserRole";
 import { toast } from "@/hooks/use-toast";
@@ -295,7 +295,7 @@ function CouponsTab() {
 }
 
 function SurveysTab() {
-  const { list, create, remove, isLoading } = useAdminManage();
+  const { list, create, update, remove, isLoading } = useAdminManage();
   const [surveys, setSurveys] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ title: "", description: "" });
@@ -324,7 +324,19 @@ function SurveysTab() {
   async function loadQuestions(surveyId: string) {
     setQuestionOpen(surveyId);
     const data = await list("survey_questions");
-    setQuestions((data || []).filter((q: any) => q.survey_id === surveyId));
+    const filtered = (data || []).filter((q: any) => q.survey_id === surveyId);
+    filtered.sort((a: any, b: any) => (a.display_order ?? 0) - (b.display_order ?? 0));
+    setQuestions(filtered);
+  }
+
+  async function moveQuestion(idx: number, direction: "up" | "down") {
+    if ((direction === "up" && idx === 0) || (direction === "down" && idx === questions.length - 1)) return;
+    const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+    const a = questions[idx];
+    const b = questions[swapIdx];
+    await update("survey_questions", a.id, { display_order: swapIdx });
+    await update("survey_questions", b.id, { display_order: idx });
+    if (questionOpen) loadQuestions(questionOpen);
   }
 
   async function addQuestion() {
@@ -399,9 +411,17 @@ function SurveysTab() {
                   {questions.map((q, idx) => (
                     <div key={q.id} className="flex items-center justify-between bg-muted/50 p-2 rounded text-sm">
                       <span>{idx + 1}. {q.question_text} <Badge variant="outline" className="ml-1 text-xs">{q.question_type}</Badge></span>
-                      <Button variant="ghost" size="sm" onClick={() => deleteQuestion(q.id)}>
-                        <Trash2 className="h-3 w-3 text-destructive" />
-                      </Button>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => moveQuestion(idx, "up")} disabled={idx === 0}>
+                          <ArrowUp className="h-3 w-3" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => moveQuestion(idx, "down")} disabled={idx === questions.length - 1}>
+                          <ArrowDown className="h-3 w-3" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => deleteQuestion(q.id)}>
+                          <Trash2 className="h-3 w-3 text-destructive" />
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
