@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Edit, Globe, Tag, ClipboardList, Loader2, Settings, Users, BarChart3, Shield, Lock, ArrowUp, ArrowDown, CheckCircle, Ticket, Award, Trophy, Star, Target, Gift, Calendar, ShoppingBag, Flame, Medal, Heart, Zap, Crown, Gem, Sparkles, type LucideIcon } from "lucide-react";
+import { Plus, Trash2, Edit, Globe, Tag, ClipboardList, Loader2, Settings, Users, BarChart3, Shield, Lock, ArrowUp, ArrowDown, CheckCircle, Ticket, Award, Trophy, Star, Target, Gift, Calendar, ShoppingBag, Flame, Medal, Heart, Zap, Crown, Gem, Sparkles, GraduationCap, BookOpen, type LucideIcon } from "lucide-react";
 import { useAdminManage } from "@/hooks/useAdminManage";
 import { useUserRole } from "@/hooks/useUserRole";
 import { toast } from "@/hooks/use-toast";
