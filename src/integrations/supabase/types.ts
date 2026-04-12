@@ -417,6 +417,97 @@ export type Database = {
         }
         Relationships: []
       }
+      qr_code_redemptions: {
+        Row: {
+          created_at: string
+          id: string
+          points_awarded: number
+          qr_code_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          points_awarded?: number
+          qr_code_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          points_awarded?: number
+          qr_code_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qr_code_redemptions_qr_code_id_fkey"
+            columns: ["qr_code_id"]
+            isOneToOne: false
+            referencedRelation: "qr_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      qr_codes: {
+        Row: {
+          badge_id: string | null
+          badge_scan_threshold: number | null
+          code: string
+          created_at: string
+          current_redemptions: number
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          max_total_redemptions: number | null
+          name: string
+          points_value: number
+          redemption_limit_count: number
+          redemption_limit_type: string
+          updated_at: string
+        }
+        Insert: {
+          badge_id?: string | null
+          badge_scan_threshold?: number | null
+          code: string
+          created_at?: string
+          current_redemptions?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_total_redemptions?: number | null
+          name: string
+          points_value?: number
+          redemption_limit_count?: number
+          redemption_limit_type?: string
+          updated_at?: string
+        }
+        Update: {
+          badge_id?: string | null
+          badge_scan_threshold?: number | null
+          code?: string
+          created_at?: string
+          current_redemptions?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_total_redemptions?: number | null
+          name?: string
+          points_value?: number
+          redemption_limit_count?: number
+          redemption_limit_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qr_codes_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       redeemed_coupons: {
         Row: {
           coupon_id: string
