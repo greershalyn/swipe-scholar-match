@@ -86,11 +86,55 @@ export function LewteSurveys() {
     if (error) {
       toast({ title: "Error submitting survey", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Survey submitted!", description: "Thank you for your response." });
+      // Award points
+      const survey = surveys.find((s) => s.id === activeSurvey);
+      const surveyPoints = survey?.points || 0;
+      if (surveyPoints > 0) {
+        await awardPoints(user.id, surveyPoints, activeSurvey, survey?.title || "Survey");
+      }
+      toast({ title: "Survey submitted!", description: surveyPoints > 0 ? `You earned ${surveyPoints} points!` : "Thank you for your response." });
       setCompleted((prev) => new Set([...prev, activeSurvey!]));
       setActiveSurvey(null);
     }
     setSubmitting(false);
+  }
+
+  async function awardPoints(userId: string, amount: number, surveyId: string, surveyTitle: string) {
+    // Get or create user_points record
+    const { data: existing } = await supabase
+      .from("user_points")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    let currentTotal = existing?.total_points || 0;
+    let currentRewards = existing?.reward_points || 0;
+
+    currentTotal += amount;
+    // Convert every 100 points to 1 reward
+    const newRewards = Math.floor(currentTotal / 100);
+    currentTotal = currentTotal % 100;
+    currentRewards += newRewards;
+
+    if (existing) {
+      await supabase
+        .from("user_points")
+        .update({ total_points: currentTotal, reward_points: currentRewards, updated_at: new Date().toISOString() })
+        .eq("user_id", userId);
+    } else {
+      await supabase
+        .from("user_points")
+        .insert({ user_id: userId, total_points: currentTotal, reward_points: currentRewards });
+    }
+
+    // Log the transaction
+    await supabase.from("point_transactions").insert({
+      user_id: userId,
+      amount,
+      transaction_type: "earned",
+      source_id: surveyId,
+      description: `Completed survey: ${surveyTitle}`,
+    });
   }
 
   if (loading) {
