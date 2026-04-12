@@ -792,6 +792,29 @@ function BadgesTab() {
                   <Input placeholder="Awarded for completing 5 surveys" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
                 </div>
                 <div className="space-y-1">
+                  <Label className="text-xs">Badge Icon</Label>
+                  <div className="grid grid-cols-6 gap-2">
+                    {BADGE_ICONS.map((bi) => {
+                      const BIcon = bi.icon;
+                      return (
+                        <button
+                          key={bi.value}
+                          type="button"
+                          onClick={() => setForm({ ...form, icon: bi.value })}
+                          className={`flex flex-col items-center gap-1 p-2 rounded-md border text-xs transition-all ${
+                            form.icon === bi.value
+                              ? "border-primary bg-primary/10 text-primary"
+                              : "border-border hover:bg-primary/5"
+                          }`}
+                        >
+                          <BIcon className="h-5 w-5" />
+                          <span className="truncate w-full text-center text-[10px]">{bi.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className="space-y-1">
                   <Label className="text-xs">Trigger Type</Label>
                   <Select value={form.trigger_type} onValueChange={(v) => setForm({ ...form, trigger_type: v })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
