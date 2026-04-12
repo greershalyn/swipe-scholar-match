@@ -68,9 +68,6 @@ function DashboardCard({
         backgroundPosition: 'center',
       } : undefined}
     >
-      {bgImage && (
-        <div className="absolute inset-0 bg-background/70 dark:bg-background/80" />
-      )}
 
       {locked && (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-background/80 backdrop-blur-md rounded-2xl">
