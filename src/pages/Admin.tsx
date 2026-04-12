@@ -244,6 +244,16 @@ function CouponsTab() {
                     <img src={form.image_url} alt="Preview" className="max-h-full object-contain" onError={(e) => (e.currentTarget.style.display = "none")} />
                   </div>
                 )}
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Coupon Expiration</Label>
+                    <Input type="date" value={form.expires_at} onChange={(e) => setForm({ ...form, expires_at: e.target.value })} />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Days to Use After Saving</Label>
+                    <Input type="number" min={1} max={365} value={form.redemption_expiry_days} onChange={(e) => setForm({ ...form, redemption_expiry_days: parseInt(e.target.value) || 30 })} />
+                  </div>
+                </div>
                 <Button onClick={handleCreate} className="w-full" disabled={isLoading}>Create Coupon</Button>
               </div>
             </DialogContent>
