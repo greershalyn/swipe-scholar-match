@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Edit, Globe, Tag, ClipboardList, Loader2, Settings, Users, BarChart3, Shield, Lock, ArrowUp, ArrowDown } from "lucide-react";
+import { Plus, Trash2, Edit, Globe, Tag, ClipboardList, Loader2, Settings, Users, BarChart3, Shield, Lock, ArrowUp, ArrowDown, CheckCircle } from "lucide-react";
 import { useAdminManage } from "@/hooks/useAdminManage";
 import { useUserRole } from "@/hooks/useUserRole";
 import { toast } from "@/hooks/use-toast";
@@ -448,6 +448,11 @@ function SurveysTab() {
                   )}
                   <Button size="sm" onClick={addQuestion} disabled={isLoading}>
                     <Plus className="h-3 w-3 mr-1" /> Add Question
+                  </Button>
+                </div>
+                <div className="flex justify-end border-t pt-3">
+                  <Button variant="outline" size="sm" onClick={() => setQuestionOpen(null)}>
+                    <CheckCircle className="h-3 w-3 mr-1" /> Done
                   </Button>
                 </div>
               </CardContent>
