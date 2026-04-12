@@ -45,7 +45,7 @@ export function LewteDashboard() {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1">
-            <TrendingUp className="h-4 w-4" /> Survey Progress
+            <TrendingUp className="h-4 w-4" /> Points Progress
           </CardTitle>
         </CardHeader>
         <CardContent>
