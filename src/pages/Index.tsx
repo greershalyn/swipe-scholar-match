@@ -1,18 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import ScholarshipSwiper from '@/components/ScholarshipSwiper';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { GraduationCap, Rocket, DollarSign, Clock, Sparkles, BookOpen, Users, Trophy, Wallet as WalletIcon, PencilIcon, FileText, Lightbulb, X, Search, Zap, School } from 'lucide-react';
 
-import Wallet from '@/components/Wallet';
-import { CrawlForm } from '@/components/CrawlForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { ExpandedFramework } from '@/types/essay';
 import { ExpandedFrameworkView } from '@/components/essay/ExpandedFrameworkView';
 import { GradientIcon } from '@/components/ui/gradient-icon';
+import { Dashboard } from '@/components/Dashboard';
 import studentHero from '@/assets/student-hero.png';
 
 
@@ -183,52 +181,7 @@ const Index = () => {
   };
 
   if (user) {
-    return (
-      <div className="p-4 lg:p-6 max-w-5xl mx-auto relative compass-bg-container">
-        <div 
-          className="absolute inset-0 pointer-events-none z-0 compass-background"
-          style={{
-            backgroundImage: `url(/lovable-uploads/f5f92d18-9536-46ff-8d97-1a799437f06a.png)`,
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'center top',
-            backgroundSize: '600px',
-            opacity: 0.3
-          }}
-        />
-        <div className="mb-6 relative z-10">
-          <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-2">Welcome back!</h1>
-          <p className="text-muted-foreground">Find your perfect scholarship match</p>
-        </div>
-        
-        <div className="flex justify-center mb-8 relative z-10">
-          <div className="w-full max-w-sm">
-            <ScholarshipSwiper />
-            <div className="text-center mt-4">
-              <p className="text-base text-foreground font-medium">
-                Swipe right to save, left to skip
-              </p>
-            </div>
-          </div>
-        </div>
-          
-        {isAdmin && (
-          <div className="mb-8 relative z-10">
-            <div className="bg-card/95 rounded-xl p-6 shadow-card-modern">
-              <h2 className="text-xl font-semibold text-foreground mb-4">Admin: Add New Scholarship</h2>
-              <CrawlForm />
-            </div>
-          </div>
-        )}
-
-        <div className="bg-card/95 rounded-xl p-6 shadow-card-modern relative z-10">
-          <h2 className="text-xl font-semibold bg-gradient-primary bg-clip-text text-transparent mb-4 flex items-center gap-2">
-            <GradientIcon icon={WalletIcon} className="h-5 w-5" />
-            Your Scholarship Wallet
-          </h2>
-          <Wallet className="mt-4" />
-        </div>
-      </div>
-    );
+    return <Dashboard />;
   }
 
   return (

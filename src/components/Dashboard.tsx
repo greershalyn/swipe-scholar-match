@@ -1,0 +1,201 @@
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import {
+  GraduationCap,
+  WalletIcon,
+  PencilIcon,
+  Calculator,
+  School,
+  ShieldCheck,
+  BookOpen,
+  Users,
+  Sparkles,
+  ArrowRight,
+  Lock,
+  Tag,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { GradientIcon } from "@/components/ui/gradient-icon";
+import { useStudentVerification } from "@/hooks/useStudentVerification";
+
+const container = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.07 } },
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" } },
+};
+
+interface DashboardCardProps {
+  icon: React.ElementType;
+  title: string;
+  cta: string;
+  description: string;
+  path: string;
+  accent?: string;
+  locked?: boolean;
+  lockMessage?: string;
+  span?: string;
+}
+
+function DashboardCard({
+  icon,
+  title,
+  cta,
+  description,
+  path,
+  locked,
+  lockMessage,
+  span = "",
+}: DashboardCardProps) {
+  const navigate = useNavigate();
+
+  return (
+    <motion.div
+      variants={item}
+      className={`group relative overflow-hidden rounded-2xl border border-border bg-card shadow-card-modern hover:shadow-glow transition-all duration-300 cursor-pointer ${span}`}
+      onClick={() => !locked && navigate(path)}
+    >
+      {locked && (
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-background/80 backdrop-blur-md rounded-2xl">
+          <Lock className="h-8 w-8 text-muted-foreground" />
+          <p className="font-semibold text-foreground text-center px-4">
+            {lockMessage}
+          </p>
+          <Button
+            size="sm"
+            className="bg-gradient-primary text-primary-foreground hover:opacity-90 rounded-full"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(path);
+            }}
+          >
+            Unlock Now
+          </Button>
+        </div>
+      )}
+
+      <div className={`p-5 sm:p-6 flex flex-col h-full ${locked ? "blur-sm" : ""}`}>
+        <div className="flex items-start justify-between mb-4">
+          <GradientIcon icon={icon} className="h-8 w-8 sm:h-10 sm:w-10" />
+          <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-200" />
+        </div>
+        <h3 className="text-base sm:text-lg font-bold text-foreground mb-1">
+          {title}
+        </h3>
+        <p className="text-xs sm:text-sm text-muted-foreground mb-4 flex-1">
+          {description}
+        </p>
+        <div className="bg-gradient-primary bg-clip-text text-transparent font-semibold text-sm flex items-center gap-1">
+          <Sparkles className="h-3.5 w-3.5 text-primary" />
+          {cta}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+export function Dashboard() {
+  const { isVerified } = useStudentVerification();
+
+  return (
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+      <div className="mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-1">
+          Welcome back!
+        </h1>
+        <p className="text-muted-foreground text-sm sm:text-base">
+          Your all-in-one hub for scholarships, savings, and success.
+        </p>
+      </div>
+
+      <motion.div
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5"
+      >
+        {/* Scholarships - featured */}
+        <DashboardCard
+          icon={GraduationCap}
+          title="Scholarships"
+          cta="New scholarships are waiting!"
+          description="Swipe through scholarships matched to your profile. Save your favorites and apply fast."
+          path="/"
+          span="sm:col-span-2 lg:col-span-1"
+        />
+
+        {/* Wallet */}
+        <DashboardCard
+          icon={WalletIcon}
+          title="Scholarship Wallet"
+          cta="You could be saving $$$"
+          description="Track your saved scholarships, deadlines, and application statuses in one place."
+          path="/wallet"
+        />
+
+        {/* Lewte - conditional */}
+        <DashboardCard
+          icon={isVerified ? Tag : ShieldCheck}
+          title="Lewte"
+          cta={isVerified ? "Exclusive deals available now" : "Unlock exclusive deals"}
+          description={
+            isVerified
+              ? "Browse coupons, take surveys, and earn reward points for student perks."
+              : "Verify your student status to unlock exclusive coupons, surveys, and rewards."
+          }
+          path="/lewte"
+          locked={!isVerified}
+          lockMessage="🔒 Unlock exclusive student deals & rewards"
+        />
+
+        {/* Essay Assistant */}
+        <DashboardCard
+          icon={PencilIcon}
+          title="Essay Assistant"
+          cta="Craft a winning essay"
+          description="AI-powered tools to help you brainstorm, outline, and polish your scholarship essays."
+          path="/essay-assistant"
+        />
+
+        {/* Test Prep */}
+        <DashboardCard
+          icon={Calculator}
+          title="Test Prep"
+          cta="Boost your scores"
+          description="Practice questions, study plans, and strategies for the SAT and ACT."
+          path="/test-prep"
+        />
+
+        {/* School Matchmaker */}
+        <DashboardCard
+          icon={School}
+          title="School Matchmaker"
+          cta="Find your perfect school"
+          description="Discover colleges that match your interests, budget, and career goals."
+          path="/school-matchmaker"
+        />
+
+        {/* Financial Education */}
+        <DashboardCard
+          icon={BookOpen}
+          title="Financial Education"
+          cta="Learn to manage college costs"
+          description="Understand FAFSA, student loans, budgeting, and financial planning for college."
+          path="/financial-education"
+        />
+
+        {/* First-Gen Resources */}
+        <DashboardCard
+          icon={Users}
+          title="First-Gen Resources"
+          cta="You're not alone"
+          description="Guides, checklists, and community support designed for first-generation students."
+          path="/first-gen-resources"
+        />
+      </motion.div>
+    </div>
+  );
+}
