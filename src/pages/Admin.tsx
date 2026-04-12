@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Edit, Globe, Tag, ClipboardList, Loader2, Settings, Users, BarChart3, Shield, Lock, ArrowUp, ArrowDown, CheckCircle, Ticket, Award } from "lucide-react";
+import { Plus, Trash2, Edit, Globe, Tag, ClipboardList, Loader2, Settings, Users, BarChart3, Shield, Lock, ArrowUp, ArrowDown, CheckCircle, Ticket, Award, Trophy, Star, Target, Gift, Calendar, ShoppingBag, Flame, Medal, Heart, Zap, Crown, Gem, Sparkles, GraduationCap, BookOpen, type LucideIcon } from "lucide-react";
 import { useAdminManage } from "@/hooks/useAdminManage";
 import { useUserRole } from "@/hooks/useUserRole";
 import { toast } from "@/hooks/use-toast";
@@ -724,6 +724,27 @@ const TRIGGER_TYPES = [
   { value: "daily_checkin", label: "Daily Check-ins" },
 ];
 
+const BADGE_ICONS: { value: string; label: string; icon: LucideIcon }[] = [
+  { value: "trophy", label: "Trophy", icon: Trophy },
+  { value: "star", label: "Star", icon: Star },
+  { value: "award", label: "Award", icon: Award },
+  { value: "medal", label: "Medal", icon: Medal },
+  { value: "crown", label: "Crown", icon: Crown },
+  { value: "gem", label: "Gem", icon: Gem },
+  { value: "heart", label: "Heart", icon: Heart },
+  { value: "zap", label: "Zap", icon: Zap },
+  { value: "flame", label: "Flame", icon: Flame },
+  { value: "sparkles", label: "Sparkles", icon: Sparkles },
+  { value: "target", label: "Target", icon: Target },
+  { value: "gift", label: "Gift", icon: Gift },
+  { value: "calendar", label: "Calendar", icon: Calendar },
+  { value: "check-circle", label: "Check", icon: CheckCircle },
+  { value: "shopping-bag", label: "Shop", icon: ShoppingBag },
+  { value: "shield", label: "Shield", icon: Shield },
+  { value: "graduation-cap", label: "Grad Cap", icon: GraduationCap },
+  { value: "book-open", label: "Book", icon: BookOpen },
+];
+
 function BadgesTab() {
   const { isLoading } = useAdminManage();
   const [badges, setBadges] = useState<any[]>([]);
@@ -792,6 +813,29 @@ function BadgesTab() {
                   <Input placeholder="Awarded for completing 5 surveys" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
                 </div>
                 <div className="space-y-1">
+                  <Label className="text-xs">Badge Icon</Label>
+                  <div className="grid grid-cols-6 gap-2">
+                    {BADGE_ICONS.map((bi) => {
+                      const BIcon = bi.icon;
+                      return (
+                        <button
+                          key={bi.value}
+                          type="button"
+                          onClick={() => setForm({ ...form, icon: bi.value })}
+                          className={`flex flex-col items-center gap-1 p-2 rounded-md border text-xs transition-all ${
+                            form.icon === bi.value
+                              ? "border-primary bg-primary/10 text-primary"
+                              : "border-border hover:bg-primary/5"
+                          }`}
+                        >
+                          <BIcon className="h-5 w-5" />
+                          <span className="truncate w-full text-center text-[10px]">{bi.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className="space-y-1">
                   <Label className="text-xs">Trigger Type</Label>
                   <Select value={form.trigger_type} onValueChange={(v) => setForm({ ...form, trigger_type: v })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
@@ -834,9 +878,12 @@ function BadgesTab() {
             {badges.map((b) => (
               <TableRow key={b.id}>
                 <TableCell>
-                  <div>
-                    <span className="font-medium">{b.name}</span>
-                    {b.description && <p className="text-xs text-muted-foreground">{b.description}</p>}
+                  <div className="flex items-center gap-2">
+                    {(() => { const BIcon = BADGE_ICONS.find(i => i.value === b.icon)?.icon || Trophy; return <BIcon className="h-4 w-4 text-primary" />; })()}
+                    <div>
+                      <span className="font-medium">{b.name}</span>
+                      {b.description && <p className="text-xs text-muted-foreground">{b.description}</p>}
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell>
