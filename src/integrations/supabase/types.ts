@@ -127,6 +127,36 @@ export type Database = {
         }
         Relationships: []
       }
+      point_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          source_id: string | null
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          source_id?: string | null
+          transaction_type?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          source_id?: string | null
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           account_active: boolean | null
@@ -543,6 +573,7 @@ export type Database = {
           id: string
           is_active: boolean
           owner_id: string | null
+          points: number
           title: string
           updated_at: string
         }
@@ -552,6 +583,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           owner_id?: string | null
+          points?: number
           title: string
           updated_at?: string
         }
@@ -561,6 +593,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           owner_id?: string | null
+          points?: number
           title?: string
           updated_at?: string
         }
@@ -587,6 +620,33 @@ export type Database = {
           profile_id?: string
           scholarship_id?: string
           swiped_right?: boolean
+        }
+        Relationships: []
+      }
+      user_points: {
+        Row: {
+          created_at: string
+          id: string
+          reward_points: number
+          total_points: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reward_points?: number
+          total_points?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reward_points?: number
+          total_points?: number
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
