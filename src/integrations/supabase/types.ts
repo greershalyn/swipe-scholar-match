@@ -85,10 +85,12 @@ export type Database = {
           id: string
           image_url: string | null
           is_active: boolean
+          is_physical: boolean
           merchant_name: string
           merchant_url: string | null
           owner_id: string | null
           redemption_expiry_days: number
+          reward_points_cost: number | null
           title: string
           updated_at: string
         }
@@ -103,10 +105,12 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_active?: boolean
+          is_physical?: boolean
           merchant_name: string
           merchant_url?: string | null
           owner_id?: string | null
           redemption_expiry_days?: number
+          reward_points_cost?: number | null
           title: string
           updated_at?: string
         }
@@ -121,10 +125,12 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_active?: boolean
+          is_physical?: boolean
           merchant_name?: string
           merchant_url?: string | null
           owner_id?: string | null
           redemption_expiry_days?: number
+          reward_points_cost?: number | null
           title?: string
           updated_at?: string
         }
@@ -380,6 +386,7 @@ export type Database = {
           id: string
           is_used: boolean
           redeemed_at: string
+          shipping_address: string | null
           user_id: string
         }
         Insert: {
@@ -389,6 +396,7 @@ export type Database = {
           id?: string
           is_used?: boolean
           redeemed_at?: string
+          shipping_address?: string | null
           user_id: string
         }
         Update: {
@@ -398,6 +406,7 @@ export type Database = {
           id?: string
           is_used?: boolean
           redeemed_at?: string
+          shipping_address?: string | null
           user_id?: string
         }
         Relationships: [
