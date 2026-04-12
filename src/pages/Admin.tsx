@@ -169,6 +169,7 @@ function CouponsTab() {
   const [form, setForm] = useState({
     title: "", description: "", coupon_code: "", discount_value: "",
     merchant_name: "", merchant_url: "", category: "", image_url: "", deal_type: "discount",
+    redemption_expiry_days: 30, expires_at: "",
   });
 
   const categories = ["Food & Drink", "Clothing", "Tech", "Entertainment", "Health & Beauty", "Travel", "Education", "Other"];
@@ -178,9 +179,10 @@ function CouponsTab() {
 
   async function handleCreate() {
     if (!form.title || !form.merchant_name) return;
-    await create("coupons", form);
+    const submitData = { ...form, expires_at: form.expires_at ? new Date(form.expires_at).toISOString() : null };
+    await create("coupons", submitData);
     toast({ title: "Coupon created" });
-    setForm({ title: "", description: "", coupon_code: "", discount_value: "", merchant_name: "", merchant_url: "", category: "", image_url: "", deal_type: "discount" });
+    setForm({ title: "", description: "", coupon_code: "", discount_value: "", merchant_name: "", merchant_url: "", category: "", image_url: "", deal_type: "discount", redemption_expiry_days: 30, expires_at: "" });
     setOpen(false);
     loadCoupons();
   }
@@ -243,6 +245,16 @@ function CouponsTab() {
                     <img src={form.image_url} alt="Preview" className="max-h-full object-contain" onError={(e) => (e.currentTarget.style.display = "none")} />
                   </div>
                 )}
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Coupon Expiration</Label>
+                    <Input type="date" value={form.expires_at} onChange={(e) => setForm({ ...form, expires_at: e.target.value })} />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Days to Use After Saving</Label>
+                    <Input type="number" min={1} max={365} value={form.redemption_expiry_days} onChange={(e) => setForm({ ...form, redemption_expiry_days: parseInt(e.target.value) || 30 })} />
+                  </div>
+                </div>
                 <Button onClick={handleCreate} className="w-full" disabled={isLoading}>Create Coupon</Button>
               </div>
             </DialogContent>

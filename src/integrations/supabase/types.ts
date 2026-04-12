@@ -88,6 +88,7 @@ export type Database = {
           merchant_name: string
           merchant_url: string | null
           owner_id: string | null
+          redemption_expiry_days: number
           title: string
           updated_at: string
         }
@@ -105,6 +106,7 @@ export type Database = {
           merchant_name: string
           merchant_url?: string | null
           owner_id?: string | null
+          redemption_expiry_days?: number
           title: string
           updated_at?: string
         }
@@ -122,6 +124,7 @@ export type Database = {
           merchant_name?: string
           merchant_url?: string | null
           owner_id?: string | null
+          redemption_expiry_days?: number
           title?: string
           updated_at?: string
         }
@@ -297,6 +300,44 @@ export type Database = {
           zip_code?: string | null
         }
         Relationships: []
+      }
+      redeemed_coupons: {
+        Row: {
+          coupon_id: string
+          created_at: string
+          expires_at: string
+          id: string
+          is_used: boolean
+          redeemed_at: string
+          user_id: string
+        }
+        Insert: {
+          coupon_id: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          is_used?: boolean
+          redeemed_at?: string
+          user_id: string
+        }
+        Update: {
+          coupon_id?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          is_used?: boolean
+          redeemed_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "redeemed_coupons_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "coupons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       saved_scholarships: {
         Row: {

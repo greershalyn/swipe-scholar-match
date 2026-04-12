@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tag, ExternalLink, Copy, Check, Gift, Percent } from "lucide-react";
+import { Tag, ExternalLink, Copy, Check, Gift, Percent, Wallet as WalletIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,6 +19,7 @@ interface Coupon {
   expires_at: string | null;
   image_url: string | null;
   deal_type: string;
+  redemption_expiry_days: number;
 }
 
 export function LewteCoupons() {
@@ -26,14 +27,27 @@ export function LewteCoupons() {
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchCoupons();
   }, []);
 
   async function fetchCoupons() {
+    const { data: { user } } = await supabase.auth.getUser();
     const { data } = await supabase.from("coupons").select("*").eq("is_active", true);
     setCoupons((data as Coupon[]) || []);
+    
+    // Check which coupons user already saved
+    if (user) {
+      const { data: redeemed } = await supabase
+        .from("redeemed_coupons")
+        .select("coupon_id")
+        .eq("user_id", user.id);
+      if (redeemed) {
+        setSavedIds(new Set(redeemed.map((r: any) => r.coupon_id)));
+      }
+    }
     setLoading(false);
   }
 
@@ -42,6 +56,31 @@ export function LewteCoupons() {
     setCopiedId(couponId);
     toast({ title: "Coupon code copied!" });
     setTimeout(() => setCopiedId(null), 2000);
+  }
+
+  async function saveToWallet(coupon: Coupon) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + (coupon.redemption_expiry_days || 30));
+    
+    const { error } = await supabase.from("redeemed_coupons").insert({
+      user_id: user.id,
+      coupon_id: coupon.id,
+      expires_at: expiresAt.toISOString(),
+    });
+    
+    if (error) {
+      if (error.code === "23505") {
+        toast({ title: "Already saved", description: "This coupon is already in your wallet." });
+      } else {
+        toast({ title: "Error", description: error.message, variant: "destructive" });
+      }
+    } else {
+      setSavedIds(prev => new Set([...prev, coupon.id]));
+      toast({ title: "Saved to Wallet!", description: "Find this coupon in your wallet when you're ready to use it." });
+    }
   }
 
   const categories = [...new Set(coupons.map((c) => c.category).filter(Boolean))] as string[];
@@ -143,6 +182,14 @@ export function LewteCoupons() {
                     </a>
                   </Button>
                 )}
+                <Button
+                  variant={savedIds.has(coupon.id) ? "secondary" : "outline"}
+                  size="sm"
+                  disabled={savedIds.has(coupon.id)}
+                  onClick={() => saveToWallet(coupon)}
+                >
+                  {savedIds.has(coupon.id) ? <><Check className="h-3 w-3 mr-1" /> Saved</> : <><WalletIcon className="h-3 w-3 mr-1" /> Save to Wallet</>}
+                </Button>
               </div>
               {coupon.expires_at && (
                 <p className="text-xs text-muted-foreground">
