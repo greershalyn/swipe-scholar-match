@@ -411,9 +411,17 @@ function SurveysTab() {
                   {questions.map((q, idx) => (
                     <div key={q.id} className="flex items-center justify-between bg-muted/50 p-2 rounded text-sm">
                       <span>{idx + 1}. {q.question_text} <Badge variant="outline" className="ml-1 text-xs">{q.question_type}</Badge></span>
-                      <Button variant="ghost" size="sm" onClick={() => deleteQuestion(q.id)}>
-                        <Trash2 className="h-3 w-3 text-destructive" />
-                      </Button>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => moveQuestion(idx, "up")} disabled={idx === 0}>
+                          <ArrowUp className="h-3 w-3" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => moveQuestion(idx, "down")} disabled={idx === questions.length - 1}>
+                          <ArrowDown className="h-3 w-3" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => deleteQuestion(q.id)}>
+                          <Trash2 className="h-3 w-3 text-destructive" />
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
