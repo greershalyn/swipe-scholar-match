@@ -4,12 +4,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShieldCheck, Mail, Tag, ClipboardList, Loader2 } from "lucide-react";
+import { ShieldCheck, Mail, Tag, ClipboardList, Bell, Loader2 } from "lucide-react";
 import { useStudentVerification } from "@/hooks/useStudentVerification";
 import { LewteVerification } from "@/components/lewte/LewteVerification";
 import { LewteCoupons } from "@/components/lewte/LewteCoupons";
 import { LewteSurveys } from "@/components/lewte/LewteSurveys";
 import { LewteDashboard } from "@/components/lewte/LewteDashboard";
+import { LewteNotifications } from "@/components/lewte/LewteNotifications";
 import { GradientIcon } from "@/components/ui/gradient-icon";
 
 export default function Lewte() {
@@ -40,6 +41,7 @@ export default function Lewte() {
         </Badge>
       </div>
 
+      <LewteNotifications />
       <LewteDashboard />
 
       <Tabs defaultValue="coupons" className="space-y-4">
