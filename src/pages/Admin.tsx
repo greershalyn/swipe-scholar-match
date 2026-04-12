@@ -190,6 +190,8 @@ function CouponsTab() {
     title: "", description: "", coupon_code: "", discount_value: "",
     merchant_name: "", merchant_url: "", category: "", image_url: "", deal_type: "discount",
     redemption_expiry_days: 30, expires_at: "", reward_points_cost: "", is_physical: false,
+    redemption_limit_type: "once", redemption_limit_count: 1,
+    max_total_redemptions: "", quantity: "",
   });
 
   const categories = ["Food & Drink", "Clothing", "Tech", "Entertainment", "Health & Beauty", "Travel", "Education", "Other"];
@@ -203,10 +205,12 @@ function CouponsTab() {
       ...form,
       expires_at: form.expires_at ? new Date(form.expires_at).toISOString() : null,
       reward_points_cost: form.reward_points_cost ? parseInt(form.reward_points_cost) : null,
+      max_total_redemptions: form.max_total_redemptions ? parseInt(form.max_total_redemptions) : null,
+      quantity: form.quantity ? parseInt(form.quantity) : null,
     };
     await create("coupons", submitData);
     toast({ title: "Coupon created" });
-    setForm({ title: "", description: "", coupon_code: "", discount_value: "", merchant_name: "", merchant_url: "", category: "", image_url: "", deal_type: "discount", redemption_expiry_days: 30, expires_at: "", reward_points_cost: "", is_physical: false });
+    setForm({ title: "", description: "", coupon_code: "", discount_value: "", merchant_name: "", merchant_url: "", category: "", image_url: "", deal_type: "discount", redemption_expiry_days: 30, expires_at: "", reward_points_cost: "", is_physical: false, redemption_limit_type: "once", redemption_limit_count: 1, max_total_redemptions: "", quantity: "" });
     setOpen(false);
     loadCoupons();
   }
