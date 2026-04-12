@@ -34,18 +34,18 @@ export function useStudentVerification() {
     }
   }
 
-  async function sendVerificationCode(schoolEmail: string) {
+  async function sendVerificationCode(schoolEmail: string, dateOfBirth: string) {
     setVerificationStatus("sending");
     setError(null);
     try {
       const { data, error: fnError } = await supabase.functions.invoke("send-verification-email", {
-        body: { school_email: schoolEmail },
+        body: { school_email: schoolEmail, date_of_birth: dateOfBirth },
       });
       if (fnError) throw new Error(fnError.message);
       if (data?.error) throw new Error(data.error);
       
       setSchoolName(data.school_name);
-      setDebugCode(data.debug_code); // Remove in production
+      setDebugCode(data.debug_code);
       setVerificationStatus("sent");
     } catch (err: any) {
       setError(err.message);

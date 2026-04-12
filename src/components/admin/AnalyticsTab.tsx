@@ -3,13 +3,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { BarChart3, Eye, MousePointerClick, ShoppingBag, Loader2, TrendingUp } from "lucide-react";
+import { BarChart3, Eye, MousePointerClick, ShoppingBag, Loader2, TrendingUp, Tag, Users } from "lucide-react";
 import { useAdminManage } from "@/hooks/useAdminManage";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function AnalyticsTab() {
   const { list, isLoading } = useAdminManage();
   const [analytics, setAnalytics] = useState<any[]>([]);
   const [coupons, setCoupons] = useState<any[]>([]);
+  const [verifications, setVerifications] = useState<any[]>([]);
   const [timeRange, setTimeRange] = useState("7d");
 
   useEffect(() => {
@@ -23,6 +25,13 @@ export default function AnalyticsTab() {
     ]);
     setAnalytics(analyticsData || []);
     setCoupons(couponsData || []);
+
+    // Load verified student age data
+    const { data: verifData } = await supabase
+      .from("student_email_verifications")
+      .select("date_of_birth, verified")
+      .eq("verified", true);
+    setVerifications(verifData || []);
   }
 
   const filteredAnalytics = useMemo(() => {
@@ -56,6 +65,44 @@ export default function AnalyticsTab() {
       .sort((a, b) => b.views + b.clicks + b.redemptions - (a.views + a.clicks + a.redemptions));
   }, [filteredAnalytics, coupons]);
 
+  // Trending categories
+  const categoryStats = useMemo(() => {
+    const map = new Map<string, { views: number; clicks: number; redemptions: number }>();
+    filteredAnalytics.forEach((a) => {
+      const coupon = coupons.find((c) => c.id === a.coupon_id);
+      const cat = coupon?.category || "Uncategorized";
+      if (!map.has(cat)) map.set(cat, { views: 0, clicks: 0, redemptions: 0 });
+      const entry = map.get(cat)!;
+      if (a.event_type === "view") entry.views++;
+      if (a.event_type === "click") entry.clicks++;
+      if (a.event_type === "redemption") entry.redemptions++;
+    });
+    return Array.from(map.entries())
+      .map(([category, s]) => ({ category, ...s, total: s.views + s.clicks + s.redemptions }))
+      .sort((a, b) => b.total - a.total);
+  }, [filteredAnalytics, coupons]);
+
+  // Age demographics
+  const ageBuckets = useMemo(() => {
+    const buckets = { "16-17": 0, "18-21": 0, "22-25": 0, "26-30": 0, "31+": 0 };
+    const today = new Date();
+    verifications.forEach((v) => {
+      if (!v.date_of_birth) return;
+      const dob = new Date(v.date_of_birth);
+      let age = today.getFullYear() - dob.getFullYear();
+      const m = today.getMonth() - dob.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+      if (age <= 17) buckets["16-17"]++;
+      else if (age <= 21) buckets["18-21"]++;
+      else if (age <= 25) buckets["22-25"]++;
+      else if (age <= 30) buckets["26-30"]++;
+      else buckets["31+"]++;
+    });
+    return Object.entries(buckets).map(([range, count]) => ({ range, count }));
+  }, [verifications]);
+
+  const totalVerified = verifications.length;
+
   return (
     <div className="space-y-4">
       {/* Summary Cards */}
@@ -80,6 +127,85 @@ export default function AnalyticsTab() {
         <StatCard icon={MousePointerClick} label="Clicks" value={stats.clicks} color="text-green-500" />
         <StatCard icon={ShoppingBag} label="Redemptions" value={stats.redemptions} color="text-purple-500" />
         <StatCard icon={TrendingUp} label="CTR" value={`${stats.ctr}%`} color="text-amber-500" />
+      </div>
+
+      {/* Trending Categories & Age Demographics side by side */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Trending Categories */}
+        <Card>
+          <CardHeader className="py-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Tag className="h-4 w-4" /> Trending Categories
+            </CardTitle>
+            <CardDescription className="text-xs">Most engaged categories</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {categoryStats.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">No category data yet</p>
+            ) : (
+              <div className="space-y-3">
+                {categoryStats.map((cat, i) => {
+                  const maxTotal = categoryStats[0]?.total || 1;
+                  const pct = Math.round((cat.total / maxTotal) * 100);
+                  return (
+                    <div key={cat.category} className="space-y-1">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="flex items-center gap-2">
+                          {i === 0 && <Badge variant="secondary" className="text-xs">🔥 Top</Badge>}
+                          {cat.category}
+                        </span>
+                        <span className="text-muted-foreground text-xs">
+                          {cat.views}v · {cat.clicks}c · {cat.redemptions}r
+                        </span>
+                      </div>
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-primary rounded-full transition-all"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Age Demographics */}
+        <Card>
+          <CardHeader className="py-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Users className="h-4 w-4" /> Audience Age
+            </CardTitle>
+            <CardDescription className="text-xs">{totalVerified} verified students</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {totalVerified === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">No verified students yet</p>
+            ) : (
+              <div className="space-y-3">
+                {ageBuckets.map((b) => {
+                  const pct = totalVerified > 0 ? Math.round((b.count / totalVerified) * 100) : 0;
+                  return (
+                    <div key={b.range} className="space-y-1">
+                      <div className="flex items-center justify-between text-sm">
+                        <span>{b.range} years</span>
+                        <span className="text-muted-foreground text-xs">{b.count} ({pct}%)</span>
+                      </div>
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-accent rounded-full transition-all"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* Per-Coupon Breakdown */}
