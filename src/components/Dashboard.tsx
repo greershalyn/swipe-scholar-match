@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import scholarshipBg from "@/assets/scholarship-bg.png";
 import walletBg from "@/assets/wallet-bg.png";
+import lewteBg from "@/assets/lewte-bg.png";
 import {
   GraduationCap,
   WalletIcon,
@@ -181,6 +182,7 @@ export function Dashboard() {
           path="/lewte"
           locked={!isVerified}
           lockMessage="🔒 Unlock exclusive student deals & rewards"
+          bgImage={lewteBg}
         />
 
         {/* Essay Assistant */}
