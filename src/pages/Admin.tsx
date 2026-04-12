@@ -878,9 +878,12 @@ function BadgesTab() {
             {badges.map((b) => (
               <TableRow key={b.id}>
                 <TableCell>
-                  <div>
-                    <span className="font-medium">{b.name}</span>
-                    {b.description && <p className="text-xs text-muted-foreground">{b.description}</p>}
+                  <div className="flex items-center gap-2">
+                    {(() => { const BIcon = BADGE_ICONS.find(i => i.value === b.icon)?.icon || Trophy; return <BIcon className="h-4 w-4 text-primary" />; })()}
+                    <div>
+                      <span className="font-medium">{b.name}</span>
+                      {b.description && <p className="text-xs text-muted-foreground">{b.description}</p>}
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell>
