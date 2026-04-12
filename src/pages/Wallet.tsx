@@ -260,7 +260,7 @@ const WalletPage = () => {
                       {tx.transaction_type === "spent" ? "−" : "+"}
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-foreground">{tx.description || (tx.transaction_type === "earned" ? "Points Earned" : "Points Spent")}</p>
+                      <p className="text-sm font-medium text-foreground">{tx.description || (tx.transaction_type === "spent" ? "Points Spent" : "Points Earned")}</p>
                       <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(tx.created_at), { addSuffix: true })}</p>
                     </div>
                   </div>
