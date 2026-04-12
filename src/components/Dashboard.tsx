@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import scholarshipBg from "@/assets/scholarship-bg.png";
 import walletBg from "@/assets/wallet-bg.png";
 import lewteBg from "@/assets/lewte-bg.png";
+import essayBg from "@/assets/essay-bg.png";
 import {
   GraduationCap,
   WalletIcon,
@@ -192,6 +193,7 @@ export function Dashboard() {
           cta="Craft a winning essay"
           description="AI-powered tools to help you brainstorm, outline, and polish your scholarship essays."
           path="/essay-assistant"
+          bgImage={essayBg}
         />
 
         {/* Test Prep */}
