@@ -13,6 +13,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ExpandedFramework } from '@/types/essay';
 import { ExpandedFrameworkView } from '@/components/essay/ExpandedFrameworkView';
 import { GradientIcon } from '@/components/ui/gradient-icon';
+import studentHero from '@/assets/student-hero.png';
 
 
 const Index = () => {
