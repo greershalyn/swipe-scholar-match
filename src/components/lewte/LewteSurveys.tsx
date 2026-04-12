@@ -41,19 +41,52 @@ export function LewteSurveys() {
   }, []);
 
   async function fetchSurveys() {
-    const { data } = await supabase.from("surveys").select("*").eq("is_active", true);
-    setSurveys((data as Survey[]) || []);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setLoading(false); return; }
+
+    const { data: allSurveys } = await supabase.from("surveys").select("*").eq("is_active", true);
+    const surveyList = (allSurveys as Survey[]) || [];
+
+    // Get user's verified school email domain
+    const { data: verification } = await supabase
+      .from("student_email_verifications")
+      .select("school_email")
+      .eq("user_id", user.id)
+      .eq("verified", true)
+      .maybeSingle();
+
+    const userDomain = verification?.school_email?.split("@")[1] || null;
+
+    // Get school targets for select_schools surveys
+    const selectSchoolSurveyIds = surveyList.filter((s: any) => s.target_audience === "select_schools").map((s) => s.id);
+    let allowedSelectIds = new Set<string>();
+
+    if (selectSchoolSurveyIds.length > 0 && userDomain) {
+      const { data: targets } = await supabase
+        .from("survey_school_targets")
+        .select("survey_id")
+        .in("survey_id", selectSchoolSurveyIds)
+        .eq("domain", userDomain);
+      allowedSelectIds = new Set((targets || []).map((t: any) => t.survey_id));
+    }
+
+    // Filter: show "all" surveys + select_schools surveys where user's domain matches
+    // Super admins (no verification) see all surveys
+    const filtered = surveyList.filter((s: any) => {
+      if (s.target_audience === "all" || !s.target_audience) return true;
+      if (s.target_audience === "select_schools") return allowedSelectIds.has(s.id);
+      return true;
+    });
+
+    setSurveys(filtered);
 
     // Check completed
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data: responses } = await supabase
-        .from("survey_responses")
-        .select("survey_id")
-        .eq("user_id", user.id);
-      if (responses) {
-        setCompleted(new Set(responses.map((r: any) => r.survey_id)));
-      }
+    const { data: responses } = await supabase
+      .from("survey_responses")
+      .select("survey_id")
+      .eq("user_id", user.id);
+    if (responses) {
+      setCompleted(new Set(responses.map((r: any) => r.survey_id)));
     }
     setLoading(false);
   }

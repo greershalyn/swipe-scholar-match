@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -298,21 +299,60 @@ function SurveysTab() {
   const { list, create, update, remove, isLoading } = useAdminManage();
   const [surveys, setSurveys] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ title: "", description: "", points: 0 });
+  const [form, setForm] = useState({ title: "", description: "", points: 0, target_audience: "all" });
+  const [selectedDomains, setSelectedDomains] = useState<string[]>([]);
+  const [allDomains, setAllDomains] = useState<any[]>([]);
   const [questionOpen, setQuestionOpen] = useState<string | null>(null);
   const [questions, setQuestions] = useState<any[]>([]);
   const [qForm, setQForm] = useState({ question_text: "", question_type: "text", options: "", is_required: true, display_order: 0 });
 
-  useEffect(() => { loadSurveys(); }, []);
+  useEffect(() => { loadSurveys(); loadDomainsList(); }, []);
   async function loadSurveys() { setSurveys(await list("surveys") || []); }
+  async function loadDomainsList() { setAllDomains(await list("allowed_school_domains") || []); }
 
   async function handleCreate() {
     if (!form.title) return;
-    await create("surveys", form);
+    const result = await create("surveys", form);
+    if (result && result[0]?.id && form.target_audience === "select_schools" && selectedDomains.length > 0) {
+      const surveyId = result[0].id;
+      for (const domain of selectedDomains) {
+        await create("survey_school_targets", { survey_id: surveyId, domain });
+      }
+      // Send notifications to verified students at those schools
+      await sendSurveyNotifications(surveyId, form.title, selectedDomains);
+    } else if (result && result[0]?.id && form.target_audience === "all") {
+      await sendSurveyNotifications(result[0].id, form.title, []);
+    }
     toast({ title: "Survey created" });
-    setForm({ title: "", description: "", points: 0 });
+    setForm({ title: "", description: "", points: 0, target_audience: "all" });
+    setSelectedDomains([]);
     setOpen(false);
     loadSurveys();
+  }
+
+  async function sendSurveyNotifications(surveyId: string, surveyTitle: string, domains: string[]) {
+    // Get verified student user IDs
+    const allVerifications: any[] = await list("student_email_verifications") || [];
+    const verified = allVerifications.filter((v: any) => v.verified);
+    
+    let targetUsers = verified;
+    if (domains.length > 0) {
+      targetUsers = verified.filter((v: any) => {
+        const emailDomain = v.school_email?.split("@")[1];
+        return domains.includes(emailDomain);
+      });
+    }
+
+    // Create notifications for each target user
+    for (const v of targetUsers) {
+      await create("notifications", {
+        user_id: v.user_id,
+        title: "New Survey Available",
+        message: `"${surveyTitle}" is now available for you to complete.`,
+        type: "survey",
+        reference_id: surveyId,
+      });
+    }
   }
 
   async function handleDelete(id: string) {
@@ -385,6 +425,35 @@ function SurveysTab() {
                   <Input type="number" min={0} max={100} placeholder="0" value={form.points} onChange={(e) => setForm({ ...form, points: parseInt(e.target.value) || 0 })} />
                   <p className="text-xs text-muted-foreground">Points earned by students for completing this survey (max 100)</p>
                 </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Target Audience</Label>
+                  <Select value={form.target_audience} onValueChange={(v) => { setForm({ ...form, target_audience: v }); if (v === "all") setSelectedDomains([]); }}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Verified Students</SelectItem>
+                      <SelectItem value="select_schools">Select Schools Only</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {form.target_audience === "select_schools" && (
+                  <div className="space-y-2 border rounded-md p-3 max-h-40 overflow-y-auto">
+                    <Label className="text-xs font-medium">Select Schools</Label>
+                    {allDomains.map((d: any) => (
+                      <div key={d.id} className="flex items-center gap-2">
+                        <Checkbox
+                          id={`domain-${d.id}`}
+                          checked={selectedDomains.includes(d.domain)}
+                          onCheckedChange={(checked) => {
+                            if (checked) setSelectedDomains([...selectedDomains, d.domain]);
+                            else setSelectedDomains(selectedDomains.filter((sd) => sd !== d.domain));
+                          }}
+                        />
+                        <Label htmlFor={`domain-${d.id}`} className="text-sm">{d.school_name} ({d.domain})</Label>
+                      </div>
+                    ))}
+                    {allDomains.length === 0 && <p className="text-xs text-muted-foreground">No school domains configured</p>}
+                  </div>
+                )}
                 <Button onClick={handleCreate} className="w-full" disabled={isLoading}>Create Survey</Button>
               </div>
             </DialogContent>
@@ -399,7 +468,10 @@ function SurveysTab() {
                 <div>
                   <CardTitle className="text-base">{s.title}</CardTitle>
                   {s.description && <CardDescription className="text-xs">{s.description}</CardDescription>}
-                  {s.points > 0 && <Badge variant="secondary" className="text-xs mt-1 w-fit">🎯 {s.points} pts</Badge>}
+                  <div className="flex gap-1 mt-1">
+                    {s.points > 0 && <Badge variant="secondary" className="text-xs">🎯 {s.points} pts</Badge>}
+                    <Badge variant="outline" className="text-xs">{s.target_audience === "select_schools" ? "Select Schools" : "All Students"}</Badge>
+                  </div>
                 </div>
                 <div className="flex gap-1">
                   <Button variant="outline" size="sm" onClick={() => loadQuestions(s.id)}>
