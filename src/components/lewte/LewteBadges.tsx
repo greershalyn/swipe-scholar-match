@@ -73,7 +73,7 @@ export function LewteBadges() {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
           {allBadges.map((badge) => {
             const isEarned = earnedBadgeIds.has(badge.id);
-            const Icon = TRIGGER_ICONS[badge.trigger_type] || Trophy;
+            const Icon = ICON_MAP[badge.icon] || Trophy;
             return (
               <div
                 key={badge.id}
