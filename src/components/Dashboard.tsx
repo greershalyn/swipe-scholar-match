@@ -165,6 +165,7 @@ export function Dashboard() {
           cta="You could be saving $$$"
           description="Track your saved scholarships, deadlines, and application statuses in one place."
           path="/wallet"
+          bgImage={walletBg}
         />
 
         {/* Lewte - conditional */}
