@@ -14,6 +14,21 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_users: {
+        Row: {
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       allowed_school_domains: {
         Row: {
           created_at: string
@@ -114,11 +129,18 @@ export type Database = {
       }
       coupons: {
         Row: {
+          biz_address: string | null
+          biz_city: string | null
+          biz_radius_mi: number | null
+          biz_state: string | null
+          biz_zip: string | null
           category: string | null
+          code: string | null
           coupon_code: string | null
           created_at: string
           current_redemptions: number
           deal_type: string
+          delivery_type: string | null
           description: string | null
           discount_value: string | null
           expires_at: string | null
@@ -126,6 +148,9 @@ export type Database = {
           image_url: string | null
           is_active: boolean
           is_physical: boolean
+          limit_lifetime: number | null
+          limit_total: number | null
+          limit_weekly: number | null
           max_total_redemptions: number | null
           merchant_name: string
           merchant_url: string | null
@@ -134,16 +159,27 @@ export type Database = {
           redemption_expiry_days: number
           redemption_limit_count: number
           redemption_limit_type: string
+          redemptions: number | null
+          retail_value: number | null
           reward_points_cost: number | null
+          stock: number | null
+          tags: string[] | null
           title: string
           updated_at: string
         }
         Insert: {
+          biz_address?: string | null
+          biz_city?: string | null
+          biz_radius_mi?: number | null
+          biz_state?: string | null
+          biz_zip?: string | null
           category?: string | null
+          code?: string | null
           coupon_code?: string | null
           created_at?: string
           current_redemptions?: number
           deal_type?: string
+          delivery_type?: string | null
           description?: string | null
           discount_value?: string | null
           expires_at?: string | null
@@ -151,6 +187,9 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean
           is_physical?: boolean
+          limit_lifetime?: number | null
+          limit_total?: number | null
+          limit_weekly?: number | null
           max_total_redemptions?: number | null
           merchant_name: string
           merchant_url?: string | null
@@ -159,16 +198,27 @@ export type Database = {
           redemption_expiry_days?: number
           redemption_limit_count?: number
           redemption_limit_type?: string
+          redemptions?: number | null
+          retail_value?: number | null
           reward_points_cost?: number | null
+          stock?: number | null
+          tags?: string[] | null
           title: string
           updated_at?: string
         }
         Update: {
+          biz_address?: string | null
+          biz_city?: string | null
+          biz_radius_mi?: number | null
+          biz_state?: string | null
+          biz_zip?: string | null
           category?: string | null
+          code?: string | null
           coupon_code?: string | null
           created_at?: string
           current_redemptions?: number
           deal_type?: string
+          delivery_type?: string | null
           description?: string | null
           discount_value?: string | null
           expires_at?: string | null
@@ -176,6 +226,9 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean
           is_physical?: boolean
+          limit_lifetime?: number | null
+          limit_total?: number | null
+          limit_weekly?: number | null
           max_total_redemptions?: number | null
           merchant_name?: string
           merchant_url?: string | null
@@ -184,9 +237,73 @@ export type Database = {
           redemption_expiry_days?: number
           redemption_limit_count?: number
           redemption_limit_type?: string
+          redemptions?: number | null
+          retail_value?: number | null
           reward_points_cost?: number | null
+          stock?: number | null
+          tags?: string[] | null
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      jobs: {
+        Row: {
+          boost_tier: string | null
+          company: string
+          created_at: string
+          deadline: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          job_type: string | null
+          location: string | null
+          location_type: string | null
+          majors: string | null
+          pay: string | null
+          posted_by: string | null
+          requirements: string | null
+          title: string
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          boost_tier?: string | null
+          company: string
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          job_type?: string | null
+          location?: string | null
+          location_type?: string | null
+          majors?: string | null
+          pay?: string | null
+          posted_by?: string | null
+          requirements?: string | null
+          title: string
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          boost_tier?: string | null
+          company?: string
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          job_type?: string | null
+          location?: string | null
+          location_type?: string | null
+          majors?: string | null
+          pay?: string | null
+          posted_by?: string | null
+          requirements?: string | null
+          title?: string
+          updated_at?: string
+          url?: string | null
         }
         Relationships: []
       }
@@ -259,34 +376,55 @@ export type Database = {
           act_score: number | null
           address: string | null
           awards_honors: string[] | null
+          bio: string | null
           birth_date: string | null
+          citizenship: string | null
           city: string | null
           college_university: string | null
+          county: string | null
           created_at: string
           current_education_level: string | null
+          disability: boolean
           disability_status: boolean | null
+          dob: string | null
           dual_enrollment: boolean | null
+          edu_verified: boolean
+          education_level: string | null
           essay_personal_statement: string | null
           ethnicity: string | null
           extracurricular_activities: string[] | null
           financial_need: boolean | null
+          first_gen: boolean | null
           first_generation_student: boolean | null
           full_name: string | null
           gender: string | null
           gpa: number | null
+          graduated_hs: boolean
+          graduation_year: string | null
           high_school_graduated: boolean | null
           household_income: number | null
           id: string
           intended_major: string | null
+          is_student: boolean
           keywords: string[] | null
+          major: string | null
+          military: boolean
           military_affiliation: string | null
+          minor: string | null
           organizations: string[] | null
+          pell_grant: boolean
+          personal_statement: string | null
+          rewards: Json
           rewards_achievements: string[] | null
           sat_score: number | null
+          school: string | null
           state: string | null
           subscription_tier: string | null
           updated_at: string
           volunteering_experience: string[] | null
+          volunteering_list: Json
+          year: string | null
+          zip: string | null
           zip_code: string | null
         }
         Insert: {
@@ -294,34 +432,55 @@ export type Database = {
           act_score?: number | null
           address?: string | null
           awards_honors?: string[] | null
+          bio?: string | null
           birth_date?: string | null
+          citizenship?: string | null
           city?: string | null
           college_university?: string | null
+          county?: string | null
           created_at?: string
           current_education_level?: string | null
+          disability?: boolean
           disability_status?: boolean | null
+          dob?: string | null
           dual_enrollment?: boolean | null
+          edu_verified?: boolean
+          education_level?: string | null
           essay_personal_statement?: string | null
           ethnicity?: string | null
           extracurricular_activities?: string[] | null
           financial_need?: boolean | null
+          first_gen?: boolean | null
           first_generation_student?: boolean | null
           full_name?: string | null
           gender?: string | null
           gpa?: number | null
+          graduated_hs?: boolean
+          graduation_year?: string | null
           high_school_graduated?: boolean | null
           household_income?: number | null
           id: string
           intended_major?: string | null
+          is_student?: boolean
           keywords?: string[] | null
+          major?: string | null
+          military?: boolean
           military_affiliation?: string | null
+          minor?: string | null
           organizations?: string[] | null
+          pell_grant?: boolean
+          personal_statement?: string | null
+          rewards?: Json
           rewards_achievements?: string[] | null
           sat_score?: number | null
+          school?: string | null
           state?: string | null
           subscription_tier?: string | null
           updated_at?: string
           volunteering_experience?: string[] | null
+          volunteering_list?: Json
+          year?: string | null
+          zip?: string | null
           zip_code?: string | null
         }
         Update: {
@@ -329,34 +488,55 @@ export type Database = {
           act_score?: number | null
           address?: string | null
           awards_honors?: string[] | null
+          bio?: string | null
           birth_date?: string | null
+          citizenship?: string | null
           city?: string | null
           college_university?: string | null
+          county?: string | null
           created_at?: string
           current_education_level?: string | null
+          disability?: boolean
           disability_status?: boolean | null
+          dob?: string | null
           dual_enrollment?: boolean | null
+          edu_verified?: boolean
+          education_level?: string | null
           essay_personal_statement?: string | null
           ethnicity?: string | null
           extracurricular_activities?: string[] | null
           financial_need?: boolean | null
+          first_gen?: boolean | null
           first_generation_student?: boolean | null
           full_name?: string | null
           gender?: string | null
           gpa?: number | null
+          graduated_hs?: boolean
+          graduation_year?: string | null
           high_school_graduated?: boolean | null
           household_income?: number | null
           id?: string
           intended_major?: string | null
+          is_student?: boolean
           keywords?: string[] | null
+          major?: string | null
+          military?: boolean
           military_affiliation?: string | null
+          minor?: string | null
           organizations?: string[] | null
+          pell_grant?: boolean
+          personal_statement?: string | null
+          rewards?: Json
           rewards_achievements?: string[] | null
           sat_score?: number | null
+          school?: string | null
           state?: string | null
           subscription_tier?: string | null
           updated_at?: string
           volunteering_experience?: string[] | null
+          volunteering_list?: Json
+          year?: string | null
+          zip?: string | null
           zip_code?: string | null
         }
         Relationships: []
@@ -566,42 +746,60 @@ export type Database = {
       }
       saved_scholarships: {
         Row: {
-          applied: boolean
+          amount: string | null
+          category: string | null
           created_at: string
+          deadline: string | null
+          description: string | null
+          eligibility: string | null
           id: string
-          profile_id: string
-          scholarship_id: string
+          match_score: number | null
+          name: string
+          org: string | null
+          position: number | null
+          scholarship_key: string
+          status: string
+          updated_at: string
+          url: string | null
+          user_id: string
         }
         Insert: {
-          applied?: boolean
+          amount?: string | null
+          category?: string | null
           created_at?: string
+          deadline?: string | null
+          description?: string | null
+          eligibility?: string | null
           id?: string
-          profile_id: string
-          scholarship_id: string
+          match_score?: number | null
+          name: string
+          org?: string | null
+          position?: number | null
+          scholarship_key: string
+          status?: string
+          updated_at?: string
+          url?: string | null
+          user_id: string
         }
         Update: {
-          applied?: boolean
+          amount?: string | null
+          category?: string | null
           created_at?: string
+          deadline?: string | null
+          description?: string | null
+          eligibility?: string | null
           id?: string
-          profile_id?: string
-          scholarship_id?: string
+          match_score?: number | null
+          name?: string
+          org?: string | null
+          position?: number | null
+          scholarship_key?: string
+          status?: string
+          updated_at?: string
+          url?: string | null
+          user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "saved_scholarships_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "saved_scholarships_scholarship_id_fkey"
-            columns: ["scholarship_id"]
-            isOneToOne: false
-            referencedRelation: "scholarships"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       scholarship_applications: {
         Row: {
@@ -641,6 +839,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      scholarship_search_cache: {
+        Row: {
+          amount: string | null
+          cached_at: string
+          category: string | null
+          deadline: string | null
+          description: string | null
+          eligibility: string | null
+          id: string
+          match_score: number | null
+          name: string
+          org: string | null
+          scholarship_key: string
+          search_angle: string | null
+          url: string | null
+          user_id: string
+        }
+        Insert: {
+          amount?: string | null
+          cached_at?: string
+          category?: string | null
+          deadline?: string | null
+          description?: string | null
+          eligibility?: string | null
+          id?: string
+          match_score?: number | null
+          name: string
+          org?: string | null
+          scholarship_key: string
+          search_angle?: string | null
+          url?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: string | null
+          cached_at?: string
+          category?: string | null
+          deadline?: string | null
+          description?: string | null
+          eligibility?: string | null
+          id?: string
+          match_score?: number | null
+          name?: string
+          org?: string | null
+          scholarship_key?: string
+          search_angle?: string | null
+          url?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       scholarships: {
         Row: {
@@ -896,37 +1145,67 @@ export type Database = {
       }
       surveys: {
         Row: {
+          audience: string | null
+          audience_schools: string[] | null
+          category: string | null
           created_at: string
           description: string | null
+          estimated_minutes: number | null
           id: string
           is_active: boolean
+          max_responses: number | null
+          one_per_user: boolean | null
           owner_id: string | null
           points: number
+          points_cap: number | null
+          questions: Json | null
+          starts_at: string | null
           target_audience: string
           title: string
           updated_at: string
+          url: string | null
         }
         Insert: {
+          audience?: string | null
+          audience_schools?: string[] | null
+          category?: string | null
           created_at?: string
           description?: string | null
+          estimated_minutes?: number | null
           id?: string
           is_active?: boolean
+          max_responses?: number | null
+          one_per_user?: boolean | null
           owner_id?: string | null
           points?: number
+          points_cap?: number | null
+          questions?: Json | null
+          starts_at?: string | null
           target_audience?: string
           title: string
           updated_at?: string
+          url?: string | null
         }
         Update: {
+          audience?: string | null
+          audience_schools?: string[] | null
+          category?: string | null
           created_at?: string
           description?: string | null
+          estimated_minutes?: number | null
           id?: string
           is_active?: boolean
+          max_responses?: number | null
+          one_per_user?: boolean | null
           owner_id?: string | null
           points?: number
+          points_cap?: number | null
+          questions?: Json | null
+          starts_at?: string | null
           target_audience?: string
           title?: string
           updated_at?: string
+          url?: string | null
         }
         Relationships: []
       }
@@ -1060,7 +1339,9 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: boolean
       }
+      is_admin: { Args: never; Returns: boolean }
       is_any_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_lewte_eligible: { Args: { p_user_id: string }; Returns: boolean }
       remove_expired_scholarships: { Args: never; Returns: undefined }
     }
     Enums: {
